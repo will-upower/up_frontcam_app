@@ -401,6 +401,8 @@ extern "C"
 {
 #endif
 int f_opencv_execute ();
+int create_opencv_window();
+void self_destruct_ocv();
 int R_FC_SyncStart(e_fc_module_t module, osal_mutex_handle_t *ptr_mtx, osal_cond_handle_t *ptr_cond, int flow);
 int R_FC_SyncEnd(e_fc_module_t module, osal_mutex_handle_t *ptr_mtx, osal_cond_handle_t *ptr_cond, int flow);
 

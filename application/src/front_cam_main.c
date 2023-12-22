@@ -428,7 +428,11 @@ re-run the application\n FC App terminating...\n ");
                 }
             }
         }
-
+        // Addendum: opencv window:
+        if (0 == g_customize.VOUT_Enable) {
+            create_opencv_window();
+            atexit(self_destruct_ocv);
+        }
         /* Create Capture thread */
         osal_thread_handle_t    capture_thrd_hndl         = OSAL_THREAD_HANDLE_INVALID;
         int64_t                 thrd_return_value         = -1;
@@ -922,7 +926,7 @@ int64_t R_VOUT_Task()
                     PRINT_ERROR("Failed Vout execute \n");
                     return FAILED;
                 }
-            }  
+            }
             if(false == g_customize.VIN_Enable)          /* if VIN is enabled */
             {
                 if (true == g_customize.Image_Folder_Enable)

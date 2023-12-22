@@ -494,9 +494,25 @@ int f_opencv_execute()
         sprintf(fps_text,"Inference FPS :%3u.%1u", g_fps[1] / 10, g_fps[1] % 10);
         cv::putText(image, fps_text, text_ai_fps_position, 2, font_size, font_Color_others, 2, true);
     }
-        memcpy((void *)gp_opencv_buffer, (void *)image.data, g_frame_width * g_frame_height * g_vout_pix_fmt);
-
+    memcpy((void *)gp_opencv_buffer, (void *)image.data, g_frame_width * g_frame_height * g_vout_pix_fmt);
+    if (0 == g_customize.VOUT_Enable) {
+        cv::Mat bgr_image(g_frame_width, g_frame_height, CV_8UC3);
+        cv::cvtColor(image, bgr_image, COLOR_RGB2BGR);
+        imshow("frontcam_demo", bgr_image);
+        waitKey(1);
+    }
     return SUCCESS;
+}
+
+int create_opencv_window() {
+    namedWindow("frontcam_demo");
+    resizeWindow("frontcam_demo", 1280, 720);
+    return SUCCESS;
+}
+
+void self_destruct_ocv() {
+    destroyWindow("frontcam_demo");
+    //destroyAllWindows();
 }
 
 /**********************************************************************************************************************
