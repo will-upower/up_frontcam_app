@@ -22,7 +22,6 @@
 #include <fstream>
 #include "pose.hpp"
 #include "postprocess.hpp"
-
 using namespace cv;
 
  const char *class_names[] = {"person","bicycle","car","motorcycle","bus","train","truck","traffic_light","stop_sign",
@@ -213,7 +212,29 @@ static int approach1(cv::Mat &src) {
             color_segmap.at<cv::Vec3b>(y, x)[2] = clr.val[2];
         }
     }
-    return 0;
+    //complete garbage ignore please
+    /* std::ofstream outFile("segmap_data.bin", std::ios::binary);
+    if (!outFile.is_open()) {
+        std::cerr << "Error opening file." << std::endl;
+        return 0;
+    }
+    outFile.write(reinterpret_cast<char*>(det_segmap.data), det_segmap.total() * det_segmap.elemSize());
+    if (!outFile) {
+        std::cerr << "Error writing to file." << std::endl;
+        outFile.close(); // Close the file before returning
+        return 0; // Return an error code
+    }
+    outFile.close(); */
+    //For Will commented out for performance reasons
+    /* cv::FileStorage fs("semseg_output.yaml", cv::FileStorage::WRITE);
+    if (!fs.isOpened()) {
+        std::cerr << "Error: Could not open the file semseg_output.yaml" << std::endl;
+        return -1;
+    }
+    fs << "ImageData" << det_segmap;
+    fs.release();
+    std::cout << "Data written to semseg_output.yaml successfully." << std::endl;
+    return 0; */
 }
 /**********************************************************************************************************************
  End of function approach1
