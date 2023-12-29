@@ -18,19 +18,11 @@
 #----------------------------------------------------------------------------------------------------------------------
 # Set app name
 #----------------------------------------------------------------------------------------------------------------------
-set(app_name "up_frontcam_ref_app")
+set(app_name "frontcam_ref_app")
 set(app_version "0.3.0")
 
 cmake_minimum_required(VERSION 3.16.3)
-
-set(CMAKE_C_COMPILER /opt/poky/3.1.11/sysroots/x86_64-pokysdk-linux/usr/bin/aarch64-poky-linux/aarch64-poky-linux-gcc)
-set(rcar-xos_DIR /home/ubuntu/Renesas/rcar-xos/v3.18.0/cmake/)
-set(rcar-xos-aarch64-gnu-linux-v4h2_DIR /home/ubuntu/Renesas/rcar-xos/v3.18.0/cmake/)
-set(OpenCV_DIR /home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/lib/cmake/opencv4/)
-set(RCAR_SOC "v4h2")
-
 project(${app_name})
-
 
 #----------------------------------------------------------------------------------------------------------------------
 # R-Car xOS SoC/Board selection

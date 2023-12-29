@@ -21,43 +21,57 @@
  *
  * Copyright (C) 2022-2023 Renesas Electronics Corporation. All rights reserved.
 ***********************************************************************************************************************/
-/*********************************************************************************************************************
-* File Name    : vout_wrapper.h
+
+/***********************************************************************************************************************
+* File Name    : cdnn_main.h
 * Version      : 1.0.0
-* Description  : wrapper header for vout in linux
-*********************************************************************************************************************/
-/*********************************************************************************************************************
-* History : Version DD.MM.YYYY Description
-*         : 0.1.0   27.09.2022 First Release
-*         : 1.0.0   06.03.2023 Updated as per Renesas coding guidelines
-*********************************************************************************************************************/
+* Description  : header File
+***********************************************************************************************************************/
+
+/***********************************************************************************************************************
+* History : DD.MM.YYYY  Version  Description
+ *          30.05.2023  1.0.0    First Release
+***********************************************************************************************************************/
 
 /**********************************************************************************************************************
  Macro definitions
  *********************************************************************************************************************/
-#ifndef _VOUTWRAPPER_H_
-#define _VOUTWRAPPER_H_
+#ifndef CDNN_MAIN_H
+#define CDNN_MAIN_H
 
 /**********************************************************************************************************************
  Includes   <System Includes> , "Project Includes"
  *********************************************************************************************************************/
-#include "vout_display_linux.h"
+#include "rcar-xos/ai_lib/ai_lib.h"
+/**********************************************************************************************************************
+ Macro definitions
+ *********************************************************************************************************************/
+ #define INF_INPUT_CHANNELS (3)
+
+/**** Object Detection ****/
+/* Size of input image to the model */
+#define OBJ_WIDTH       (320)
+#define OBJ_HEIGHT      (320)
+/* Thresholds */ 
+#define TH_PROB         (0.5)
+#define TH_NMS          (0.5)
+/* Number for [region] layer num parameter */
+#define NUM_BB          (3)
+/* Number of class to be detected */
+#define NUM_CLASS       (27)
+/* Display */
+#define WIDTH_ADJUST_OBJ    (320)
+#define HEIGHT_ADJUST_OBJ   (320)
+/**********************************************************************************************************************
+ Typedef definitions
+ *********************************************************************************************************************/
 
 /**********************************************************************************************************************
- Function Declarations
-*********************************************************************************************************************/
-int wr_vout_open (const char * device, const char * module);
-struct resources * wr_vout_getresources (struct device * dev);
-void wr_vout_close (int fd);
-bool wr_vout_set_property (struct device * dev, struct property_arg * p);
-void wr_vout_clear_planes (struct device * dev, struct plane_arg * p);
-void wr_vout_free_resources (struct resources * res);
-
-int wr_vout_setPlane (struct device * dev, struct plane_arg * p);
-int wr_vout_control (int fd, unsigned long request, void * arg);
-int wr_vout_create_frameBuffer (int fd, unsigned int fourcc, const uint32_t w, const uint32_t h, uint32_t handles[4], uint32_t pitches[4], uint32_t offsets[4], unsigned int * fb_id, unsigned int flags);
-int wr_vout_drmGetCap (int fd, uint64_t capability, uint64_t * value);
-int wr_vout_drmModeSetCrtc (int fd, uint32_t crtc_id, uint32_t fb_id, uint32_t x, uint32_t y, uint32_t * connectors, int count, struct pipe_arg * pipe);
-int wr_vout_drmModeDirtyFB (int fd, uint32_t bufferid, void * clips, uint32_t num_clips);
-
-#endif
+ Exported global variables and functions
+ *********************************************************************************************************************/
+int R_CDNN_Execute();
+void inferencePreprocess_ss();
+void inferencePreprocess_od();
+void inferencePostprocess_ss(signed char * data);
+void inferencePostprocess_od(signed char * data);
+#endif /* CDNN_MAIN_H */
