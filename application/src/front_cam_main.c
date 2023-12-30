@@ -162,6 +162,10 @@ int32_t g_vout_done       = 0;
 
 int g_fps[5];
 extern int R_VIN_Start_Capturing (int VIN_Device);
+
+//new
+int mmap_file = 0;
+unsigned char * mapped_buffer_out = NULL;
 /**********************************************************************************************************************
  Private (static) variables and functions
  *********************************************************************************************************************/
@@ -905,53 +909,59 @@ int64_t R_VOUT_Task()
     R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_50MS_SLEEP);
     while (!g_is_thread_exit)
     {   
-            ret = f_opencv_execute();                   /* OpenCV execute */
+        ret = mmap_copy();
+        if (FAILED == ret)
+        {
+            g_is_thread_exit = true;
+            return FAILED;
+        }
+        ret = f_opencv_execute();                   /* OpenCV execute */
+        if (FAILED == ret)
+        {
+            g_is_thread_exit = true;
+            PRINT_ERROR("Failed f_opencv_execute \n");
+            return FAILED;
+        }
+
+        if (0 != g_customize.Proc_Time)              /* If processing time is enabled */
+        {
+            fpsCount(0);                             /* Get FPS */
+        }
+        if (true == g_customize.VOUT_Enable)         /* if VOUT is enabled */
+        {
+            ret = execute();                         /* VOUT execution */
             if (FAILED == ret)
             {
                 g_is_thread_exit = true;
-                PRINT_ERROR("Failed f_opencv_execute \n");
+                PRINT_ERROR("Failed Vout execute \n");
                 return FAILED;
             }
-
-            if (0 != g_customize.Proc_Time)              /* If processing time is enabled */
-            {
-                fpsCount(0);                             /* Get FPS */
-            }
-            if (true == g_customize.VOUT_Enable)         /* if VOUT is enabled */
-            {
-                ret = execute();                         /* VOUT execution */
-                if (FAILED == ret)
-                {
-                    g_is_thread_exit = true;
-                    PRINT_ERROR("Failed Vout execute \n");
-                    return FAILED;
-                }
-            }
-            if(false == g_customize.VIN_Enable)          /* if VIN is enabled */
-            {
-                if (true == g_customize.Image_Folder_Enable)
-                {
-                    FILE * fp = NULL;
-                    mkdir(folder, 0777);
-                    sprintf(image_name, "%s/%s_out", folder, buffer);
-                    fp = fopen(image_name, "wb");
-                    fwrite(gp_opencv_buffer, sizeof(unsigned char), (size_t)size, fp);
-                    fclose(fp);
-                }
-            }
-
+        }
+        if(false == g_customize.VIN_Enable)          /* if VIN is enabled */
+        {
             if (true == g_customize.Image_Folder_Enable)
             {
-                 /*Receiving message to image read MQ*/
-                e_osal_return_t osal_ret = R_OSAL_MqReceiveForTimePeriod(g_mq_handle_imgread, TIMEOUT_MS, 
-                                           (void *)&image_read_receive_flag, g_mq_config_imgread.msg_size);     
-                if (OSAL_RETURN_OK != osal_ret)
-                {
-                    PRINT_ERROR("receiving message to image read MQ was failed, osal_ret = %d\n", osal_ret);
-                }
+                FILE * fp = NULL;
+                mkdir(folder, 0777);
+                sprintf(image_name, "%s/%s_out", folder, buffer);
+                fp = fopen(image_name, "wb");
+                fwrite(gp_opencv_buffer, sizeof(unsigned char), (size_t)size, fp);
+                fclose(fp);
             }
-
         }
+
+        if (true == g_customize.Image_Folder_Enable)
+        {
+                /*Receiving message to image read MQ*/
+            e_osal_return_t osal_ret = R_OSAL_MqReceiveForTimePeriod(g_mq_handle_imgread, TIMEOUT_MS, 
+                                        (void *)&image_read_receive_flag, g_mq_config_imgread.msg_size);     
+            if (OSAL_RETURN_OK != osal_ret)
+            {
+                PRINT_ERROR("receiving message to image read MQ was failed, osal_ret = %d\n", osal_ret);
+            }
+        }
+
+    }
 
     is_queue_empty = false;
     R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_50MS_SLEEP);
@@ -1127,7 +1137,10 @@ int64_t R_Init_Modules()
         g_fcStatus.vout.status = FAILED;
         printf("VOUT Disabled : Enable from config file\n");
     }
-
+    ret = mmap_image_init();
+    if (FAILED == ret) {
+        return FAILED;
+    }
     set_syncstatus(eFC_DRAW, 0);
     return SUCCESS;
 }
@@ -1251,7 +1264,11 @@ int64_t R_Deinit_Modules()
         PRINT_ERROR("Failed OSAL DeInitialize \n");
         return FAILED;
     }
-
+    ret = mmap_deinit();
+    if (FAILED == ret) 
+    {
+        return FAILED;
+    }
     return SUCCESS;
 }
 /**********************************************************************************************************************

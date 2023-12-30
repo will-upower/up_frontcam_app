@@ -409,6 +409,12 @@ int R_FC_SyncEnd(e_fc_module_t module, osal_mutex_handle_t *ptr_mtx, osal_cond_h
 #ifdef __cplusplus
 }
 #endif
+//mmap
+extern int mmap_image_init();
+extern int mmap_deinit();
+extern int mmap_copy();
+extern int mmap_file;
+extern unsigned char * mapped_buffer_out;
 
 extern unsigned char sem_seg_array[];
 extern float pe_array_heatmaps[];
