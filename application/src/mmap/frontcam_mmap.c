@@ -11,8 +11,10 @@ int mmap_image_init()
     //gp_vin_out_buffer
     //g_customize, g_frame_width, g_frame_height, BPP_*, get_buffer_size() are all defined in the common.h or mmap.h file
     size_t size = get_buffer_size();
+    mode_t old_umask = umask(0);
+    mmap_file = open("image_buffer_out.dat", O_RDWR | O_CREAT | O_TRUNC, (mode_t)0666);
+    umask(old_umask);
 
-    mmap_file = open("image_buffer_out.dat", O_RDWR | O_CREAT, (mode_t)0664);
     if (mmap_file == -1) {
         PRINT_ERROR("Failed to open or create mmap file 'image_buffer_out.dat'\n");
         return FAILED; // 1
