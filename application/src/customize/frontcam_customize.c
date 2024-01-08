@@ -293,7 +293,7 @@ int R_CustomizeLoad(st_customize_t *custom_param, const char *file_name)
         getstr(buf, "Frame_File_Name ", custom_param->Frame_File_Name);
         sscanf(buf, "Image_Folder_Enable %d", &custom_param->Image_Folder_Enable);
         getstr(buf, "Frame_Folder_Name ", custom_param->Frame_Folder_Name);
-        
+
         sscanf(buf, "Max_Camera_Width %d", &custom_param->Max_Camera_Width);
         sscanf(buf, "Max_Camera_Height %d", &custom_param->Max_Camera_Height);
 #if(CDNN)  
@@ -309,8 +309,10 @@ int R_CustomizeLoad(st_customize_t *custom_param, const char *file_name)
         sscanf(buf, "SEM_SEG_Height %d", &custom_param->SEM_SEG_Height);
         sscanf(buf, "POSE_EST_Width %d", &custom_param->POSE_EST_Width);
         sscanf(buf, "POSE_EST_Height %d", &custom_param->POSE_EST_Height);
-    }
 
+        sscanf(buf, "Video_Read_Enable %d", &custom_param->Video_Read_Enable);
+        getstr(buf, "Video_File_Name ", custom_param->Video_File_Name);
+    }
 
     return SUCCESS;
 }
@@ -439,7 +441,6 @@ int R_CustomizeValidate(st_customize_t *custom_param)
  *********************************************************************************************************************/
 int R_CustomizePrint(st_customize_t *custom_param)
 {
-
 printf("FC V4H PIPE-LINE \n");
     printf("-------------------------------\n");
 
@@ -549,8 +550,10 @@ printf("FC V4H PIPE-LINE \n");
     printf("SEM_SEG_Height              : %d \n", custom_param->SEM_SEG_Height);
     printf("POSE_EST_Width              : %d \n", custom_param->POSE_EST_Width);
     printf("POSE_EST_Height             : %d \n", custom_param->POSE_EST_Height);
+    printf("\n[Video File] \n");
+    printf("Video_Read_Enable           : %d \n", custom_param->Video_Read_Enable);
+    printf("Video_File_Name             : %s \n", custom_param->Video_File_Name);
     printf("-------------------------------\n");
-    return 0;
 
     return 0;
 }

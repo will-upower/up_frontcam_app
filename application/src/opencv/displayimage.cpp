@@ -141,7 +141,6 @@ static int log_display(cv::Mat &src)
         Point text_point(20,35*(i)+10);
 #if (CDNN)
         if ((true == g_customize.CDNN_Load_Enable) && (true == g_customize.CPU_Load_Enable))
-
         {
             sprintf(log_str,"[%s] CPU : %d%% CDNN : %d%% Average CDNN : %d%%",timestamp,(int)g_cpu_usage ,(int)cdnnload,(int)avgcdnnload);
            
@@ -160,7 +159,7 @@ static int log_display(cv::Mat &src)
         {
             sprintf(log_str,"[%s] CPU Load : %d%%",timestamp,(int)g_cpu_usage);
         }
-#endif       
+#endif
         putText(src, log_str,text_point , font_type, 1, CLR_WHITE, 1, LINE_8, 0);
 
     }
@@ -182,7 +181,6 @@ static int log_display(cv::Mat &src)
 ***********************************************************************************************************************/
 static int graph_display(cv::Mat &src, int core_index, std::vector<int64_t> load_arr)
 {
-
     int thickness = 1;
     int font_type = FONT_HERSHEY_PLAIN;
     int graph_start_pnt_x = 60;
@@ -360,7 +358,7 @@ int f_opencv_execute()
         Mat log(1080, 640, CV_8UC3, gp_log_buffer);
         memset(gp_log_buffer, 0, (LOG_SCREEN_WIDTH * LOG_SCREEN_HEIGHT * 3));
         int font_type = FONT_HERSHEY_PLAIN;
-		
+
         float cpuload = g_cpu_usage;
 
         /*Calculate CDNN Load for V4H*/
@@ -518,5 +516,3 @@ void self_destruct_ocv() {
 /**********************************************************************************************************************
  End of function f_opencv_execute
  *********************************************************************************************************************/
-
-

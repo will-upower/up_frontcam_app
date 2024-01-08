@@ -132,7 +132,9 @@ typedef struct
     int POSE_EST_Width;        
     int POSE_EST_Height; 
 
-}st_customize_t;
+    int Video_Read_Enable;
+    char Video_File_Name[64];
+} st_customize_t;
 
 /**********************************************************************************************************************
  Global variables

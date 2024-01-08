@@ -231,7 +231,7 @@ int main(int argc, char * argv[])
     fp_syncend = R_FC_SyncEnd;
     FcModuleInitFlags();                            /* Initialize flags */
 
-    do 
+    do
     {
         signal(SIGINT, sigint_handler);
         ret = R_CustomizeLoad(&g_customize, FC_CustomizeFile);
