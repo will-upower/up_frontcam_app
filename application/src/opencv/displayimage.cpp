@@ -70,6 +70,7 @@ std::vector<int64_t> cpu_load_arr;
 std::vector<int64_t> cdnn_load_arr;
 std::vector<int64_t> g_avg_cdnn_load_arr;
 
+
 /**********************************************************************************************************************
  Private variables
  *********************************************************************************************************************/
@@ -275,6 +276,49 @@ static int graph_display(cv::Mat &src, int core_index, std::vector<int64_t> load
  End of function graph_display
  *********************************************************************************************************************/
 
+cv::VideoCapture video_file_capture;
+/*********************************************************************************************************************/
+/* Function Name : open_stored_video */
+/**********************************************************************************************************************
+ * @brief       Open video. Only use if camera is not available
+ * @param[in]   video file path
+ * @param[out]  status
+ * @retval      true      success
+ * @retval      false     fail
+***********************************************************************************************************************/
+int open_stored_video(char *video_filename)
+{
+    video_file_capture.open(video_filename);
+
+    if (!video_file_capture.isOpened())
+    {
+        std::cerr << "Error opening video file" << std::endl;
+        return 0;
+    }
+
+    return 1;
+}
+/**********************************************************************************************************************
+ End of function open_stored_video
+ *********************************************************************************************************************/
+
+/*********************************************************************************************************************/
+/* Function Name : close_stored_video */
+/**********************************************************************************************************************
+ * @brief       Close video file. Only close if camera is not available
+ * @param[in]   void
+ * @param[out]  void
+***********************************************************************************************************************/
+void close_stored_video()
+{
+    video_file_capture.release();
+
+    cv::destroyAllWindows();
+}
+/**********************************************************************************************************************
+ End of function close_stored_video
+ *********************************************************************************************************************/
+
 /*********************************************************************************************************************/
 /* Function Name : f_opencv_execute */
 /**********************************************************************************************************************
@@ -298,14 +342,21 @@ int f_opencv_execute()
     cv::Mat depth_img_resz(MULTIPLANE_SCREEN_WIDTH, MULTIPLANE_SCREEN_HEIGHT , CV_8UC3);
     cv::Mat opt_img_resz(MULTIPLANE_SCREEN_WIDTH, MULTIPLANE_SCREEN_HEIGHT , CV_8UC3);
     Mat status_display(MULTIPLANE_SCREEN_HEIGHT, MULTIPLANE_SCREEN_WIDTH, CV_8UC3, mul_plane_buffer_4);
-    DEBUG_PRINT("OpenCV check : plane_count = %d\n",plane_count);
-    if(plane_count == 4)
+    if (g_customize.Video_Read_Enable == false)
     {
-        memset(mul_plane_buffer_4,255,(MULTIPLANE_SCREEN_WIDTH * MULTIPLANE_SCREEN_HEIGHT * 3));
-        cv::putText(status_display, "FC Near Application Status", Point(320,30),2, font_size, CLR_BLACK, 2, true);
-    }  
+        DEBUG_PRINT("OpenCV check : plane_count = %d\n",plane_count);
+        if(plane_count == 4)
+        {
+            memset(mul_plane_buffer_4,255,(MULTIPLANE_SCREEN_WIDTH * MULTIPLANE_SCREEN_HEIGHT * 3));
+            cv::putText(status_display, "FC Near Application Status", Point(320,30),2, font_size, CLR_BLACK, 2, true);
+        }
 
-    process_yuv(gp_opencv_in, image,PLN_1);
+        process_yuv(gp_opencv_in, image, PLN_1);
+    }
+    else
+    {
+        video_file_capture >> image;
+    }
 
     //Point text_ai_fps_position(20, 110);
     if (0 != g_customize.Proc_Time)
@@ -481,7 +532,7 @@ int f_opencv_execute()
             }
         }
 #endif
-#endif    
+#endif
     Point text_fps_position(20, 30);
     Point text_ai_fps_position(20, 70);
     if (0 != g_customize.Proc_Time)

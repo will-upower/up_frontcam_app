@@ -272,8 +272,6 @@ re-run the application\n FC App terminating...\n ");
             break;
         }
 
-
-
         if (true == g_customize.Image_Folder_Enable)     /* Enabled to read image from folder */
         {
             ret = R_Create_Image_List(g_customize.Frame_Folder_Name);                 /* image list creation */
@@ -347,7 +345,6 @@ re-run the application\n FC App terminating...\n ");
 
         if (FAILED == ret)
         {
-       
             R_Deinit_Modules();                         /* Deinitialize modules if failed */
             PRINT_ERROR("Failed R_Mutex_Map ret\n");
             break;
@@ -428,11 +425,13 @@ re-run the application\n FC App terminating...\n ");
                 }
             }
         }
+
         // Addendum: opencv window:
         if (0 == g_customize.VOUT_Enable) {
             create_opencv_window();
             atexit(self_destruct_ocv);
         }
+
         /* Create Capture thread */
         osal_thread_handle_t    capture_thrd_hndl         = OSAL_THREAD_HANDLE_INVALID;
         int64_t                 thrd_return_value         = -1;
@@ -452,7 +451,7 @@ re-run the application\n FC App terminating...\n ");
         imr_thrd_cfg.stack_size = 0x2000;
         imr_thrd_cfg.task_name  = "R_IMR_Task";
         imr_thrd_cfg.userarg    = NULL;
-        
+
         /* Create CNN thread */
         osal_thread_handle_t    ai_thrd_hndl         = OSAL_THREAD_HANDLE_INVALID;
         int64_t                 ai_thrd_return_value = -1;
@@ -496,6 +495,7 @@ re-run the application\n FC App terminating...\n ");
         /* START_THREAD: Thread starts */
 
         /* Start control Thread */
+        printf("Creating control thread\n");
         osal_ret = R_OSAL_ThreadCreate(&ctrl_thrd_cfg, 0xf003, &ctrl_thrd_hndl);
         if (OSAL_RETURN_OK != osal_ret)
         {
@@ -504,31 +504,37 @@ re-run the application\n FC App terminating...\n ");
             break;
         }
 
-        /* Start Capture Thread */
-        osal_ret = R_OSAL_ThreadCreate(&capture_thrd_cfg, 0xf000, &capture_thrd_hndl);
-        if (OSAL_RETURN_OK != osal_ret)
+        if (g_customize.Video_Read_Enable == false)
         {
-            g_is_thread_exit = true;
-            PRINT_ERROR("OSAL capture thread creation failed with error %d\n", osal_ret);
-            R_Deinit_Modules();
-            break;
-        }
-
-        /* Start IMR Thread */
-        if(true == g_customize.IMR_LDC || true == g_customize.IMR_Resize)
-        {
-            osal_ret = R_OSAL_ThreadCreate(&imr_thrd_cfg, 0xf004, &imr_thrd_hndl);
+            /* Start Capture Thread */
+            printf("Creating capture thread\n");
+            osal_ret = R_OSAL_ThreadCreate(&capture_thrd_cfg, 0xf000, &capture_thrd_hndl);
             if (OSAL_RETURN_OK != osal_ret)
             {
-                PRINT_ERROR("OSAL IMR thread creation failed with error %d\n", osal_ret);
+                g_is_thread_exit = true;
+                PRINT_ERROR("OSAL capture thread creation failed with error %d\n", osal_ret);
                 R_Deinit_Modules();
                 break;
+            }
+
+            /* Start IMR Thread */
+            printf("Creating IMR thread\n");
+            if(true == g_customize.IMR_LDC || true == g_customize.IMR_Resize)
+            {
+                osal_ret = R_OSAL_ThreadCreate(&imr_thrd_cfg, 0xf004, &imr_thrd_hndl);
+                if (OSAL_RETURN_OK != osal_ret)
+                {
+                    PRINT_ERROR("OSAL IMR thread creation failed with error %d\n", osal_ret);
+                    R_Deinit_Modules();
+                    break;
+                }
             }
         }
 
 #if(CDNN)
         if(true == g_customize.CDNN_Enable)
         {
+            printf("Creating CDNN thread\n");
             osal_ret = R_OSAL_ThreadCreate(&ai_thrd_cfg, 0xf001, &ai_thrd_hndl);
             if (OSAL_RETURN_OK != osal_ret)
             {
@@ -546,6 +552,7 @@ re-run the application\n FC App terminating...\n ");
         if (true == g_customize.CPU_Load_Enable)
 #endif
         {
+            printf("Creating CPU thread\n");
             osal_ret = R_OSAL_ThreadCreate(&cpu_thrd_cfg, 0xf005, &cpu_thrd_hndl);
             if (OSAL_RETURN_OK != osal_ret)
             {
@@ -556,6 +563,7 @@ re-run the application\n FC App terminating...\n ");
             }
         }
         /* Start vout Thread */
+        printf("Creating VOUT thread\n");
         osal_ret = R_OSAL_ThreadCreate(&vout_thrd_cfg, 0xf002, &vout_thrd_hndl);
         if (OSAL_RETURN_OK != osal_ret)
         {
@@ -564,31 +572,35 @@ re-run the application\n FC App terminating...\n ");
             R_Deinit_Modules();
             break;
         }
-        /* wait until capture thread */
-        osal_ret = R_OSAL_ThreadJoin(capture_thrd_hndl, &thrd_return_value);
-        if (OSAL_RETURN_OK != osal_ret)
-        {
-            PRINT_ERROR("OSAL capture thread join failed with error %d\n", osal_ret);
-            R_Deinit_Modules();
-            break;
-        }
 
-        if(true == g_customize.IMR_LDC || true == g_customize.IMR_Resize)
+        if (g_customize.Video_Read_Enable == false)
         {
-            osal_ret = R_OSAL_ThreadJoin(imr_thrd_hndl, &imr_thrd_return_value);
+            /* wait until capture thread */
+            osal_ret = R_OSAL_ThreadJoin(capture_thrd_hndl, &thrd_return_value);
             if (OSAL_RETURN_OK != osal_ret)
             {
-                PRINT_ERROR("OSAL imr thread join failed with error %d\n", osal_ret);
+                PRINT_ERROR("OSAL capture thread join failed with error %d\n", osal_ret);
                 R_Deinit_Modules();
                 break;
+            }
+
+            if(true == g_customize.IMR_LDC || true == g_customize.IMR_Resize)
+            {
+                osal_ret = R_OSAL_ThreadJoin(imr_thrd_hndl, &imr_thrd_return_value);
+                if (OSAL_RETURN_OK != osal_ret)
+                {
+                    PRINT_ERROR("OSAL imr thread join failed with error %d\n", osal_ret);
+                    R_Deinit_Modules();
+                    break;
+                }
             }
         }
 
         /*Wait until Inference Thread*/
 #if (CDNN)
         if(true == g_customize.CDNN_Enable)
-
         {
+            printf("Joining CDNN thread\n");
             osal_ret = R_OSAL_ThreadJoin(ai_thrd_hndl, &ai_thrd_return_value);
             if (OSAL_RETURN_OK != osal_ret)
             {
@@ -606,6 +618,7 @@ re-run the application\n FC App terminating...\n ");
         if (true == g_customize.CPU_Load_Enable) 
 #endif
         {
+            printf("Joining CPU thread\n");
             osal_ret = R_OSAL_ThreadJoin(cpu_thrd_hndl, &cpu_thrd_return_value);
             if (OSAL_RETURN_OK != osal_ret)
             {
@@ -616,6 +629,7 @@ re-run the application\n FC App terminating...\n ");
         }
 
         /* wait until VOUT thread finished */
+        printf("Joining VOUT thread\n");
         osal_ret = R_OSAL_ThreadJoin(vout_thrd_hndl, &vout_thrd_return_value);
         if (OSAL_RETURN_OK != osal_ret)
         {
@@ -635,6 +649,7 @@ re-run the application\n FC App terminating...\n ");
         }
 
         /* De-Initialize */
+        printf("De-initializing modules\n");
         R_Deinit_Modules();
     }
     while (0);
@@ -847,13 +862,15 @@ int64_t R_IMR_Task()
  *********************************************************************************************************************/
 int64_t R_CPULOAD_Task()
 {
+    printf("Starting R_CPULOAD_Task function\n");
+
     int ret;
     int pid_temp = getpid();
     st_cpuload load_0;
     st_cpuload load_1;
 
-    R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_50MS_SLEEP);
-    
+    R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_50MS_SLEEP);
+
     if (true == g_customize.CPU_Load_Enable)                        /* If CPU Load is enabled */
     {
         while (!g_is_thread_exit)
@@ -901,57 +918,67 @@ int64_t R_VOUT_Task()
     static int image_read_receive_flag = 0;
     e_osal_return_t osal_ret = OSAL_RETURN_OK;
     bool is_queue_empty = false;
+
+    if (g_customize.Video_Read_Enable)
+    {
+        open_stored_video("video.mp4");
+    }
  
     R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_50MS_SLEEP);
     while (!g_is_thread_exit)
-    {   
-            ret = f_opencv_execute();                   /* OpenCV execute */
+    {
+        ret = f_opencv_execute();                   /* OpenCV execute */
+        if (FAILED == ret)
+        {
+            g_is_thread_exit = true;
+            PRINT_ERROR("Failed f_opencv_execute \n");
+            return FAILED;
+        }
+
+        if (0 != g_customize.Proc_Time)              /* If processing time is enabled */
+        {
+            fpsCount(0);                             /* Get FPS */
+        }
+        if (true == g_customize.VOUT_Enable)         /* if VOUT is enabled */
+        {
+            ret = execute();                         /* VOUT execution */
             if (FAILED == ret)
             {
                 g_is_thread_exit = true;
-                PRINT_ERROR("Failed f_opencv_execute \n");
+                PRINT_ERROR("Failed Vout execute \n");
                 return FAILED;
             }
-
-            if (0 != g_customize.Proc_Time)              /* If processing time is enabled */
-            {
-                fpsCount(0);                             /* Get FPS */
-            }
-            if (true == g_customize.VOUT_Enable)         /* if VOUT is enabled */
-            {
-                ret = execute();                         /* VOUT execution */
-                if (FAILED == ret)
-                {
-                    g_is_thread_exit = true;
-                    PRINT_ERROR("Failed Vout execute \n");
-                    return FAILED;
-                }
-            }
-            if(false == g_customize.VIN_Enable)          /* if VIN is enabled */
-            {
-                if (true == g_customize.Image_Folder_Enable)
-                {
-                    FILE * fp = NULL;
-                    mkdir(folder, 0777);
-                    sprintf(image_name, "%s/%s_out", folder, buffer);
-                    fp = fopen(image_name, "wb");
-                    fwrite(gp_opencv_buffer, sizeof(unsigned char), (size_t)size, fp);
-                    fclose(fp);
-                }
-            }
-
+        }
+        if(false == g_customize.VIN_Enable || false == g_customize.Video_Read_Enable)          /* if VIN is enabled */
+        {
             if (true == g_customize.Image_Folder_Enable)
             {
-                 /*Receiving message to image read MQ*/
-                e_osal_return_t osal_ret = R_OSAL_MqReceiveForTimePeriod(g_mq_handle_imgread, TIMEOUT_MS, 
-                                           (void *)&image_read_receive_flag, g_mq_config_imgread.msg_size);     
-                if (OSAL_RETURN_OK != osal_ret)
-                {
-                    PRINT_ERROR("receiving message to image read MQ was failed, osal_ret = %d\n", osal_ret);
-                }
+                FILE * fp = NULL;
+                mkdir(folder, 0777);
+                sprintf(image_name, "%s/%s_out", folder, buffer);
+                fp = fopen(image_name, "wb");
+                fwrite(gp_opencv_buffer, sizeof(unsigned char), (size_t)size, fp);
+                fclose(fp);
             }
-
         }
+
+        if (true == g_customize.Image_Folder_Enable)
+        {
+                /*Receiving message to image read MQ*/
+            e_osal_return_t osal_ret = R_OSAL_MqReceiveForTimePeriod(g_mq_handle_imgread, TIMEOUT_MS, 
+                                        (void *)&image_read_receive_flag, g_mq_config_imgread.msg_size);     
+            if (OSAL_RETURN_OK != osal_ret)
+            {
+                PRINT_ERROR("receiving message to image read MQ was failed, osal_ret = %d\n", osal_ret);
+            }
+        }
+
+    }
+
+    if (g_customize.Video_Read_Enable)
+    {
+        close_stored_video();
+    }
 
     is_queue_empty = false;
     R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_50MS_SLEEP);
@@ -1066,47 +1093,49 @@ int64_t R_Init_Modules()
         g_fcStatus.vin.status = SUCCESS;
     }
 
-    if(true == g_customize.IMR_LDC || true == g_customize.IMR_Resize)
+    if (g_customize.Video_Read_Enable == false)
     {
-        ret = R_IMR_Init();
-        if (FAILED == ret)
+        if(true == g_customize.IMR_LDC || true == g_customize.IMR_Resize)
         {
-            g_fcStatus.imr_ldc.status = FAILED;
-            g_fcStatus.imr_rs.status  = FAILED;
-            PRINT_ERROR("Failed R_IMR_Init \n");
-            return FAILED;
+            ret = R_IMR_Init();
+            if (FAILED == ret)
+            {
+                g_fcStatus.imr_ldc.status = FAILED;
+                g_fcStatus.imr_rs.status  = FAILED;
+                PRINT_ERROR("Failed R_IMR_Init \n");
+                return FAILED;
+            }
         }
 
-    }
-
-     if (true == g_customize.ISP_Enable)
-     {
-         ret = R_ISP_Initialize();                    /* ISP initialization */
-         if (FAILED == ret)
-         {
-             g_fcStatus.isp.status = FAILED;
-             PRINT_ERROR("Failed ISP_init \n");
-             return FAILED;
-         }
-     }
-
-    if (true == g_customize.IMR_LDC)                   /* If IMR lens distortion correction enabled */
-    {
-        ret = R_IMR_SetupLDC();                        /* Set up IMR LDC */
-        if (FAILED == ret)
+        if (true == g_customize.ISP_Enable)
         {
-            PRINT_ERROR("Failed R_IMR_SetupLDC \n");
-            return FAILED;
+            ret = R_ISP_Initialize();                    /* ISP initialization */
+            if (FAILED == ret)
+            {
+                g_fcStatus.isp.status = FAILED;
+                PRINT_ERROR("Failed ISP_init \n");
+                return FAILED;
+            }
         }
-    }
 
-    if (true == g_customize.IMR_Resize)                /* If IMR resize enabled */
-    {
-        ret = R_IMR_SetupResize();                     /* Set up IMR resize */
-        if (FAILED == ret)
+        if (true == g_customize.IMR_LDC)                   /* If IMR lens distortion correction enabled */
         {
-            PRINT_ERROR("Failed R_IMR_SetupResize \n");
-            return FAILED;
+            ret = R_IMR_SetupLDC();                        /* Set up IMR LDC */
+            if (FAILED == ret)
+            {
+                PRINT_ERROR("Failed R_IMR_SetupLDC \n");
+                return FAILED;
+            }
+        }
+
+        if (true == g_customize.IMR_Resize)                /* If IMR resize enabled */
+        {
+            ret = R_IMR_SetupResize();                     /* Set up IMR resize */
+            if (FAILED == ret)
+            {
+                PRINT_ERROR("Failed R_IMR_SetupResize \n");
+                return FAILED;
+            }
         }
     }
 
@@ -1292,28 +1321,31 @@ static int64_t R_FC_SystemInit()
         break;
     }
 
-    /* memory allocation for VIN buffer */
-    ret = Vin_Buffer_Alloc();
-    if(FAILED == ret)
+    if (g_customize.Video_Read_Enable == false)
     {
-        DEBUG_PRINT("Failed to allocate vin_buffer \n");
-        return ret;
-    }
+        /* memory allocation for VIN buffer */
+        ret = Vin_Buffer_Alloc();
+        if(FAILED == ret)
+        {
+            DEBUG_PRINT("Failed to allocate vin_buffer \n");
+            return ret;
+        }
 
-    /* memory allocation for ISP buffers */
-    ret = Isp_Buffer_Alloc();
-    if(FAILED == ret)
-    {
-        DEBUG_PRINT("Failed to allocate isp buffer \n");
-        return ret;
-    }
+        /* memory allocation for ISP buffers */
+        ret = Isp_Buffer_Alloc();
+        if(FAILED == ret)
+        {
+            DEBUG_PRINT("Failed to allocate isp buffer \n");
+            return ret;
+        }
 
-    /* memory allocation for IMR buffers */
-    ret = Imr_Buffer_Alloc();
-    if(FAILED == ret)
-    {
-        DEBUG_PRINT("Failed to allocate isp buffer \n");
-        return ret;
+        /* memory allocation for IMR buffers */
+        ret = Imr_Buffer_Alloc();
+        if(FAILED == ret)
+        {
+            DEBUG_PRINT("Failed to allocate isp buffer \n");
+            return ret;
+        }
     }
 
     /* buffer allocation for OpenCV buffers */

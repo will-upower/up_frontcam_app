@@ -355,80 +355,83 @@ int R_IMR_Init(void)
         PRINT_ERROR("Failed init_osal \n");
         return FAILED;
     }
-    
-    ret = init_imrdrv();                                /* imr driver initialization */
 
-    if (ret)
+    if (g_customize.Video_Read_Enable == false)
     {
-        PRINT_ERROR("Failed init_imrdrv \n");
-        return FAILED;
-    }
+        ret = init_imrdrv();                                /* imr driver initialization */
 
-    if (true == g_customize.IMR_LDC)
-    {
-        ret = R_IMR_AllocImageLDC();                    /* image allocation for IMR LDC */
-
-        if (FAILED == ret)
+        if (ret)
         {
-            g_fcStatus.imr_ldc.status = FAILED;
-            PRINT_ERROR("Failed R_IMR_AllocImageLDC \n");
+            PRINT_ERROR("Failed init_imrdrv \n");
             return FAILED;
         }
-        else
-        {
-            g_fcStatus.imr_ldc.status = SUCCESS;
-        }
 
-        set_syncstatus(eIMR_LDC, 0);
-    }
+        if (true == g_customize.IMR_LDC)
+        {
+            ret = R_IMR_AllocImageLDC();                    /* image allocation for IMR LDC */
 
-    if (true == g_customize.IMR_Resize)
-    {
-        ret = R_IMR_AllocImageResize();                 /* image allocation for IMR Resize */
+            if (FAILED == ret)
+            {
+                g_fcStatus.imr_ldc.status = FAILED;
+                PRINT_ERROR("Failed R_IMR_AllocImageLDC \n");
+                return FAILED;
+            }
+            else
+            {
+                g_fcStatus.imr_ldc.status = SUCCESS;
+            }
 
-        if (FAILED == ret)
-        {
-            g_fcStatus.imr_rs.status = FAILED;
-            PRINT_ERROR("Failed R_IMR_AllocImageResize \n");
-            return FAILED;
+            set_syncstatus(eIMR_LDC, 0);
+
+            if (true == g_customize.IMR_Resize)
+            {
+                ret = R_IMR_AllocImageResize();                 /* image allocation for IMR Resize */
+
+                if (FAILED == ret)
+                {
+                    g_fcStatus.imr_rs.status = FAILED;
+                    PRINT_ERROR("Failed R_IMR_AllocImageResize \n");
+                    return FAILED;
+                }
+                else
+                {
+                    g_fcStatus.imr_rs.status = SUCCESS;
+                }
+
+                if (g_customize.IMR_Ch_0_Enable)
+                {
+                    memset(src_addr_scaling[IMR_CH_0], 0, (g_frame_width * g_frame_height * BPP_YUV));
+                    memset(gp_imr_rs_buffer_ch0, 0, (g_customize.IMR_Resize_Width_Ch_0 * g_customize.IMR_Resize_Height_Ch_0 * 
+                    BPP_YUV));
+                }
+                if (g_customize.IMR_Ch_1_Enable)
+                {    
+                    memset(src_addr_scaling[IMR_CH_1], 0, (g_frame_width * g_frame_height * BPP_YUV));
+                    memset(gp_imr_rs_buffer_ch1, 0, (g_customize.IMR_Resize_Width_Ch_1 * g_customize.IMR_Resize_Height_Ch_1 * 
+                    BPP_YUV));
+                }
+                if (g_customize.IMR_Ch_2_Enable)
+                {   
+                    memset(src_addr_scaling[IMR_CH_2], 0, (g_frame_width * g_frame_height * BPP_YUV));
+                    memset(gp_imr_rs_buffer_ch2, 0, (g_customize.IMR_Resize_Width_Ch_2 * g_customize.IMR_Resize_Height_Ch_2 * 
+                    BPP_YUV));
+                }
+                if (g_customize.IMR_Ch_3_Enable)
+                {   
+                    memset(src_addr_scaling[IMR_CH_3], 0, (g_frame_width * g_frame_height * BPP_YUV));
+                    memset(gp_imr_rs_buffer_ch3, 0, (g_customize.IMR_Resize_Width_Ch_3 * g_customize.IMR_Resize_Height_Ch_3 * 
+                    BPP_YUV));
+                }
+                if (g_customize.IMR_Ch_4_Enable)
+                {    
+                    memset(src_addr_scaling[IMR_CH_4], 0, (g_frame_width * g_frame_height * BPP_YUV));
+                    memset(gp_imr_rs_buffer_ch4, 0, (g_customize.IMR_Resize_Width_Ch_4 * g_customize.IMR_Resize_Height_Ch_4 * 
+                    BPP_YUV));
+                }
+
+                set_syncstatus(eIMR_RS, 0);
+            }
         }
-        else
-        {
-            g_fcStatus.imr_rs.status = SUCCESS;
-        }
-        
-        if (g_customize.IMR_Ch_0_Enable)
-        {
-            memset(src_addr_scaling[IMR_CH_0], 0, (g_frame_width * g_frame_height * BPP_YUV));
-            memset(gp_imr_rs_buffer_ch0, 0, (g_customize.IMR_Resize_Width_Ch_0 * g_customize.IMR_Resize_Height_Ch_0 * 
-			BPP_YUV));
-        }
-        if (g_customize.IMR_Ch_1_Enable)
-        {    
-            memset(src_addr_scaling[IMR_CH_1], 0, (g_frame_width * g_frame_height * BPP_YUV));
-            memset(gp_imr_rs_buffer_ch1, 0, (g_customize.IMR_Resize_Width_Ch_1 * g_customize.IMR_Resize_Height_Ch_1 * 
-			BPP_YUV));
-        }
-        if (g_customize.IMR_Ch_2_Enable)
-        {   
-            memset(src_addr_scaling[IMR_CH_2], 0, (g_frame_width * g_frame_height * BPP_YUV));
-            memset(gp_imr_rs_buffer_ch2, 0, (g_customize.IMR_Resize_Width_Ch_2 * g_customize.IMR_Resize_Height_Ch_2 * 
-			BPP_YUV));
-        }
-        if (g_customize.IMR_Ch_3_Enable)
-        {   
-            memset(src_addr_scaling[IMR_CH_3], 0, (g_frame_width * g_frame_height * BPP_YUV));
-            memset(gp_imr_rs_buffer_ch3, 0, (g_customize.IMR_Resize_Width_Ch_3 * g_customize.IMR_Resize_Height_Ch_3 * 
-			BPP_YUV));
-        }
-        if (g_customize.IMR_Ch_4_Enable)
-        {    
-            memset(src_addr_scaling[IMR_CH_4], 0, (g_frame_width * g_frame_height * BPP_YUV));
-            memset(gp_imr_rs_buffer_ch4, 0, (g_customize.IMR_Resize_Width_Ch_4 * g_customize.IMR_Resize_Height_Ch_4 * 
-			BPP_YUV));
-        }
- 
-        set_syncstatus(eIMR_RS, 0);
     }
 
     return SUCCESS;

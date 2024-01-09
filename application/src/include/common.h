@@ -400,6 +400,8 @@ extern int deinit_mmgr ();
 extern "C"
 {
 #endif
+int open_stored_video(char *video_filename);
+void close_stored_video();
 int f_opencv_execute ();
 int create_opencv_window();
 void self_destruct_ocv();
