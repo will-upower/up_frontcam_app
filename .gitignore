@@ -1,6 +1,7 @@
 .vscode/*
 build/
 build_linux_dev_board/
+test_data/
 # Local History for Visual Studio Code
 .history/
 

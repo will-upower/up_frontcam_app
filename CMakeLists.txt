@@ -18,19 +18,11 @@
 #----------------------------------------------------------------------------------------------------------------------
 # Set app name
 #----------------------------------------------------------------------------------------------------------------------
-set(app_name "up_frontcam_ref_app")
+set(app_name "frontcam_ref_app")
 set(app_version "0.3.0")
 
 cmake_minimum_required(VERSION 3.16.3)
-
-set(CMAKE_C_COMPILER /opt/poky/3.1.11/sysroots/x86_64-pokysdk-linux/usr/bin/aarch64-poky-linux/aarch64-poky-linux-gcc)
-set(rcar-xos_DIR /home/ubuntu/Renesas/rcar-xos/v3.18.0/cmake/)
-set(rcar-xos-aarch64-gnu-linux-v4h2_DIR /home/ubuntu/Renesas/rcar-xos/v3.18.0/cmake/)
-set(OpenCV_DIR /home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/lib/cmake/opencv4/)
-set(RCAR_SOC "v4h2")
-
 project(${app_name})
-
 
 #----------------------------------------------------------------------------------------------------------------------
 # R-Car xOS SoC/Board selection
@@ -110,6 +102,7 @@ set(source
     ${CMAKE_CURRENT_SOURCE_DIR}/application/3rdparty/libdrm/tests/os/vout/Linux/vout_display_linux.c
     ${CMAKE_CURRENT_SOURCE_DIR}/application/3rdparty/libdrm/tests/os/vout/vout_wrapper.c
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/customize/frontcam_customize.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/application/src/mmap/frontcam_mmap.c
 )
 
 if(RCAR_SOC STREQUAL "v4h2")
@@ -156,6 +149,7 @@ set(header
     ${CMAKE_CURRENT_SOURCE_DIR}/application/3rdparty/libdrm/tests/os/vout/Linux/vout_display_linux.h
     ${CMAKE_CURRENT_SOURCE_DIR}/application/3rdparty/libdrm/tests/os/vout/vout_wrapper.h
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/customize/include/customize.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/application/src/mmap/include/frontcam_mmap.h
 )
 
 if(RCAR_SOC STREQUAL "v4h2")
@@ -190,6 +184,7 @@ set(include_dir
     ${SDKROOT}/sysroots/aarch64-poky-linux/usr/include/drm
     ${SDKROOT}/sysroots/aarch64-poky-linux/usr/src/debug/libdrm/2.4.101-r0/libdrm-2.4.101
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/customize/include/
+    ${CMAKE_CURRENT_SOURCE_DIR}/application/src/mmap/include/
 )
 
 if(RCAR_SOC STREQUAL "v4h2")
