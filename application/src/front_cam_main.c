@@ -1970,9 +1970,13 @@ static int64_t Vin_Buffer_Alloc()
     {
         gp_vin_out_buffer = (char *)malloc(g_frame_width * g_frame_height * BPP_Y10); /* vin buffer allocation */
     }
+    else if (g_customize.Image_Folder_Enable)
+    {
+        gp_vin_out_buffer = (char *)malloc (512 * 256 * BPP_RGB); 
+    }
     else                                                            /* vin buffer allocation for other formats */
     {
-        gp_vin_out_buffer = (char *)malloc(g_frame_width * g_frame_height * BPP_YUV); 
+        gp_vin_out_buffer = (char *)malloc(g_frame_width * g_frame_height * BPP_Y10); 
     }
 
     if (NULL == gp_vin_out_buffer)
