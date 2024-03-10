@@ -2031,7 +2031,15 @@ static int64_t Isp_Buffer_Alloc()
  *********************************************************************************************************************/
 static int64_t Imr_Buffer_Alloc()
 {
-
+    int bpp;
+    if (true == g_customize.Image_Folder_Enable) 
+    {
+        bpp = BPP_RGB;
+    }
+    else 
+    {
+        bpp = BPP_YUV;
+    }
     /* ai_rgb buffer allocation */
     gp_ai_rgb_buffer = (char *)malloc(g_customize.IMR_Resize_Width_Ch_0 * g_customize.IMR_Resize_Height_Ch_0 * BPP_RGB); 
     if (NULL == gp_ai_rgb_buffer)
@@ -2040,7 +2048,7 @@ static int64_t Imr_Buffer_Alloc()
         return FAILED;
     }
 
-    gp_imr_ldc_buffer = (char *)malloc(g_frame_width * g_frame_height * BPP_YUV); /* imr_ldc buffer allocation */
+    gp_imr_ldc_buffer = (char *)malloc(g_frame_width * g_frame_height * bpp); /* imr_ldc buffer allocation */
     if (NULL == gp_imr_ldc_buffer)
     {
         DEBUG_PRINT("Failed to allocate gp_imr_ldc_buffer Buffer \n");
@@ -2049,8 +2057,7 @@ static int64_t Imr_Buffer_Alloc()
 
     if (g_customize.IMR_Ch_0_Enable)
     {
-        gp_imr_rs_buffer_ch0 = (char *)malloc(g_customize.IMR_Resize_Width_Ch_0 * g_customize.IMR_Resize_Height_Ch_0 * 
-		BPP_YUV); /* imr_rs buffer allocation */
+        gp_imr_rs_buffer_ch0 = (char *)malloc(g_customize.IMR_Resize_Width_Ch_0 * g_customize.IMR_Resize_Height_Ch_0 * bpp); /* imr_rs buffer allocation */
         if (NULL == gp_imr_rs_buffer_ch0)
         {
             DEBUG_PRINT("Failed to allocate gp_imr_rs_buffer_ch0 Buffer \n");
@@ -2060,8 +2067,7 @@ static int64_t Imr_Buffer_Alloc()
 
     if (g_customize.IMR_Ch_1_Enable)
     {
-        gp_imr_rs_buffer_ch1 = (char *)malloc(g_customize.IMR_Resize_Width_Ch_1 * g_customize.IMR_Resize_Height_Ch_1 * 
-		BPP_YUV); /* imr_rs buffer allocation */
+        gp_imr_rs_buffer_ch1 = (char *)malloc(g_customize.IMR_Resize_Width_Ch_1 * g_customize.IMR_Resize_Height_Ch_1 * bpp); /* imr_rs buffer allocation */
         if (NULL == gp_imr_rs_buffer_ch1)
         {
             DEBUG_PRINT("Failed to allocate gp_imr_rs_buffer_ch1 Buffer \n");
@@ -2071,8 +2077,7 @@ static int64_t Imr_Buffer_Alloc()
 
     if (g_customize.IMR_Ch_2_Enable)
     {
-        gp_imr_rs_buffer_ch2 = (char *)malloc(g_customize.IMR_Resize_Width_Ch_2 * g_customize.IMR_Resize_Height_Ch_2 * 
-		BPP_YUV); /* imr_rs buffer allocation */
+        gp_imr_rs_buffer_ch2 = (char *)malloc(g_customize.IMR_Resize_Width_Ch_2 * g_customize.IMR_Resize_Height_Ch_2 * bpp); /* imr_rs buffer allocation */
         if (NULL == gp_imr_rs_buffer_ch2)
         {
             DEBUG_PRINT("Failed to allocate gp_imr_rs_buffer_ch2 Buffer \n");
@@ -2082,8 +2087,7 @@ static int64_t Imr_Buffer_Alloc()
 
     if (g_customize.IMR_Ch_3_Enable)
     {
-        gp_imr_rs_buffer_ch3 = (char *)malloc(g_customize.IMR_Resize_Width_Ch_3 * g_customize.IMR_Resize_Height_Ch_3 * 
-		BPP_YUV); /* imr_rs buffer allocation */
+        gp_imr_rs_buffer_ch3 = (char *)malloc(g_customize.IMR_Resize_Width_Ch_3 * g_customize.IMR_Resize_Height_Ch_3 * bpp); /* imr_rs buffer allocation */
         if (NULL == gp_imr_rs_buffer_ch3)
         {
             DEBUG_PRINT("Failed to allocate gp_imr_rs_buffer_ch3 Buffer \n");
@@ -2093,8 +2097,7 @@ static int64_t Imr_Buffer_Alloc()
 
     if (g_customize.IMR_Ch_4_Enable)
     {
-        gp_imr_rs_buffer_ch4 = (char *)malloc(g_customize.IMR_Resize_Width_Ch_4 * g_customize.IMR_Resize_Height_Ch_4 * 
-		BPP_YUV); /* imr_rs buffer allocation */
+        gp_imr_rs_buffer_ch4 = (char *)malloc(g_customize.IMR_Resize_Width_Ch_4 * g_customize.IMR_Resize_Height_Ch_4 * bpp); /* imr_rs buffer allocation */
         if (NULL == gp_imr_rs_buffer_ch4)
         {
             DEBUG_PRINT("Failed to allocate gp_imr_rs_buffer_ch4 Buffer \n");
