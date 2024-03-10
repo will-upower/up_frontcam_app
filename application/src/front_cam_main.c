@@ -756,9 +756,9 @@ int64_t R_Capture_Task()
                 }
                 else
                 {
-                    fclose(fp_list);
-                    printf("Read Image from folder completed\n");
-                    if (remove(IMAGE_LIST) == 0)                          /* Remove the image list */
+                    rewind(fp_list);
+                    printf("Read Image from folder completed! Starting over now...\n");
+                    /* if (remove(IMAGE_LIST) == 0)                          // Remove the image list 
                     {
                         printf("The file is deleted successfully\n");
                     } else 
@@ -766,7 +766,7 @@ int64_t R_Capture_Task()
                         PRINT_ERROR("The file is not deleted\n");
                     }
                     g_is_thread_exit = true;
-                    return SUCCESS;
+                    return SUCCESS; */
                 }
 
                 R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);             /* Thread sleep */
