@@ -39,6 +39,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <dirent.h>
 #include <signal.h>
 #include <sys/stat.h>
 #include <unistd.h> // MISRA
@@ -650,6 +651,10 @@ re-run the application\n FC App terminating...\n ");
  End of function main
  *********************************************************************************************************************/
 
+int compare(const struct dirent **a, const struct dirent **b) {
+    return strcoll((*a)->d_name, (*b)->d_name);
+}
+
 /**********************************************************************************************************************
 /* Function Name : R_Capture_Task */
 /******************************************************************************************************************//**
@@ -683,9 +688,27 @@ int64_t R_Capture_Task()
         fp_list = fopen(IMAGE_LIST, "r");                    /* IMAGE_LIST file open */
         if (fp_list == NULL)
         {
-            PRINT_ERROR("Could not open file\n");
-            g_is_thread_exit = true;
-            return FAILED;
+            PRINT_ERROR("Could not open file 'List.txt! Attempting to add images in 'g_customize.Frame_Folder_Name'\n");
+            
+            struct dirent **entries;
+            int num_entries;
+            fp_list = fopen(IMAGE_LIST, "w+");
+
+            num_entries = scandir(g_customize.Frame_Folder_Name, &entries, NULL, compare);
+            if (num_entries == -1) {
+                PRINT_ERROR("Could not open 'g_customize.Frame_Folder_Name'\n");
+                g_is_thread_exit = true;
+                return FAILED;
+            }
+
+            for (int i = 0; i < num_entries; ++i) {
+                if (entries[i]->d_type == DT_REG) //checks to see if its a valid file
+                {
+                    fprintf(fp_list, "%s\n", entries[i]->d_name);
+                    free(entries[i]);
+                }
+            }
+            free(entries);
         }
     }
 
