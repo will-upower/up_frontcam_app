@@ -750,10 +750,10 @@ void inferencePostprocess_od(signed char * data)
                 final_array[row][col][b][2] *= (float) (OBJ_WIDTH / WIDTH_ADJUST_OBJ);
                 final_array[row][col][b][3] *= (float) (OBJ_HEIGHT / HEIGHT_ADJUST_OBJ);
 
-                final_array[row][col][b][0]  = round(final_array[row][col][b][0]  * g_customize.Frame_Width);
-                final_array[row][col][b][1]  = round(final_array[row][col][b][1]  * g_customize.Frame_Height);
-                final_array[row][col][b][2]  = round(final_array[row][col][b][2]  * g_customize.Frame_Width);
-                final_array[row][col][b][3]  = round(final_array[row][col][b][3]  * g_customize.Frame_Height);
+                final_array[row][col][b][0]  = round(final_array[row][col][b][0]  * g_frame_width);
+                final_array[row][col][b][1]  = round(final_array[row][col][b][1]  * g_frame_height);
+                final_array[row][col][b][2]  = round(final_array[row][col][b][2]  * g_frame_width);
+                final_array[row][col][b][3]  = round(final_array[row][col][b][3]  * g_frame_height);
 
                 for(int j = 0; j < (NUM_CLASS + 5); j++)
                 { 

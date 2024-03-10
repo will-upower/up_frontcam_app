@@ -246,10 +246,12 @@ int main(int argc, char * argv[])
             PRINT_INFO("Cannot find a customize file. customization paramters are used default values\n");
             R_CustomizeInit(&g_customize);           /* Initialize customization parameters */
         }
+        g_customize.CPU_Load_Enable = false; //Always disable CPU Load
 #if (CDNN)
+        g_customize.CDNN_Load_Enable = false; //Always disable CDNN Load
         if ((true == g_customize.CDNN_Load_Enable) || (true == g_customize.CPU_Load_Enable))     /* Graph Display */
 #else
-        if (true == g_customize.CPU_Load_Enable)     /* Graph Display */
+        if (true == g_customize.CPU_Load_Enable)     /* Graph Display */ //Make sure to always disable CPU_Load
 #endif
         {
             g_customize.Frame_Width         = FRAME_WIDTH;
@@ -1080,7 +1082,7 @@ int64_t R_Init_Modules()
     if(true == g_customize.VIN_Enable)                  /* If VIN enabled */
     {
         ret = R_VIN_Initilize(g_customize.VIN_Device, 
-                     g_customize.Frame_Width, g_customize.Frame_Height, g_customize.VIN_Offset_X, 
+                     g_frame_width, g_frame_height, g_customize.VIN_Offset_X, 
                      g_customize.VIN_Offset_Y, g_customize.VIN_Capture_Format, g_customize.VIN_Req_Buffer_Num, 
                      g_customize.Debug_Enable);  /* Initialize VIN */
         if (FAILED == ret)
