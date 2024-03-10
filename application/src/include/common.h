@@ -416,6 +416,10 @@ extern int mmap_copy();
 extern int mmap_file;
 extern unsigned char * mapped_buffer_out;
 
+//new: found in read_image.cpp
+int read_png_frames(void * buffer, const char* filename, int& bufferSize);
+
+
 extern unsigned char sem_seg_array[];
 extern float pe_array_heatmaps[];
 extern float pe_array_pafs[];

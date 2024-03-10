@@ -713,9 +713,11 @@ int64_t R_Capture_Task()
             free(entries);
         }
     }
-
+    const int64_t png_size = g_frame_height * g_frame_width * BPP_RGB;
+    int64_t read_image_size;
     while (!g_is_thread_exit)
     {
+        
         if (true == g_customize.VIN_Enable)                 /* Camera capture enabled */
         {
             ret = st_r_vin_execute_main();                  /* Execution of VIN */
@@ -742,31 +744,14 @@ int64_t R_Capture_Task()
                     }
                     sscanf(fname, "%s", buffer);
                     sprintf(image_name_buf, "%s/%s", g_customize.Frame_Folder_Name, buffer);
-                    fp_Image = fopen(image_name_buf, "rb");
-                    if(fp_Image == NULL)
-                    {
-                        PRINT_ERROR("Could not open file\n");
-                        g_is_thread_exit = true;
-                        return FAILED;
-                    }
-                    R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
-                    fread(gp_vin_out_buffer, sizeof(unsigned char), g_frame_height * g_frame_width * BPP_YUV, fp_Image);
+                    R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);                    
+                    ret = read_png_frames(gp_vin_out_buffer, image_name_buf, png_size);
                     R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
-                    fclose(fp_Image);
                 }
                 else
                 {
                     rewind(fp_list);
                     printf("Read Image from folder completed! Starting over now...\n");
-                    /* if (remove(IMAGE_LIST) == 0)                          // Remove the image list 
-                    {
-                        printf("The file is deleted successfully\n");
-                    } else 
-                    {
-                        PRINT_ERROR("The file is not deleted\n");
-                    }
-                    g_is_thread_exit = true;
-                    return SUCCESS; */
                 }
 
                 R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);             /* Thread sleep */
