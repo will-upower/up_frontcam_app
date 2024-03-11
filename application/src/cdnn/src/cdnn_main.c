@@ -36,6 +36,7 @@
 /**********************************************************************************************************************
  Includes   <System Includes> , "Project Includes"
  *********************************************************************************************************************/
+#include <CL/cl.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -95,6 +96,7 @@ static int R_FC_SyncEndWrapperAI();
 static void softmax(float *x, int n);
 char * gp_ai_final_buffer;
 void Conv_YUYV2RGB(unsigned char * yuyv, unsigned char * bgr, int width, int height);
+void Conv_YUYV2RGB_OpenCL(unsigned char *yuyv, unsigned char *bgr, int width, int height);
 static unsigned char * get_imr_resize_buffer (int channel);
 /**********************************************************************************************************************
  Function Declarations
@@ -910,7 +912,9 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
                     if (R_FC_Pre_cnt == 0 && g_customize.SEM_SEG_Enable == 1)
                     {
                         R_FC_SyncStart(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);   
-                        Conv_YUYV2RGB(get_imr_resize_buffer(g_sem_seg_map_ch), gp_ai_rgb_buffer, g_customize.IMR_Resize_Width_Ch_0, 
+                        // Conv_YUYV2RGB(get_imr_resize_buffer(g_sem_seg_map_ch), gp_ai_rgb_buffer, g_customize.IMR_Resize_Width_Ch_0, 
+                        //             g_customize.IMR_Resize_Height_Ch_0);
+                        Conv_YUYV2RGB_OpenCL(get_imr_resize_buffer(g_sem_seg_map_ch), gp_ai_rgb_buffer, g_customize.IMR_Resize_Width_Ch_0, 
                                     g_customize.IMR_Resize_Height_Ch_0);
                         inferencePreprocess_ss();
                         if (g_customize.OBJ_DET_Enable == 1 || g_customize.POSE_EST_Enable == 1)
@@ -928,8 +932,8 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
                         {
                             R_FC_SyncStart(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
                         }
-                        Conv_YUYV2RGB(get_imr_resize_buffer(g_obj_det_map_ch), gp_ai_rgb_buffer, OBJ_WIDTH, OBJ_HEIGHT);
-                        
+                        // Conv_YUYV2RGB(get_imr_resize_buffer(g_obj_det_map_ch), gp_ai_rgb_buffer, OBJ_WIDTH, OBJ_HEIGHT);
+                        Conv_YUYV2RGB_OpenCL(get_imr_resize_buffer(g_obj_det_map_ch), gp_ai_rgb_buffer, OBJ_WIDTH, OBJ_HEIGHT);
                         inferencePreprocess_od();
                         if (g_customize.SEM_SEG_Enable == 1 && g_customize.POSE_EST_Enable == 0)
                         {
@@ -951,7 +955,8 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
                         {   
                             R_FC_SyncStart(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
                         }
-                        Conv_YUYV2RGB(get_imr_resize_buffer(g_pose_est_map_ch), gp_ai_rgb_buffer, POSE_EST_IMG_WIDTH, POSE_EST_IMG_HEIGHT);
+                        // Conv_YUYV2RGB(get_imr_resize_buffer(g_pose_est_map_ch), gp_ai_rgb_buffer, POSE_EST_IMG_WIDTH, POSE_EST_IMG_HEIGHT);
+                        Conv_YUYV2RGB_OpenCL(get_imr_resize_buffer(g_pose_est_map_ch), gp_ai_rgb_buffer, POSE_EST_IMG_WIDTH, POSE_EST_IMG_HEIGHT);
                         inferencePreprocess_pe();
                         if (g_customize.SEM_SEG_Enable == 1)
                         {
@@ -1176,4 +1181,62 @@ void Conv_YUYV2RGB(unsigned char * yuyv, unsigned char * bgr, int width, int hei
             }
         }
     }
+}
+
+void Conv_YUYV2RGB_OpenCL(unsigned char *yuyv, unsigned char *bgr, int width, int height)
+{
+    cl_int err;
+    printf("+=+=+=+=+=+=+=+=+=+=+=+= OpenCL Conv_YUYV2RGB +=+=+=+=+=+=+=+=+=+=+=+=\n");
+    // Load OpenCL program source code
+    FILE *file = fopen("Conv_YUYV2RGB.cl", "r");
+    fseek(file, 0, SEEK_END);
+    size_t source_size = ftell(file);
+    rewind(file);
+    char *source_code = (char *)malloc(source_size + 1);
+    fread(source_code, 1, source_size, file);
+    source_code[source_size] = '\0';
+    fclose(file);
+
+    // Initialize OpenCL
+    cl_platform_id platform;
+    err = clGetPlatformIDs(1, &platform, NULL);
+    cl_device_id device;
+    err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL);
+    cl_context context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
+    cl_command_queue queue = clCreateCommandQueue(context, device, 0, &err);
+
+    // Create OpenCL program
+    cl_program program = clCreateProgramWithSource(context, 1, (const char **)&source_code, &source_size, &err);
+    err = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
+
+    // Create OpenCL kernel
+    cl_kernel kernel = clCreateKernel(program, "Conv_YUYV2RGB", &err);
+
+    // Create OpenCL buffers
+    cl_mem yuyv_buffer = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, width * height * 2, yuyv, &err);
+    cl_mem bgr_buffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, width * height * 3, NULL, &err);
+
+    // Set OpenCL kernel arguments
+    err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &yuyv_buffer);
+    err |= clSetKernelArg(kernel, 1, sizeof(cl_mem), &bgr_buffer);
+    err |= clSetKernelArg(kernel, 2, sizeof(int), &width);
+    err |= clSetKernelArg(kernel, 3, sizeof(int), &height);
+
+    // Execute OpenCL kernel
+    size_t global_work_size[2] = {width, height};
+    err = clEnqueueNDRangeKernel(queue, kernel, 2, NULL, global_work_size, NULL, 0, NULL, NULL);
+    err = clFinish(queue);
+
+    // Read results back from OpenCL device
+    err = clEnqueueReadBuffer(queue, bgr_buffer, CL_TRUE, 0, width * height * 3, bgr, 0, NULL, NULL);
+
+    // Cleanup OpenCL resources
+    clReleaseMemObject(yuyv_buffer);
+    clReleaseMemObject(bgr_buffer);
+    clReleaseKernel(kernel);
+    clReleaseProgram(program);
+    clReleaseCommandQueue(queue);
+    clReleaseContext(context);
+
+    free(source_code);
 }
