@@ -261,7 +261,15 @@ int main(int argc, char * argv[])
             g_customize.VOUT_Display_Width  = DISPLAY_WIDTH;
             g_customize.VOUT_Display_Height = DISPLAY_HEIGHT;
         }
-
+        if ( true == g_customize.Image_Folder_Enable) 
+        {
+            g_customize.Frame_Width         = IMAGE_FOLDER_WIDTH;
+            g_customize.Frame_Height        = IMAGE_FOLDER_HEIGHT;
+            g_customize.VOUT_Pos_X          = 0;
+            g_customize.VOUT_Pos_Y          = 0;
+            g_customize.VOUT_Display_Width  = IMAGE_FOLDER_WIDTH;
+            g_customize.VOUT_Display_Height = IMAGE_FOLDER_HEIGHT;
+        }
         R_CustomizePrint(&g_customize);            /* Print customization parameters */
 
         ret = R_CustomizeValidate(&g_customize);   /* Customization parameter validation */
@@ -1957,7 +1965,7 @@ static int64_t Vin_Buffer_Alloc()
     }
     else if (g_customize.Image_Folder_Enable)
     {
-        gp_vin_out_buffer = (char *)malloc (512 * 256 * BPP_RGB); 
+        gp_vin_out_buffer = (char *)malloc (IMAGE_FOLDER_HEIGHT * IMAGE_FOLDER_WIDTH * BPP_RGB); 
     }
     else                                                            /* vin buffer allocation for other formats */
     {

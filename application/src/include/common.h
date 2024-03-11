@@ -419,6 +419,8 @@ extern unsigned char * mapped_buffer_out;
 //new: found in read_image.cpp
 int read_png_frames(void * buffer, const char* filename, int& bufferSize);
 
+#define IMAGE_FOLDER_WIDTH (512)
+#define IMAGE_FOLDER_HEIGHT (256)
 
 extern unsigned char sem_seg_array[];
 extern float pe_array_heatmaps[];
