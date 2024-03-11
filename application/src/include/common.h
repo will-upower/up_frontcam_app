@@ -417,7 +417,7 @@ extern int mmap_file;
 extern unsigned char * mapped_buffer_out;
 
 //new: found in read_image.cpp
-int read_png_frames(void * buffer, const char* filename, int& bufferSize);
+int read_png_frames(void * buffer, const char* filename, int expected_buffer_size);
 
 #define IMAGE_FOLDER_WIDTH (512)
 #define IMAGE_FOLDER_HEIGHT (256)
