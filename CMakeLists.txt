@@ -86,6 +86,10 @@ add_definitions("-DRCAR_SOC_${RCAR_SOC_CLASS}${RCAR_SOC_GEN}${RCAR_SOC_LEVEL}${R
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS} )
 
+# OpenCL required
+find_package(OpenCL REQUIRED)
+include_directories(${OpenCL_INCLUDE_DIRS})
+
 #----------------------------------------------------------------------------------------------------------------------
 # Source files
 #----------------------------------------------------------------------------------------------------------------------
@@ -304,6 +308,10 @@ endif()
 set(link_dir
     # Additional Link Directories for 3rd party libraries
     #${CMAKE_CURRENT_SOURCE_DIR}/../refapp_common_fwk/build_linux_dev_board/
+)
+
+set(link_dir 
+    ${OpenCL_LIBRARIES}
 )
 
 #----------------------------------------------------------------------------------------------------------------------
