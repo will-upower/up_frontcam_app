@@ -712,11 +712,8 @@ int64_t R_Capture_Task()
             }
 
             for (int i = 0; i < num_entries; ++i) {
-                if (entries[i]->d_type == DT_REG) //checks to see if its a valid file
-                {
-                    fprintf(fp_list, "%s\n", entries[i]->d_name);
-                    free(entries[i]);
-                }
+                fprintf(fp_list, "%s\n", entries[i]->d_name);
+                free(entries[i]);
             }
             free(entries);
         }
