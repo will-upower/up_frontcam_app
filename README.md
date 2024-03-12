@@ -1,6 +1,16 @@
 # up_frontcam_ref_app
 
-Source code from Renesas's frontcam_ref_app. We will modify to use this with our own model and run on the v4h2 boards
+Modified Renesas frontcam_ref application. Modified to work on a desktop environment for the V4H2 SoC.
+
+# Building
+
+Depends on R-Car SDK ver 3.18 and the Renesas ai_lib package. They can be found [here](https://dynamap.sharepoint.com/:f:/s/HPVCUPUS/ErozWjPbst1Api6R42Sa0lIBKNxuYsulVBkbiXOMnN5XEw?e=FVQu7G).
+
+Setup of the R-Car SDK should be straightforward, save for one potential hiccup. First, make sure to download the *.sh script, the poky toolchain *.tar.gz, the yocto linux *.tar.gz, the adas bootloader *.tar.gz, and the ai_lib addon *.zip. Put them in the home directory and run the build script. If their are any hash or checksum errors, manually install the tarballs to the default directory (~/Renesas/rcar-xos/v3.18.0/).
+
+To install the ai_lib, extract the contents of it over the R-Car SDK. There are patch files, 2 for the cmake and 1 for the build script found in the samples folder. Patch them with this command: `patch -b < NAME_OF_PATCH.patch`
+
+Finally, to build the application, clone this repository to the samples folder. Run the build script, and when asked for the name of the application, enter `up_frontcam_ref_app`. Target is V4H2 and built type should be Release.
 
 # Running OCV imshow()
 
