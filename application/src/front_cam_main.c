@@ -695,28 +695,27 @@ int64_t R_Capture_Task()
 
     if (true == g_customize.Image_Folder_Enable)            /* Image read from folder enabled */
     {
-        fp_list = fopen(IMAGE_LIST, "r");                    /* IMAGE_LIST file open */
-        if (fp_list == NULL)
-        {
-            PRINT_ERROR("Could not open file 'List.txt! Attempting to add images in 'g_customize.Frame_Folder_Name'\n");
-            
-            struct dirent **entries;
-            int num_entries;
-            fp_list = fopen(IMAGE_LIST, "w+");
+        struct dirent **entries;
+        int num_entries;
+        fp_list = fopen(IMAGE_LIST, "w+");
 
-            num_entries = scandir(g_customize.Frame_Folder_Name, &entries, NULL, compare);
-            if (num_entries == -1) {
-                PRINT_ERROR("Could not open 'g_customize.Frame_Folder_Name'\n");
-                g_is_thread_exit = true;
-                return FAILED;
-            }
-
-            for (int i = 0; i < num_entries; ++i) {
-                fprintf(fp_list, "%s\n", entries[i]->d_name);
-                free(entries[i]);
-            }
-            free(entries);
+        num_entries = scandir(g_customize.Frame_Folder_Name, &entries, NULL, compare);
+        if (num_entries == -1) {
+            PRINT_ERROR("Could not open 'g_customize.Frame_Folder_Name'\n");
+            g_is_thread_exit = true;
+            return FAILED;
         }
+
+        for (int i = 0; i < num_entries; ++i) {
+
+            if(entries[i]->d_type == 8) //DT_REG // Only Files are allowed
+            {
+            fprintf(fp_list, "%s\n", entries[i]->d_name);
+            //printf(fp_list, "%s\n", entries[i]->d_name);
+            free(entries[i]);
+            }
+        }
+        free(entries);
     }
     const int64_t png_size = g_frame_height * g_frame_width * BPP_RGB;
     int64_t read_image_size;
@@ -752,6 +751,7 @@ int64_t R_Capture_Task()
                     R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);                    
                     ret = read_png_frames(gp_vin_out_buffer, image_name_buf, png_size);
                     R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
+                    usleep(10000);
                 }
                 else
                 {

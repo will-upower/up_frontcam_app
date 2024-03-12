@@ -507,7 +507,6 @@ int f_opencv_execute()
         if (true == g_customize.Image_Folder_Enable)
         {
             imshow("frontcam_demo", image);
-            printf("channels: %d\n", image.channels());
             waitKey(1);
         }
         else 
