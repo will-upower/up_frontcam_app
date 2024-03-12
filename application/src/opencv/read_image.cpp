@@ -12,9 +12,8 @@ int read_png_frames(void * buffer, const char* filename, int expected_buffer_siz
         PRINT_ERROR("Could not open or find the image %s.\n", filename);
         return FAILED;
     }
-
     // Convert the image to a buffer
-    cv::Mat flattened_image = image.reshape(1, 1);
+    Mat flattened_image = image.reshape(1, 1);
     int buffer_size = flattened_image.total() * flattened_image.elemSize();
     if (buffer_size == expected_buffer_size) 
     {

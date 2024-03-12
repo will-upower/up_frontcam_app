@@ -307,7 +307,14 @@ int f_opencv_execute()
         cv::putText(status_display, "FC Near Application Status", Point(320,30),2, font_size, CLR_BLACK, 2, true);
     }  
 
-    process_yuv(gp_opencv_in, image,PLN_1);
+    if (g_customize.Image_Folder_Enable == true) 
+    {
+        process_rgb(gp_opencv_in, image,PLN_1);
+    }
+    else 
+    {
+        process_yuv(gp_opencv_in, image,PLN_1);
+    }
 
     //Point text_ai_fps_position(20, 110);
     if (0 != g_customize.Proc_Time)
@@ -495,12 +502,23 @@ int f_opencv_execute()
         cv::putText(image, fps_text, text_ai_fps_position, 2, font_size, font_Color_others, 2, true);
     }
     memcpy((void *)gp_opencv_buffer, (void *)image.data, g_frame_width * g_frame_height * g_vout_pix_fmt);
-    if (0 == g_customize.VOUT_Enable) {
-        cv::Mat bgr_image(g_frame_width, g_frame_height, CV_8UC3);
-        cv::cvtColor(image, bgr_image, COLOR_RGB2BGR);
-        imshow("frontcam_demo", bgr_image);
-        waitKey(1);
+    if (0 == g_customize.VOUT_Enable) 
+    {
+        if (true == g_customize.Image_Folder_Enable)
+        {
+            imshow("frontcam_demo", image);
+            printf("channels: %d\n", image.channels());
+            waitKey(1);
+        }
+        else 
+        {
+            cv::Mat bgr_image(g_frame_width, g_frame_height, CV_8UC3);
+            cv::cvtColor(image, bgr_image, COLOR_RGB2BGR);
+            imshow("frontcam_demo", bgr_image);
+            waitKey(1);
+        }
     }
+    
     return SUCCESS;
 }
 
