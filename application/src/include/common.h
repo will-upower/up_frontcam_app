@@ -408,6 +408,7 @@ int R_FC_SyncEnd(e_fc_module_t module, osal_mutex_handle_t *ptr_mtx, osal_cond_h
 
 //new: found in read_image.cpp
 int read_png_frames(void * buffer, const char* filename, int expected_buffer_size);
+int write_image(void * buffer, const char* filename, int height, int width) ;
 #ifdef __cplusplus
 }
 #endif
@@ -419,8 +420,8 @@ extern int mmap_file;
 extern unsigned char * mapped_buffer_out;
 
 
-#define IMAGE_FOLDER_WIDTH (512)
-#define IMAGE_FOLDER_HEIGHT (256)
+#define IMAGE_FOLDER_WIDTH (1280)
+#define IMAGE_FOLDER_HEIGHT (720)
 
 extern unsigned char sem_seg_array[];
 extern float pe_array_heatmaps[];

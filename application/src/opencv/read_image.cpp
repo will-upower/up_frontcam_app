@@ -5,7 +5,8 @@
 
 using namespace cv;
 
-int read_png_frames(void * buffer, const char* filename, int expected_buffer_size) {
+int read_png_frames(void * buffer, const char* filename, int expected_buffer_size) 
+{
     // Read the image
     Mat image = imread(filename);
     if (image.empty()) {
@@ -25,5 +26,23 @@ int read_png_frames(void * buffer, const char* filename, int expected_buffer_siz
         return FAILED;
     }
 
+    return SUCCESS;
+}
+
+//Used for debug only
+int write_image(void * buffer, const char* filename, int height, int width) 
+{
+    if (buffer == nullptr || filename == nullptr) {
+        PRINT_ERROR("Buffer is empty.\n");
+        return FAILED;
+    }
+
+    if (height <= 0 || width <= 0) {
+        PRINT_ERROR("Invalid Dimensions.\n");
+        return FAILED;
+    }
+
+    Mat image(height, width, CV_8UC3, buffer);
+    imwrite(filename, image);
     return SUCCESS;
 }

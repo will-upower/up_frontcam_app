@@ -263,12 +263,13 @@ int main(int argc, char * argv[])
         }
         if ( true == g_customize.Image_Folder_Enable) 
         {
-            g_customize.Frame_Width         = IMAGE_FOLDER_WIDTH;
+            /* g_customize.Frame_Width         = IMAGE_FOLDER_WIDTH;
             g_customize.Frame_Height        = IMAGE_FOLDER_HEIGHT;
             g_customize.VOUT_Pos_X          = 0;
             g_customize.VOUT_Pos_Y          = 0;
             g_customize.VOUT_Display_Width  = IMAGE_FOLDER_WIDTH;
-            g_customize.VOUT_Display_Height = IMAGE_FOLDER_HEIGHT;
+            g_customize.VOUT_Display_Height = IMAGE_FOLDER_HEIGHT; */
+            g_customize.VIN_Capture_Format = 2; //RGB24
         }
         R_CustomizePrint(&g_customize);            /* Print customization parameters */
 
@@ -751,7 +752,7 @@ int64_t R_Capture_Task()
                     R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);                    
                     ret = read_png_frames(gp_vin_out_buffer, image_name_buf, png_size);
                     R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
-                    usleep(10000);
+                    usleep(1000000 / 30);
                 }
                 else
                 {
