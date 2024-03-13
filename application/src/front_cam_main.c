@@ -273,7 +273,7 @@ int main(int argc, char * argv[])
         }
         R_CustomizePrint(&g_customize);            /* Print customization parameters */
 
-        /* ret = R_CustomizeValidate(&g_customize);   
+        ret = R_CustomizeValidate(&g_customize);   
         if (FAILED == ret)
         {
             PRINT_ERROR("Failed R_CustomizeValidate \n");
@@ -286,9 +286,7 @@ int main(int argc, char * argv[])
             PRINT_WARNING("Change the customization parameters in front_cam_customize.config file and \
 re-run the application\n FC App terminating...\n ");
             break;
-        } */
-
-
+        }
 
         if (true == g_customize.Image_Folder_Enable)     /* Enabled to read image from folder */
         {
