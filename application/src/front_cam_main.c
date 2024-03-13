@@ -261,7 +261,7 @@ int main(int argc, char * argv[])
             g_customize.VOUT_Display_Width  = DISPLAY_WIDTH;
             g_customize.VOUT_Display_Height = DISPLAY_HEIGHT;
         }
-        if ( true == g_customize.Image_Folder_Enable) 
+        if (false == IMAGE_FOLDER_IMR_DEBUG && true == g_customize.Image_Folder_Enable) 
         {
             /* g_customize.Frame_Width         = IMAGE_FOLDER_WIDTH;
             g_customize.Frame_Height        = IMAGE_FOLDER_HEIGHT;
@@ -718,8 +718,16 @@ int64_t R_Capture_Task()
         }
         free(entries);
     }
-    const int64_t png_size = g_frame_height * g_frame_width * BPP_RGB;
-    int64_t read_image_size;
+    
+    int64_t read_image_size, png_size;
+    if (false == IMAGE_FOLDER_IMR_DEBUG && true == g_customize.Image_Folder_Enable) 
+    {
+        png_size = g_frame_height * g_frame_width * BPP_RGB;
+    }
+    else
+    {
+        png_size = g_frame_height * g_frame_width * BPP_YUV;
+    }
     while (!g_is_thread_exit)
     {
         
@@ -1961,9 +1969,9 @@ static int64_t Vin_Buffer_Alloc()
     {
         gp_vin_out_buffer = (char *)malloc(g_frame_width * g_frame_height * BPP_Y10); /* vin buffer allocation */
     }
-    else if (g_customize.Image_Folder_Enable)
+    else if (false == IMAGE_FOLDER_IMR_DEBUG && true == g_customize.Image_Folder_Enable)
     {
-        gp_vin_out_buffer = (char *)malloc (IMAGE_FOLDER_HEIGHT * IMAGE_FOLDER_WIDTH * BPP_RGB); 
+        gp_vin_out_buffer = (char *)malloc (g_frame_width * g_frame_height * BPP_RGB); 
     }
     else                                                            /* vin buffer allocation for other formats */
     {
@@ -2038,7 +2046,7 @@ static int64_t Isp_Buffer_Alloc()
 static int64_t Imr_Buffer_Alloc()
 {
     int bpp;
-    if (true == g_customize.Image_Folder_Enable) 
+    if (false == IMAGE_FOLDER_IMR_DEBUG && true == g_customize.Image_Folder_Enable) 
     {
         bpp = BPP_RGB;
     }

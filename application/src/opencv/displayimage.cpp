@@ -307,7 +307,7 @@ int f_opencv_execute()
         cv::putText(status_display, "FC Near Application Status", Point(320,30),2, font_size, CLR_BLACK, 2, true);
     }  
 
-    if (g_customize.Image_Folder_Enable == true) 
+    if (false == IMAGE_FOLDER_IMR_DEBUG && true == g_customize.Image_Folder_Enable) 
     {
         process_rgb(gp_opencv_in, image,PLN_1);
     }

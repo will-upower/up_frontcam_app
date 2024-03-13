@@ -910,7 +910,7 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
                 if (R_FC_Pre_cnt == 0 && g_customize.SEM_SEG_Enable == 1)
                 {
                     R_FC_SyncStart(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);   
-                    if (g_customize.Image_Folder_Enable == true) 
+                    if (false == IMAGE_FOLDER_IMR_DEBUG && true == g_customize.Image_Folder_Enable) 
                     {
                         gp_ai_rgb_buffer = get_imr_resize_buffer(g_sem_seg_map_ch);
                     } 
@@ -935,7 +935,7 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
                     {
                         R_FC_SyncStart(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
                     }
-                    if (g_customize.Image_Folder_Enable == true) 
+                    if (false == IMAGE_FOLDER_IMR_DEBUG && true == g_customize.Image_Folder_Enable) 
                     {
                         gp_ai_rgb_buffer = get_imr_resize_buffer(g_obj_det_map_ch);
                     } 
@@ -964,7 +964,7 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
                     {   
                         R_FC_SyncStart(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
                     }
-                    if (g_customize.Image_Folder_Enable == true) 
+                    if (false == IMAGE_FOLDER_IMR_DEBUG && true == g_customize.Image_Folder_Enable) 
                     {
                         gp_ai_rgb_buffer = get_imr_resize_buffer(g_pose_est_map_ch);
                     } 
