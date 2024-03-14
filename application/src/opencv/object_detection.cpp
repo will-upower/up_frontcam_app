@@ -179,10 +179,10 @@ void obj_det(float objDet_output[OBJ_DET_OUT_COLOUMN][OBJ_DET_OUT_ROW])
         float x1 = obj_det_outbuff[i][0] + obj_det_outbuff[i][2] / 2;
         float y1 = obj_det_outbuff[i][1] + obj_det_outbuff[i][3] / 2; 
 
-        float gain_2 = float(g_customize.OBJ_DET_Height) / float(g_customize.Frame_Height);
-        float gain_1 = float(g_customize.OBJ_DET_Width) / float(g_customize.Frame_Width);
-        float pad0   = (float(g_customize.OBJ_DET_Width) - float(g_customize.Frame_Width) * gain_1) / 2;
-        float pad1   = (float(g_customize.OBJ_DET_Height) - float(g_customize.Frame_Height) * gain_2) / 2;
+        float gain_2 = float(g_customize.OBJ_DET_Height) / float(g_frame_height);
+        float gain_1 = float(g_customize.OBJ_DET_Width) / float(g_frame_width);
+        float pad0   = (float(g_customize.OBJ_DET_Width) - float(g_frame_width) * gain_1) / 2;
+        float pad1   = (float(g_customize.OBJ_DET_Height) - float(g_frame_height) * gain_2) / 2;
 
         /* copy inference result to global struct */
         _bbox_cor[i].cls     = obj_det_outbuff[i][5];

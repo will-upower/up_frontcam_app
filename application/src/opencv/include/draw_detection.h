@@ -56,6 +56,7 @@ struct road_map
 #define CLR_PURPLE Scalar(255, 0, 255)
 #define CLR_GREEN Scalar(0,  255,  0)
 
-int process_yuv(void *inImage, Mat &outimg, int id);
+int process_yuv(void *inImage, Mat &outimg, int plane);
+int process_rgb(void *inImage, Mat &outimg, int plane);
 
 #endif //__DRAW_DETECTION_H__

@@ -39,6 +39,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <dirent.h>
 #include <signal.h>
 #include <sys/stat.h>
 #include <unistd.h> // MISRA
@@ -245,10 +246,12 @@ int main(int argc, char * argv[])
             PRINT_INFO("Cannot find a customize file. customization paramters are used default values\n");
             R_CustomizeInit(&g_customize);           /* Initialize customization parameters */
         }
+        g_customize.CPU_Load_Enable = false; //Always disable CPU Load
 #if (CDNN)
+        g_customize.CDNN_Load_Enable = false; //Always disable CDNN Load
         if ((true == g_customize.CDNN_Load_Enable) || (true == g_customize.CPU_Load_Enable))     /* Graph Display */
 #else
-        if (true == g_customize.CPU_Load_Enable)     /* Graph Display */
+        if (true == g_customize.CPU_Load_Enable)     /* Graph Display */ //Make sure to always disable CPU_Load
 #endif
         {
             g_customize.Frame_Width         = FRAME_WIDTH;
@@ -258,25 +261,32 @@ int main(int argc, char * argv[])
             g_customize.VOUT_Display_Width  = DISPLAY_WIDTH;
             g_customize.VOUT_Display_Height = DISPLAY_HEIGHT;
         }
-
+        if (false == IMAGE_FOLDER_IMR_DEBUG && true == g_customize.Image_Folder_Enable) 
+        {
+            /* g_customize.Frame_Width         = IMAGE_FOLDER_WIDTH;
+            g_customize.Frame_Height        = IMAGE_FOLDER_HEIGHT;
+            g_customize.VOUT_Pos_X          = 0;
+            g_customize.VOUT_Pos_Y          = 0;
+            g_customize.VOUT_Display_Width  = IMAGE_FOLDER_WIDTH;
+            g_customize.VOUT_Display_Height = IMAGE_FOLDER_HEIGHT; */
+            g_customize.VIN_Capture_Format = 2; //RGB24
+        }
         R_CustomizePrint(&g_customize);            /* Print customization parameters */
 
-        ret = R_CustomizeValidate(&g_customize);   /* Customization parameter validation */
+        /* ret = R_CustomizeValidate(&g_customize);   
         if (FAILED == ret)
         {
             PRINT_ERROR("Failed R_CustomizeValidate \n");
             break;
         }
 
-        ret = R_PipelineParamValidate();   /* Customization parameter validation */
+        ret = R_PipelineParamValidate();   
         if (ret != SUCCESS)
         {
             PRINT_WARNING("Change the customization parameters in front_cam_customize.config file and \
 re-run the application\n FC App terminating...\n ");
             break;
-        }
-
-
+        } */
 
         if (true == g_customize.Image_Folder_Enable)     /* Enabled to read image from folder */
         {
@@ -650,6 +660,10 @@ re-run the application\n FC App terminating...\n ");
  End of function main
  *********************************************************************************************************************/
 
+int compare(const struct dirent **a, const struct dirent **b) {
+    return strcoll((*a)->d_name, (*b)->d_name);
+}
+
 /**********************************************************************************************************************
 /* Function Name : R_Capture_Task */
 /******************************************************************************************************************//**
@@ -677,20 +691,48 @@ int64_t R_Capture_Task()
 
     struct timeval  mod_starttime;
     struct timeval  mod_endtime;
-
-    if (true == g_customize.Image_Folder_Enable)            /* Image read from folder enabled */
+     
+    VideoCaptureWrapper* fcVideoCaptureWrapper;
+    if (true == VIDEO_READ && true == g_customize.Image_Folder_Enable)
     {
-        fp_list = fopen(IMAGE_LIST, "r");                    /* IMAGE_LIST file open */
-        if (fp_list == NULL)
-        {
-            PRINT_ERROR("Could not open file\n");
+        fcVideoCaptureWrapper = openVideoStream(VIDEO_READ_PATH);
+    } 
+    else if (true == g_customize.Image_Folder_Enable)            /* Image read from folder enabled */
+    {
+        struct dirent **entries;
+        int num_entries;
+        fp_list = fopen(IMAGE_LIST, "w+");
+
+        num_entries = scandir(g_customize.Frame_Folder_Name, &entries, NULL, compare);
+        if (num_entries == -1) {
+            PRINT_ERROR("Could not open 'g_customize.Frame_Folder_Name'\n");
             g_is_thread_exit = true;
             return FAILED;
         }
-    }
 
+        for (int i = 0; i < num_entries; ++i) {
+
+            if(entries[i]->d_type == 8) //DT_REG // Only Files are allowed
+            {
+            fprintf(fp_list, "%s\n", entries[i]->d_name);
+            free(entries[i]);
+            }
+        }
+        free(entries);
+    }
+    
+    int64_t read_image_size, png_size;
+    if (false == IMAGE_FOLDER_IMR_DEBUG && true == g_customize.Image_Folder_Enable) 
+    {
+        png_size = g_frame_height * g_frame_width * BPP_RGB;
+    }
+    else
+    {
+        png_size = g_frame_height * g_frame_width * BPP_YUV;
+    }
     while (!g_is_thread_exit)
     {
+        
         if (true == g_customize.VIN_Enable)                 /* Camera capture enabled */
         {
             ret = st_r_vin_execute_main();                  /* Execution of VIN */
@@ -704,7 +746,24 @@ int64_t R_Capture_Task()
         }
         else
         {
-            if (true == g_customize.Image_Folder_Enable)       /* Image read from folder enabled */
+            if (true == VIDEO_READ && true == g_customize.Image_Folder_Enable) 
+            {
+                e_osal_return_t osal_ret = R_OSAL_MqSendForTimePeriod(g_mq_handle_imgread, TIMEOUT_MS, 
+                                                (void *)&image_read_send_flag, g_mq_config_imgread.msg_size);
+                if (OSAL_RETURN_OK != osal_ret)
+                {
+                    PRINT_ERROR("sending message to image read MQ was failed, osal_ret = %d\n", osal_ret);
+                }
+                R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);       
+                ret = readFrame(fcVideoCaptureWrapper, gp_vin_out_buffer);
+                R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
+                if (FAILED == ret)
+                {
+                    g_is_thread_exit = true;
+                    return FAILED;
+                }
+            }
+            else if (true == g_customize.Image_Folder_Enable)       /* Image read from folder enabled */
             {
                 if (fgets(fname, MAX_LEN_IMG_BUFF, fp_list))
                 {
@@ -717,31 +776,15 @@ int64_t R_Capture_Task()
                     }
                     sscanf(fname, "%s", buffer);
                     sprintf(image_name_buf, "%s/%s", g_customize.Frame_Folder_Name, buffer);
-                    fp_Image = fopen(image_name_buf, "rb");
-                    if(fp_Image == NULL)
-                    {
-                        PRINT_ERROR("Could not open file\n");
-                        g_is_thread_exit = true;
-                        return FAILED;
-                    }
-                    R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
-                    fread(gp_vin_out_buffer, sizeof(unsigned char), g_frame_height * g_frame_width * BPP_YUV, fp_Image);
+                    R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);                    
+                    ret = read_png_frames(gp_vin_out_buffer, image_name_buf, png_size);
                     R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
-                    fclose(fp_Image);
+                    usleep(1000000 / 30);
                 }
                 else
                 {
-                    fclose(fp_list);
-                    printf("Read Image from folder completed\n");
-                    if (remove(IMAGE_LIST) == 0)                          /* Remove the image list */
-                    {
-                        printf("The file is deleted successfully\n");
-                    } else 
-                    {
-                        PRINT_ERROR("The file is not deleted\n");
-                    }
-                    g_is_thread_exit = true;
-                    return SUCCESS;
+                    rewind(fp_list);
+                    printf("Read Image from folder completed! Starting over now...\n");
                 }
 
                 R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);             /* Thread sleep */
@@ -753,35 +796,35 @@ int64_t R_Capture_Task()
         }
 
 
-         if (true == g_customize.ISP_Enable)
-         {
-             ret = R_ISP_Execute();
-             if (FAILED == ret)
-             {
-                 PRINT_ERROR("Failed R_ISP_Execute \n");
-                 g_is_thread_exit = true;
-                 return FAILED;
-             }
+        if (true == g_customize.ISP_Enable)
+        {
+            ret = R_ISP_Execute();
+            if (FAILED == ret)
+            {
+                PRINT_ERROR("Failed R_ISP_Execute \n");
+                g_is_thread_exit = true;
+                return FAILED;
+            }
 
-             if (true == g_customize.ISP_RAW_OUT_Format)
-             {
-                 memcpy((void *)gp_isp_buffer, (void *)gp_isp_out_rgb , (size_t) g_frame_width * g_frame_height * BPP_RGB);
-             }
-             else
-             {
- #if (!RCAR_V4H)
-                 R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
-                 ret = y_uv2yuyv(gp_isp_buffer, (char *)gp_isp_out_y, (char *)gp_isp_out_uv, g_frame_width, g_frame_height);
-                 if (FAILED == ret)
-                 {
-                     PRINT_ERROR("Failed y_uv2yuyv Conversion \n");
-                     g_is_thread_exit = true;
-                     return FAILED;
-                 }
-                 R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
- #endif
-             }
-         }
+            if (true == g_customize.ISP_RAW_OUT_Format)
+            {
+                memcpy((void *)gp_isp_buffer, (void *)gp_isp_out_rgb , (size_t) g_frame_width * g_frame_height * BPP_RGB);
+            }
+            else
+            {
+#if (!RCAR_V4H)
+                R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
+                ret = y_uv2yuyv(gp_isp_buffer, (char *)gp_isp_out_y, (char *)gp_isp_out_uv, g_frame_width, g_frame_height);
+                if (FAILED == ret)
+                {
+                    PRINT_ERROR("Failed y_uv2yuyv Conversion \n");
+                    g_is_thread_exit = true;
+                    return FAILED;
+                }
+                R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
+#endif
+            }
+        }
     }
 
     return SUCCESS;
@@ -1057,7 +1100,7 @@ int64_t R_Init_Modules()
     if(true == g_customize.VIN_Enable)                  /* If VIN enabled */
     {
         ret = R_VIN_Initilize(g_customize.VIN_Device, 
-                     g_customize.Frame_Width, g_customize.Frame_Height, g_customize.VIN_Offset_X, 
+                     g_frame_width, g_frame_height, g_customize.VIN_Offset_X, 
                      g_customize.VIN_Offset_Y, g_customize.VIN_Capture_Format, g_customize.VIN_Req_Buffer_Num, 
                      g_customize.Debug_Enable);  /* Initialize VIN */
         if (FAILED == ret)
@@ -1945,9 +1988,13 @@ static int64_t Vin_Buffer_Alloc()
     {
         gp_vin_out_buffer = (char *)malloc(g_frame_width * g_frame_height * BPP_Y10); /* vin buffer allocation */
     }
+    else if (false == IMAGE_FOLDER_IMR_DEBUG && true == g_customize.Image_Folder_Enable)
+    {
+        gp_vin_out_buffer = (char *)malloc (g_frame_width * g_frame_height * BPP_RGB); 
+    }
     else                                                            /* vin buffer allocation for other formats */
     {
-        gp_vin_out_buffer = (char *)malloc(g_frame_width * g_frame_height * BPP_YUV); 
+        gp_vin_out_buffer = (char *)malloc(g_frame_width * g_frame_height * BPP_Y10); 
     }
 
     if (NULL == gp_vin_out_buffer)
@@ -2017,7 +2064,15 @@ static int64_t Isp_Buffer_Alloc()
  *********************************************************************************************************************/
 static int64_t Imr_Buffer_Alloc()
 {
-
+    int bpp;
+    if (false == IMAGE_FOLDER_IMR_DEBUG && true == g_customize.Image_Folder_Enable) 
+    {
+        bpp = BPP_RGB;
+    }
+    else 
+    {
+        bpp = BPP_YUV;
+    }
     /* ai_rgb buffer allocation */
     gp_ai_rgb_buffer = (char *)malloc(g_customize.IMR_Resize_Width_Ch_0 * g_customize.IMR_Resize_Height_Ch_0 * BPP_RGB); 
     if (NULL == gp_ai_rgb_buffer)
@@ -2026,7 +2081,7 @@ static int64_t Imr_Buffer_Alloc()
         return FAILED;
     }
 
-    gp_imr_ldc_buffer = (char *)malloc(g_frame_width * g_frame_height * BPP_YUV); /* imr_ldc buffer allocation */
+    gp_imr_ldc_buffer = (char *)malloc(g_frame_width * g_frame_height * bpp); /* imr_ldc buffer allocation */
     if (NULL == gp_imr_ldc_buffer)
     {
         DEBUG_PRINT("Failed to allocate gp_imr_ldc_buffer Buffer \n");
@@ -2035,8 +2090,7 @@ static int64_t Imr_Buffer_Alloc()
 
     if (g_customize.IMR_Ch_0_Enable)
     {
-        gp_imr_rs_buffer_ch0 = (char *)malloc(g_customize.IMR_Resize_Width_Ch_0 * g_customize.IMR_Resize_Height_Ch_0 * 
-		BPP_YUV); /* imr_rs buffer allocation */
+        gp_imr_rs_buffer_ch0 = (char *)malloc(g_customize.IMR_Resize_Width_Ch_0 * g_customize.IMR_Resize_Height_Ch_0 * bpp); /* imr_rs buffer allocation */
         if (NULL == gp_imr_rs_buffer_ch0)
         {
             DEBUG_PRINT("Failed to allocate gp_imr_rs_buffer_ch0 Buffer \n");
@@ -2046,8 +2100,7 @@ static int64_t Imr_Buffer_Alloc()
 
     if (g_customize.IMR_Ch_1_Enable)
     {
-        gp_imr_rs_buffer_ch1 = (char *)malloc(g_customize.IMR_Resize_Width_Ch_1 * g_customize.IMR_Resize_Height_Ch_1 * 
-		BPP_YUV); /* imr_rs buffer allocation */
+        gp_imr_rs_buffer_ch1 = (char *)malloc(g_customize.IMR_Resize_Width_Ch_1 * g_customize.IMR_Resize_Height_Ch_1 * bpp); /* imr_rs buffer allocation */
         if (NULL == gp_imr_rs_buffer_ch1)
         {
             DEBUG_PRINT("Failed to allocate gp_imr_rs_buffer_ch1 Buffer \n");
@@ -2057,8 +2110,7 @@ static int64_t Imr_Buffer_Alloc()
 
     if (g_customize.IMR_Ch_2_Enable)
     {
-        gp_imr_rs_buffer_ch2 = (char *)malloc(g_customize.IMR_Resize_Width_Ch_2 * g_customize.IMR_Resize_Height_Ch_2 * 
-		BPP_YUV); /* imr_rs buffer allocation */
+        gp_imr_rs_buffer_ch2 = (char *)malloc(g_customize.IMR_Resize_Width_Ch_2 * g_customize.IMR_Resize_Height_Ch_2 * bpp); /* imr_rs buffer allocation */
         if (NULL == gp_imr_rs_buffer_ch2)
         {
             DEBUG_PRINT("Failed to allocate gp_imr_rs_buffer_ch2 Buffer \n");
@@ -2068,8 +2120,7 @@ static int64_t Imr_Buffer_Alloc()
 
     if (g_customize.IMR_Ch_3_Enable)
     {
-        gp_imr_rs_buffer_ch3 = (char *)malloc(g_customize.IMR_Resize_Width_Ch_3 * g_customize.IMR_Resize_Height_Ch_3 * 
-		BPP_YUV); /* imr_rs buffer allocation */
+        gp_imr_rs_buffer_ch3 = (char *)malloc(g_customize.IMR_Resize_Width_Ch_3 * g_customize.IMR_Resize_Height_Ch_3 * bpp); /* imr_rs buffer allocation */
         if (NULL == gp_imr_rs_buffer_ch3)
         {
             DEBUG_PRINT("Failed to allocate gp_imr_rs_buffer_ch3 Buffer \n");
@@ -2079,8 +2130,7 @@ static int64_t Imr_Buffer_Alloc()
 
     if (g_customize.IMR_Ch_4_Enable)
     {
-        gp_imr_rs_buffer_ch4 = (char *)malloc(g_customize.IMR_Resize_Width_Ch_4 * g_customize.IMR_Resize_Height_Ch_4 * 
-		BPP_YUV); /* imr_rs buffer allocation */
+        gp_imr_rs_buffer_ch4 = (char *)malloc(g_customize.IMR_Resize_Width_Ch_4 * g_customize.IMR_Resize_Height_Ch_4 * bpp); /* imr_rs buffer allocation */
         if (NULL == gp_imr_rs_buffer_ch4)
         {
             DEBUG_PRINT("Failed to allocate gp_imr_rs_buffer_ch4 Buffer \n");
