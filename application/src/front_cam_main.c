@@ -273,7 +273,7 @@ int main(int argc, char * argv[])
         }
         R_CustomizePrint(&g_customize);            /* Print customization parameters */
 
-        ret = R_CustomizeValidate(&g_customize);   
+        /* ret = R_CustomizeValidate(&g_customize);   
         if (FAILED == ret)
         {
             PRINT_ERROR("Failed R_CustomizeValidate \n");
@@ -286,7 +286,7 @@ int main(int argc, char * argv[])
             PRINT_WARNING("Change the customization parameters in front_cam_customize.config file and \
 re-run the application\n FC App terminating...\n ");
             break;
-        }
+        } */
 
         if (true == g_customize.Image_Folder_Enable)     /* Enabled to read image from folder */
         {
@@ -691,8 +691,13 @@ int64_t R_Capture_Task()
 
     struct timeval  mod_starttime;
     struct timeval  mod_endtime;
-
-    if (true == g_customize.Image_Folder_Enable)            /* Image read from folder enabled */
+     
+    VideoCaptureWrapper* fcVideoCaptureWrapper;
+    if (true == VIDEO_READ && true == g_customize.Image_Folder_Enable)
+    {
+        fcVideoCaptureWrapper = openVideoStream(VIDEO_READ_PATH);
+    } 
+    else if (true == g_customize.Image_Folder_Enable)            /* Image read from folder enabled */
     {
         struct dirent **entries;
         int num_entries;
@@ -710,7 +715,6 @@ int64_t R_Capture_Task()
             if(entries[i]->d_type == 8) //DT_REG // Only Files are allowed
             {
             fprintf(fp_list, "%s\n", entries[i]->d_name);
-            //printf(fp_list, "%s\n", entries[i]->d_name);
             free(entries[i]);
             }
         }
@@ -742,7 +746,24 @@ int64_t R_Capture_Task()
         }
         else
         {
-            if (true == g_customize.Image_Folder_Enable)       /* Image read from folder enabled */
+            if (true == VIDEO_READ && true == g_customize.Image_Folder_Enable) 
+            {
+                e_osal_return_t osal_ret = R_OSAL_MqSendForTimePeriod(g_mq_handle_imgread, TIMEOUT_MS, 
+                                                (void *)&image_read_send_flag, g_mq_config_imgread.msg_size);
+                if (OSAL_RETURN_OK != osal_ret)
+                {
+                    PRINT_ERROR("sending message to image read MQ was failed, osal_ret = %d\n", osal_ret);
+                }
+                R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);       
+                ret = readFrame(fcVideoCaptureWrapper, gp_vin_out_buffer);
+                R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
+                if (FAILED == ret)
+                {
+                    g_is_thread_exit = true;
+                    return FAILED;
+                }
+            }
+            else if (true == g_customize.Image_Folder_Enable)       /* Image read from folder enabled */
             {
                 if (fgets(fname, MAX_LEN_IMG_BUFF, fp_list))
                 {
@@ -775,35 +796,35 @@ int64_t R_Capture_Task()
         }
 
 
-         if (true == g_customize.ISP_Enable)
-         {
-             ret = R_ISP_Execute();
-             if (FAILED == ret)
-             {
-                 PRINT_ERROR("Failed R_ISP_Execute \n");
-                 g_is_thread_exit = true;
-                 return FAILED;
-             }
+        if (true == g_customize.ISP_Enable)
+        {
+            ret = R_ISP_Execute();
+            if (FAILED == ret)
+            {
+                PRINT_ERROR("Failed R_ISP_Execute \n");
+                g_is_thread_exit = true;
+                return FAILED;
+            }
 
-             if (true == g_customize.ISP_RAW_OUT_Format)
-             {
-                 memcpy((void *)gp_isp_buffer, (void *)gp_isp_out_rgb , (size_t) g_frame_width * g_frame_height * BPP_RGB);
-             }
-             else
-             {
- #if (!RCAR_V4H)
-                 R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
-                 ret = y_uv2yuyv(gp_isp_buffer, (char *)gp_isp_out_y, (char *)gp_isp_out_uv, g_frame_width, g_frame_height);
-                 if (FAILED == ret)
-                 {
-                     PRINT_ERROR("Failed y_uv2yuyv Conversion \n");
-                     g_is_thread_exit = true;
-                     return FAILED;
-                 }
-                 R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
- #endif
-             }
-         }
+            if (true == g_customize.ISP_RAW_OUT_Format)
+            {
+                memcpy((void *)gp_isp_buffer, (void *)gp_isp_out_rgb , (size_t) g_frame_width * g_frame_height * BPP_RGB);
+            }
+            else
+            {
+#if (!RCAR_V4H)
+                R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
+                ret = y_uv2yuyv(gp_isp_buffer, (char *)gp_isp_out_y, (char *)gp_isp_out_uv, g_frame_width, g_frame_height);
+                if (FAILED == ret)
+                {
+                    PRINT_ERROR("Failed y_uv2yuyv Conversion \n");
+                    g_is_thread_exit = true;
+                    return FAILED;
+                }
+                R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
+#endif
+            }
+        }
     }
 
     return SUCCESS;

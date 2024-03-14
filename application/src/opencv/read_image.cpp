@@ -1,7 +1,7 @@
 #include <stdio.h>
-#include <opencv2/opencv.hpp>
 #include "common.h"
 #include "opencv.h"
+#include <opencv2/opencv.hpp>
 
 using namespace cv;
 
@@ -54,6 +54,62 @@ int write_image(void * buffer, const char* filename, int height, int width)
     imwrite(filename, image);
     return SUCCESS;
 }
+
+struct VideoCaptureWrapper {
+    cv::VideoCapture cap;
+};
+
+VideoCaptureWrapper* openVideoStream(const char* filename)
+{
+    VideoCaptureWrapper* capture = new VideoCaptureWrapper();
+    capture->cap.open(filename);
+    if (!capture->cap.isOpened()) 
+    {
+        PRINT_ERROR("Could not open or find the video '%s'.\n", filename);
+        delete capture;
+        return NULL;
+    }
+    return capture;
+}
+
+int releaseVideoStream(VideoCaptureWrapper* capture) 
+{
+    if (capture) 
+    {
+        capture->cap.release();
+        delete capture;
+        return SUCCESS;
+    }
+}
+
+int readFrame(VideoCaptureWrapper* capture, void* buffer) 
+{
+    if (!capture || !capture->cap.isOpened())
+    {
+        PRINT_ERROR("Failed to open VideoCapture object.\n");
+        return FAILED;
+    }
+    Mat frame;
+    if (!capture->cap.read(frame))
+    {
+        PRINT_ERROR("Failed to read video frame.\n");
+        return FAILED;
+    }
+    Mat flattened_image = frame.reshape(1, 1);
+    int buffer_size = flattened_image.total() * flattened_image.elemSize();
+
+    if (true == IMAGE_FOLDER_IMR_DEBUG && true == g_customize.Image_Folder_Enable) 
+    {
+        Conv_RGB2YUYV((unsigned char*)flattened_image.data, (unsigned char*)buffer, g_customize.Frame_Width, g_customize.Frame_Height);
+        return SUCCESS;
+    } 
+    
+    std::memcpy(buffer, flattened_image.data, buffer_size);
+    
+    return SUCCESS;
+}
+
+
 
 
 void Conv_RGB2YUYV(unsigned char * bgr, unsigned char * yuyv, int width, int height)

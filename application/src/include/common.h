@@ -407,8 +407,14 @@ int R_FC_SyncStart(e_fc_module_t module, osal_mutex_handle_t *ptr_mtx, osal_cond
 int R_FC_SyncEnd(e_fc_module_t module, osal_mutex_handle_t *ptr_mtx, osal_cond_handle_t *ptr_cond, int flow);
 
 //new: found in read_image.cpp
-int read_png_frames(void * buffer, const char* filename, int expected_buffer_size);
-int write_image(void * buffer, const char* filename, int height, int width) ;
+int read_png_frames(void* buffer, const char* filename, int expected_buffer_size);
+int write_image(void* buffer, const char* filename, int height, int width);
+
+typedef struct VideoCaptureWrapper VideoCaptureWrapper;
+VideoCaptureWrapper* openVideoStream(const char* filename);
+int releaseVideoStream(VideoCaptureWrapper* capture);
+int readFrame(VideoCaptureWrapper* capture, void* frame_data);
+
 #ifdef __cplusplus
 }
 #endif
@@ -424,6 +430,8 @@ extern unsigned char * mapped_buffer_out;
 #define IMAGE_FOLDER_HEIGHT (720)
 
 #define IMAGE_FOLDER_IMR_DEBUG (true)
+#define VIDEO_READ (true)
+#define VIDEO_READ_PATH "input.avi"
 
 extern unsigned char sem_seg_array[];
 extern float pe_array_heatmaps[];
