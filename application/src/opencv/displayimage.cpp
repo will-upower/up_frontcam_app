@@ -292,11 +292,10 @@ int open_stored_video(char *video_filename)
 
     if (!video_file_capture.isOpened())
     {
-        std::cerr << "Error opening video file" << std::endl;
-        return 0;
+        return FAILED;
     }
 
-    return 1;
+    return SUCCESS;
 }
 /**********************************************************************************************************************
  End of function open_stored_video
@@ -355,7 +354,9 @@ int f_opencv_execute()
     }
     else
     {
-        video_file_capture >> image;
+        // video_file_capture >> image;
+        video_file_capture.read(image);
+        imshow("frontcam_demo", image);
     }
 
     //Point text_ai_fps_position(20, 110);

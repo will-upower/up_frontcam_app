@@ -921,7 +921,14 @@ int64_t R_VOUT_Task()
 
     if (g_customize.Video_Read_Enable)
     {
-        open_stored_video("video.mp4");
+        char video_filename[64] = "video.mp4";
+        ret = open_stored_video(video_filename);
+        if (ret == FAILED)
+        {
+            g_is_thread_exit = true;
+            PRINT_ERROR("Failed to open video file: %s\n", video_filename);
+            return FAILED;
+        }
     }
  
     R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_50MS_SLEEP);
