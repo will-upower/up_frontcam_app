@@ -239,8 +239,14 @@ int main(int argc, char * argv[])
     do 
     {
         signal(SIGINT, sigint_handler);
+        
+        g_customize.mmap_out_enable = 0;
+        g_customize.Image_Folder_Video_Enable = 1;
+        g_customize.Image_Folder_RGB2YUV_Enable = 1;
+        strcpy(g_customize.Video_File_Path, "input.avi");
+        g_customize.Image_Video_Height = 256;
+        g_customize.Image_Video_Width = 512;
         ret = R_CustomizeLoad(&g_customize, FC_CustomizeFile);
-
         if (FAILED == ret)
         {
             PRINT_INFO("Cannot find a customize file. customization paramters are used default values\n");
@@ -261,15 +267,22 @@ int main(int argc, char * argv[])
             g_customize.VOUT_Display_Width  = DISPLAY_WIDTH;
             g_customize.VOUT_Display_Height = DISPLAY_HEIGHT;
         }
-        if (false == IMAGE_FOLDER_IMR_DEBUG && true == g_customize.Image_Folder_Enable) 
+        if (true == g_customize.Image_Folder_Enable) 
         {
-            /* g_customize.Frame_Width         = IMAGE_FOLDER_WIDTH;
-            g_customize.Frame_Height        = IMAGE_FOLDER_HEIGHT;
+            g_customize.Frame_Width         = g_customize.Image_Video_Width;
+            g_customize.Frame_Height        = g_customize.Image_Video_Height;
             g_customize.VOUT_Pos_X          = 0;
             g_customize.VOUT_Pos_Y          = 0;
-            g_customize.VOUT_Display_Width  = IMAGE_FOLDER_WIDTH;
-            g_customize.VOUT_Display_Height = IMAGE_FOLDER_HEIGHT; */
-            g_customize.VIN_Capture_Format = 2; //RGB24
+            g_customize.VOUT_Display_Width  = g_customize.Image_Video_Width;
+            g_customize.VOUT_Display_Height = g_customize.Image_Video_Height;
+            if (true == g_customize.Image_Folder_RGB2YUV_Enable)
+            {
+                g_customize.VIN_Capture_Format = 1;
+            }
+            else 
+            {
+                g_customize.VIN_Capture_Format = 2; //RGB24
+            }
         }
         R_CustomizePrint(&g_customize);            /* Print customization parameters */
 
@@ -693,9 +706,9 @@ int64_t R_Capture_Task()
     struct timeval  mod_endtime;
      
     VideoCaptureWrapper* fcVideoCaptureWrapper;
-    if (true == VIDEO_READ && true == g_customize.Image_Folder_Enable)
+    if (true == g_customize.Image_Folder_Video_Enable && true == g_customize.Image_Folder_Enable)
     {
-        fcVideoCaptureWrapper = openVideoStream(VIDEO_READ_PATH);
+        fcVideoCaptureWrapper = openVideoStream(g_customize.Video_File_Path);
     } 
     else if (true == g_customize.Image_Folder_Enable)            /* Image read from folder enabled */
     {
@@ -722,7 +735,7 @@ int64_t R_Capture_Task()
     }
     
     int64_t read_image_size, png_size;
-    if (false == IMAGE_FOLDER_IMR_DEBUG && true == g_customize.Image_Folder_Enable) 
+    if (false == g_customize.Image_Folder_RGB2YUV_Enable && true == g_customize.Image_Folder_Enable) 
     {
         png_size = g_frame_height * g_frame_width * BPP_RGB;
     }
@@ -746,7 +759,7 @@ int64_t R_Capture_Task()
         }
         else
         {
-            if (true == VIDEO_READ && true == g_customize.Image_Folder_Enable) 
+            if (true == g_customize.Image_Folder_Video_Enable && true == g_customize.Image_Folder_Enable) 
             {
                 e_osal_return_t osal_ret = R_OSAL_MqSendForTimePeriod(g_mq_handle_imgread, TIMEOUT_MS, 
                                                 (void *)&image_read_send_flag, g_mq_config_imgread.msg_size);
@@ -762,6 +775,8 @@ int64_t R_Capture_Task()
                     g_is_thread_exit = true;
                     return FAILED;
                 }
+                
+                R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);    
             }
             else if (true == g_customize.Image_Folder_Enable)       /* Image read from folder enabled */
             {
@@ -1988,7 +2003,7 @@ static int64_t Vin_Buffer_Alloc()
     {
         gp_vin_out_buffer = (char *)malloc(g_frame_width * g_frame_height * BPP_Y10); /* vin buffer allocation */
     }
-    else if (false == IMAGE_FOLDER_IMR_DEBUG && true == g_customize.Image_Folder_Enable)
+    else if (false == g_customize.Image_Folder_RGB2YUV_Enable && true == g_customize.Image_Folder_Enable)
     {
         gp_vin_out_buffer = (char *)malloc (g_frame_width * g_frame_height * BPP_RGB); 
     }
@@ -2065,7 +2080,7 @@ static int64_t Isp_Buffer_Alloc()
 static int64_t Imr_Buffer_Alloc()
 {
     int bpp;
-    if (false == IMAGE_FOLDER_IMR_DEBUG && true == g_customize.Image_Folder_Enable) 
+    if (false == g_customize.Image_Folder_RGB2YUV_Enable && true == g_customize.Image_Folder_Enable) 
     {
         bpp = BPP_RGB;
     }
