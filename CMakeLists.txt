@@ -102,7 +102,6 @@ set(source
     ${CMAKE_CURRENT_SOURCE_DIR}/application/3rdparty/libdrm/tests/os/vout/Linux/vout_display_linux.c
     ${CMAKE_CURRENT_SOURCE_DIR}/application/3rdparty/libdrm/tests/os/vout/vout_wrapper.c
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/customize/frontcam_customize.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/application/src/mmap/frontcam_mmap.c
 )
 
 if(RCAR_SOC STREQUAL "v4h2")
@@ -149,7 +148,6 @@ set(header
     ${CMAKE_CURRENT_SOURCE_DIR}/application/3rdparty/libdrm/tests/os/vout/Linux/vout_display_linux.h
     ${CMAKE_CURRENT_SOURCE_DIR}/application/3rdparty/libdrm/tests/os/vout/vout_wrapper.h
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/customize/include/customize.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/application/src/mmap/include/frontcam_mmap.h
 )
 
 if(RCAR_SOC STREQUAL "v4h2")
@@ -184,7 +182,6 @@ set(include_dir
     ${SDKROOT}/sysroots/aarch64-poky-linux/usr/include/drm
     ${SDKROOT}/sysroots/aarch64-poky-linux/usr/src/debug/libdrm/2.4.101-r0/libdrm-2.4.101
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/customize/include/
-    ${CMAKE_CURRENT_SOURCE_DIR}/application/src/mmap/include/
 )
 
 if(RCAR_SOC STREQUAL "v4h2")
