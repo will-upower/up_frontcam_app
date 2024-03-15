@@ -775,7 +775,7 @@ int64_t R_Capture_Task()
                     g_is_thread_exit = true;
                     return FAILED;
                 }
-                
+
                 R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);    
             }
             else if (true == g_customize.Image_Folder_Enable)       /* Image read from folder enabled */
@@ -967,7 +967,10 @@ int64_t R_VOUT_Task()
     R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_50MS_SLEEP);
     while (!g_is_thread_exit)
     {   
-        ret = mmap_copy();
+        if (g_customize.mmap_out_enable) 
+        {
+            ret = mmap_copy();
+        }
         if (FAILED == ret)
         {
             g_is_thread_exit = true;
@@ -993,18 +996,6 @@ int64_t R_VOUT_Task()
                 g_is_thread_exit = true;
                 PRINT_ERROR("Failed Vout execute \n");
                 return FAILED;
-            }
-        }
-        if(false == g_customize.VIN_Enable)          /* if VIN is enabled */
-        {
-            if (true == g_customize.Image_Folder_Enable)
-            {
-                FILE * fp = NULL;
-                mkdir(folder, 0777);
-                sprintf(image_name, "%s/%s_out", folder, buffer);
-                fp = fopen(image_name, "wb");
-                fwrite(gp_opencv_buffer, sizeof(unsigned char), (size_t)size, fp);
-                fclose(fp);
             }
         }
 

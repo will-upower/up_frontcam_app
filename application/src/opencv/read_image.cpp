@@ -18,7 +18,7 @@ int read_png_frames(void * buffer, const char* filename, int expected_buffer_siz
     Mat flattened_image = image.reshape(1, 1);
     int buffer_size = flattened_image.total() * flattened_image.elemSize();
 
-    if (true == IMAGE_FOLDER_IMR_DEBUG && true == g_customize.Image_Folder_Enable) 
+    if (true == g_customize.Image_Folder_RGB2YUV_Enable && true == g_customize.Image_Folder_Enable) 
     {
         Conv_RGB2YUYV((unsigned char*)flattened_image.data, (unsigned char*)buffer, g_customize.Frame_Width, g_customize.Frame_Height);
         return SUCCESS;
@@ -63,6 +63,9 @@ VideoCaptureWrapper* openVideoStream(const char* filename)
 {
     VideoCaptureWrapper* capture = new VideoCaptureWrapper();
     capture->cap.open(filename);
+    capture->cap.set(cv::CAP_PROP_BUFFERSIZE, 2);
+    capture->cap.set(CAP_PROP_FRAME_HEIGHT, g_customize.Frame_Height);
+    capture->cap.set(CAP_PROP_FRAME_WIDTH, g_customize.Frame_Width);
     if (!capture->cap.isOpened()) 
     {
         PRINT_ERROR("Could not open or find the video '%s'.\n", filename);
@@ -98,7 +101,7 @@ int readFrame(VideoCaptureWrapper* capture, void* buffer)
     Mat flattened_image = frame.reshape(1, 1);
     int buffer_size = flattened_image.total() * flattened_image.elemSize();
 
-    if (true == IMAGE_FOLDER_IMR_DEBUG && true == g_customize.Image_Folder_Enable) 
+    if (true == g_customize.Image_Folder_RGB2YUV_Enable && true == g_customize.Image_Folder_Enable) 
     {
         Conv_RGB2YUYV((unsigned char*)flattened_image.data, (unsigned char*)buffer, g_customize.Frame_Width, g_customize.Frame_Height);
         return SUCCESS;
