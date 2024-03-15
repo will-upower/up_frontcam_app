@@ -406,12 +406,12 @@ int R_CustomizeValidate(st_customize_t *custom_param)
 
     ret += ImrCustomParamCheck(custom_param);
 
-    if(!((custom_param->VOUT_Display_Width == 1920 && custom_param->VOUT_Display_Height == 1080) || 
+    /* if(!((custom_param->VOUT_Display_Width == 1920 && custom_param->VOUT_Display_Height == 1080) || 
         (custom_param->VOUT_Display_Width == 1600 && custom_param->VOUT_Display_Height == 900)))
     {
         PRINT_WARNING("Currently for V4H2 1920*1080 and 1600*900 are supported display resolutions.\n");
         return FAILED;
-    }
+    } */
 
     if (ret == 0)
     {
