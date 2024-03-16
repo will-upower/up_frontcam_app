@@ -426,13 +426,6 @@ extern int mmap_file;
 extern unsigned char * mapped_buffer_out;
 
 
-#define IMAGE_FOLDER_WIDTH (1280)
-#define IMAGE_FOLDER_HEIGHT (720)
-
-#define IMAGE_FOLDER_IMR_DEBUG (true)
-#define VIDEO_READ (true)
-#define VIDEO_READ_PATH "input.avi"
-
 extern unsigned char sem_seg_array[];
 extern float pe_array_heatmaps[];
 extern float pe_array_pafs[];

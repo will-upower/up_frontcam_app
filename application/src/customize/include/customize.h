@@ -131,8 +131,14 @@ typedef struct
     int SEM_SEG_Height;         
     int POSE_EST_Width;        
     int POSE_EST_Height; 
-
-}st_customize_t;
+    //new
+    int mmap_out_enable;                         /* 0:Disable, 1:Enable - (default:1)*/
+    int Image_Folder_Video_Enable;
+    int Image_Folder_RGB2YUV_Enable;
+    int Image_Video_Height;
+    int Image_Video_Width;
+    char Video_File_Path[64];
+} st_customize_t;
 
 /**********************************************************************************************************************
  Global variables

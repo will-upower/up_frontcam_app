@@ -309,6 +309,13 @@ int R_CustomizeLoad(st_customize_t *custom_param, const char *file_name)
         sscanf(buf, "SEM_SEG_Height %d", &custom_param->SEM_SEG_Height);
         sscanf(buf, "POSE_EST_Width %d", &custom_param->POSE_EST_Width);
         sscanf(buf, "POSE_EST_Height %d", &custom_param->POSE_EST_Height);
+        //new
+        sscanf(buf, "mmap_out_enable %d", &custom_param->mmap_out_enable);
+        sscanf(buf, "Image_Folder_Video_Enable %d", &custom_param->Image_Folder_Video_Enable);    
+        sscanf(buf, "Image_Folder_RGB2YUV_Enable %d", &custom_param->Image_Folder_RGB2YUV_Enable);
+        sscanf(buf, "Image_Video_Height %d", &custom_param->Image_Video_Height);
+        sscanf(buf, "Image_Video_Width %d", &custom_param->Image_Video_Width);
+        sscanf(buf, "Video_File_Path ", &custom_param->Video_File_Path);
     }
 
 
@@ -395,6 +402,7 @@ int R_CustomizeValidate(st_customize_t *custom_param)
     ret += CustomizeRangeCheck("POSE_EST_Enable", custom_param->POSE_EST_Enable, 0, 1);
     ret += CustomizeRangeCheck("CDNN_Load_Enable", custom_param->CDNN_Load_Enable, 0, 1);
 #endif
+    /* 
     ret += CustomizeRangeCheck("Frame_Width", custom_param->Frame_Width, 0, custom_param->Max_Camera_Width);
     ret += CustomizeRangeCheck("Frame_Height", custom_param->Frame_Height, 0, custom_param->Max_Camera_Height);
     ret += CustomizeRangeCheck("OBJ_DET_Width", custom_param->OBJ_DET_Width, 0, custom_param->Frame_Width);
@@ -402,7 +410,8 @@ int R_CustomizeValidate(st_customize_t *custom_param)
     ret += CustomizeRangeCheck("SEM_SEG_Width", custom_param->SEM_SEG_Width, 0, custom_param->Frame_Width);
     ret += CustomizeRangeCheck("SEM_SEG_Height", custom_param->SEM_SEG_Height, 0, custom_param->Frame_Height);
     ret += CustomizeRangeCheck("POSE_EST_Width", custom_param->POSE_EST_Width, 0, custom_param->Frame_Width);
-    ret += CustomizeRangeCheck("POSE_EST_Height", custom_param->POSE_EST_Height, 0, custom_param->Frame_Height);
+    ret += CustomizeRangeCheck("POSE_EST_Height", custom_param->POSE_EST_Height, 0, custom_param->Frame_Height); 
+    */
 
     ret += ImrCustomParamCheck(custom_param);
 
@@ -469,7 +478,10 @@ printf("FC V4H PIPE-LINE \n");
     {
         printf("|VOUT| \n \n");
     }
-
+    else 
+    {
+        printf("|OCV| \n \n");
+    }
     printf("FC Configuration \n");
     printf("-------------------------------\n");
     printf("\n[VIN] \n");
@@ -550,8 +562,6 @@ printf("FC V4H PIPE-LINE \n");
     printf("POSE_EST_Width              : %d \n", custom_param->POSE_EST_Width);
     printf("POSE_EST_Height             : %d \n", custom_param->POSE_EST_Height);
     printf("-------------------------------\n");
-    return 0;
-
     return 0;
 }
 /**********************************************************************************************************************
