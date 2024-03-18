@@ -241,7 +241,7 @@ int main(int argc, char * argv[])
         signal(SIGINT, sigint_handler);
         
         g_customize.mmap_out_enable = 0;
-        g_customize.Image_Folder_Video_Enable = 1;
+        g_customize.Image_Folder_Video_Enable = 0;
         g_customize.Image_Folder_RGB2YUV_Enable = 1;
         strcpy(g_customize.Video_File_Path, "input.avi");
         g_customize.Image_Video_Height = 256;
@@ -301,16 +301,6 @@ re-run the application\n FC App terminating...\n ");
             break;
         } */
 
-        if (true == g_customize.Image_Folder_Enable)     /* Enabled to read image from folder */
-        {
-            ret = R_Create_Image_List(g_customize.Frame_Folder_Name);                 /* image list creation */
-            if (ret != SUCCESS)
-            {
-                PRINT_ERROR("Failed R_Create_Image_List\n");
-                break;
-            }
-        }
-
         ret = R_FC_SystemInit();                        /* System initialization */
 
         if (FAILED == ret)
@@ -327,9 +317,13 @@ re-run the application\n FC App terminating...\n ");
             break;
         }
         
+        if (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) 
+        {
+            printf("[%s]\n", g_customize.Frame_File_Name);
+        }
+
         e_osal_return_t osal_ret;
 
-        e_osal_return_t ret_osal;
         osal_ret = R_OSAL_Initialize();                  /* OSAL Initialize */
 
         if (OSAL_RETURN_OK != osal_ret)
@@ -342,10 +336,10 @@ re-run the application\n FC App terminating...\n ");
 
         if (ret)
         {
-            ret_osal = R_OSAL_Deinitialize();           /* OSAL deinitialize if failed */
-            if (OSAL_RETURN_OK != ret_osal)
+            osal_ret = R_OSAL_Deinitialize();           /* OSAL deinitialize if failed */
+            if (OSAL_RETURN_OK != osal_ret)
             {
-                PRINT_ERROR("Failed R_OSAL_Deinitialize ret=%d\n", ret_osal);
+                PRINT_ERROR("Failed R_OSAL_Deinitialize ret=%d\n", osal_ret);
             }
             break;
         }
@@ -1467,36 +1461,6 @@ ISP_Enable=1 are invalid configuration for the application \n");
  *********************************************************************************************************************/
 static int64_t buffer_map()
 {
-    if (false == g_customize.VIN_Enable)    /* VIN disabled */
-    {
-        if (false == g_customize.Image_Folder_Enable)
-        {
-            printf("[%s]\n", g_customize.Frame_File_Name);
-            FILE * buf_fp = NULL;
-            buf_fp = fopen(g_customize.Frame_File_Name, "rb");
-            if (NULL == buf_fp)
-            {
-                PRINT_ERROR("Input Frame not found [%s]\n", g_customize.Frame_File_Name);
-                 return FAILED;
-            }
-
-            if (true == g_customize.ISP_Enable)                                 /* ISP enabled */
-            {
-#if (!RCAR_V4H)
-                fread(gp_image_buffer, sizeof(unsigned char), g_frame_height * g_frame_width * BPP_Y, buf_fp);
-#else
-                fread(gp_image_buffer, sizeof(unsigned char), (1296 * 784 * 2), buf_fp);
-#endif
-            }
-            else
-            {
-                fread(gp_vin_out_buffer, sizeof(unsigned char), g_frame_height * g_frame_width * BPP_YUV, buf_fp);
-            }
-
-            fclose(buf_fp);
-        }
-    }
-
     /* ISP Input Customization */
     ISP_inputcustom();
    
