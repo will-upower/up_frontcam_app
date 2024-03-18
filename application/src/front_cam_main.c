@@ -770,11 +770,11 @@ int64_t R_Capture_Task()
                 R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);       
                 ret = readFrame(fcVideoCaptureWrapper, gp_vin_out_buffer);
                 R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
-                if (FAILED == ret)
+                /* if (FAILED == ret)
                 {
                     g_is_thread_exit = true;
                     return FAILED;
-                }
+                } */
 
                 R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);    
             }
@@ -1037,7 +1037,7 @@ int64_t R_Inference_Task()
 { 
     static int counter = 0;
     static int start_time=0;
-
+    DEBUG_PRINT("running R_Inference_Task \n");
 #if(CDNN)
     R_CDNN_Execute();
 #endif
