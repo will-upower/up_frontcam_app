@@ -414,6 +414,7 @@ typedef struct VideoCaptureWrapper VideoCaptureWrapper;
 VideoCaptureWrapper* openVideoStream(const char* filename);
 int releaseVideoStream(VideoCaptureWrapper* capture);
 int readFrame(VideoCaptureWrapper* capture, void* frame_data);
+void Conv_RGB2YUYV(unsigned char * bgr, unsigned char * yuyv, int width, int height);
 
 #ifdef __cplusplus
 }
@@ -423,8 +424,11 @@ extern int mmap_image_init();
 extern int mmap_deinit();
 extern int mmap_copy();
 extern int mmap_file;
+extern int mmap_file_in;
 extern unsigned char * mapped_buffer_out;
-
+extern unsigned char * mapped_buffer_in;
+extern int in_mmap_init(const char* filename);
+extern int in_mmap_deinit();
 
 extern unsigned char sem_seg_array[];
 extern float pe_array_heatmaps[];
@@ -434,7 +438,5 @@ extern uint32_t g_output_stride;
 extern uint32_t g_output_buf_hwaddr_uv; 
 
 extern bool g_is_thread_exit;
-
-extern void Conv_RGB2YUYV(unsigned char * bgr, unsigned char * yuyv, int width, int height);
 
 #endif /* COMMON_H_ */

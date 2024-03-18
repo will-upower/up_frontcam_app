@@ -68,3 +68,36 @@ int mmap_copy() {
     memcpy((void*)mapped_buffer_out, gp_vin_out_buffer, size);
     return SUCCESS; // 0
 }
+
+int in_mmap_init(const char* filename) 
+{
+    size_t size = get_buffer_size();
+
+    // Open the file
+    mmap_file_in = open(filename, O_RDONLY);
+    if (mmap_file_in == -1) {
+        PRINT_ERROR("Failed to read shared memory %s\n", filename);
+        return FAILED;
+    }
+
+    // Map the file into memory
+    mapped_buffer_in = mmap(NULL, size, PROT_READ, MAP_PRIVATE, mmap_file_in, 0);
+    if (mapped_buffer_in == MAP_FAILED) {
+        PRINT_ERROR("Memory allocation failed for %s\n", filename);
+        close(mmap_file_in);
+        return FAILED;
+    }
+
+    return SUCCESS;
+}
+
+
+int in_mmap_deinit() {
+    size_t size = get_buffer_size();
+    if (munmap(mapped_buffer_in, size) == -1) {
+        PRINT_ERROR("Memory de-allocation failed!\n");
+        return FAILED;
+    }
+    close(mmap_file_in);
+    return SUCCESS;
+}

@@ -523,7 +523,7 @@ int f_opencv_execute()
 
 int create_opencv_window() {
     namedWindow("frontcam_demo", 0); // cv::WINDOW_NORMAL
-    resizeWindow("frontcam_demo", 1280, 720);
+    resizeWindow("frontcam_demo", g_frame_width, g_frame_height);
     return SUCCESS;
 }
 

@@ -166,7 +166,9 @@ extern int R_VIN_Start_Capturing (int VIN_Device);
 
 //new
 int mmap_file = 0;
+int mmap_file_in = 0;
 unsigned char * mapped_buffer_out = NULL;
+unsigned char * mapped_buffer_in = NULL;
 /**********************************************************************************************************************
  Private (static) variables and functions
  *********************************************************************************************************************/
@@ -188,6 +190,7 @@ static void    FcModuleInitFlags ();
 static inline unsigned long uSecElapsed (struct timeval *t2, struct timeval *t1);
 static int st_r_vin_execute_main (void);
 static int Opencv_buffer_alloc();
+
 
 /**********************************************************************************************************************
  Function Declarations
@@ -284,6 +287,16 @@ int main(int argc, char * argv[])
                 g_customize.VIN_Capture_Format = 2; //RGB24
             }
         }
+        if (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable)
+        {
+            g_customize.Frame_Width         = 1024;
+            g_customize.Frame_Height        = 768;
+            g_customize.VOUT_Pos_X          = 0;
+            g_customize.VOUT_Pos_Y          = 0;
+            g_customize.VOUT_Display_Width  = 1024;
+            g_customize.VOUT_Display_Height = 768;
+            g_customize.VIN_Capture_Format = 1; //YUYV, need to convert from RGB to YUYV            
+        }
         R_CustomizePrint(&g_customize);            /* Print customization parameters */
 
         /* ret = R_CustomizeValidate(&g_customize);   
@@ -320,6 +333,7 @@ re-run the application\n FC App terminating...\n ");
         if (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) 
         {
             printf("[%s]\n", g_customize.Frame_File_Name);
+            in_mmap_init(g_customize.Frame_File_Name);
         }
 
         e_osal_return_t osal_ret;
@@ -703,7 +717,7 @@ int64_t R_Capture_Task()
     if (true == g_customize.Image_Folder_Video_Enable && true == g_customize.Image_Folder_Enable)
     {
         fcVideoCaptureWrapper = openVideoStream(g_customize.Video_File_Path);
-    } 
+    }
     else if (true == g_customize.Image_Folder_Enable)            /* Image read from folder enabled */
     {
         struct dirent **entries;
@@ -769,8 +783,6 @@ int64_t R_Capture_Task()
                     g_is_thread_exit = true;
                     return FAILED;
                 } */
-
-                R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);    
             }
             else if (true == g_customize.Image_Folder_Enable)       /* Image read from folder enabled */
             {
@@ -794,13 +806,14 @@ int64_t R_Capture_Task()
                     rewind(fp_list);
                     printf("Read Image from folder completed! Starting over now...\n");
                 }
-
-                R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);             /* Thread sleep */
             }
-            else if(false == g_customize.ISP_Enable)
+            else if (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) 
             {
-                R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_50MS_SLEEP);
+                write_image(mapped_buffer_in, "mmaped_in.png", g_frame_width, g_frame_height);
+                Conv_RGB2YUYV(mapped_buffer_in, gp_vin_out_buffer, g_frame_width, g_frame_height);
             }
+
+            R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);            
         }
 
 
@@ -1283,6 +1296,25 @@ int64_t R_Deinit_Modules()
         }
     }
 
+    if (true == g_customize.mmap_out_enable)
+    {
+        ret = mmap_deinit();
+        if (FAILED == ret)
+        {
+            PRINT_ERROR("Failed mmap_out DeInitialize \n");
+            return FAILED;
+        }
+    }
+    if (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable)
+    {
+        ret = in_mmap_deinit();
+        if (FAILED == ret)
+        {
+            PRINT_ERROR("Failed in_mmap DeInitialize \n");
+            return FAILED;
+        }
+    }
+
     free(gp_opencv_buffer);
 
     if (SUCCESS == g_fcStatus.vout.status)
@@ -1305,8 +1337,7 @@ int64_t R_Deinit_Modules()
     {
         PRINT_ERROR("Failed OSAL DeInitialize \n");
         return FAILED;
-    }
-    ret = mmap_deinit();
+    }    
     if (FAILED == ret) 
     {
         return FAILED;
