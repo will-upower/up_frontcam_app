@@ -820,10 +820,6 @@ static int imr_SetupResize_ch0(void)
     
     stride_size                           = (pixfmt == PIXFMT_YUYV) ? BPP_YUV : BPP_Y;
 
-    printf("src_data.stride = %d\n", (uint32_t)imr_param_scaling_0.src_data.stride);
-    printf("dst_data.stride = %d\n", (uint32_t)imr_param_scaling_0.dst_data.stride);
-    printf("src_data.width = %d\n", (uint16_t)imr_param_scaling_0.src_data.width);
-    printf("src_data.height = %d\n", (uint16_t)imr_param_scaling_0.src_data.height);
     imr_param_scaling_0.src_data.stride     = (uint32_t)imr_param_scaling_0.src_data.stride * stride_size;
     imr_param_scaling_0.dst_data.stride     = (uint32_t)imr_param_scaling_0.dst_data.stride * stride_size;
     DEBUG_PRINT("Image stride IMR Scaling = %d\n", imr_param_scaling_0.src_data.stride);
