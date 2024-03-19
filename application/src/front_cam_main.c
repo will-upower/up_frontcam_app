@@ -370,8 +370,7 @@ re-run the application\n FC App terminating...\n ");
             break;
         }
     
-        ret = R_Create_Mutex();                         /* Create mutex */
-
+        ret = R_Create_Mutex();                         /* Create mutex */       
         if (FAILED == ret)
         {
        
@@ -1194,9 +1193,12 @@ int64_t R_Init_Modules()
         g_fcStatus.vout.status = FAILED;
         printf("VOUT Disabled : Enable from config file\n");
     }
-    ret = mmap_image_init();
-    if (FAILED == ret) {
-        return FAILED;
+    if (g_customize.mmap_out_enable)
+    {
+        ret = mmap_image_init();
+        if (FAILED == ret) {
+            return FAILED;
+        }
     }
     set_syncstatus(eFC_DRAW, 0);
     return SUCCESS;

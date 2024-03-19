@@ -99,7 +99,6 @@ int in_mmap_init(const char* filename)
         PRINT_ERROR("Failed to open file %s\n", filename);
         return FAILED;
     }
-
     // Map the file into memory
     mapped_buffer_in = mmap(NULL, size, PROT_READ, MAP_SHARED, mmap_file_in, 0);
     if (mapped_buffer_in == MAP_FAILED) {
