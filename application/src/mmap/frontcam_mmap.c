@@ -7,9 +7,13 @@
 #include "common.h"
 #include "frontcam_mmap.h"
 
+#include <semaphore.h>
 
-int mmap_image_init() 
-{   
+static const char *sem_name = "/global_semaphore";
+static sem_t *semaphore;
+
+int mmap_image_init()
+{
     //gp_vin_out_buffer
     //g_customize, g_frame_width, g_frame_height, BPP_*, get_buffer_size() are all defined in the common.h or mmap.h file
     size_t size = get_buffer_size();
@@ -37,7 +41,28 @@ int mmap_image_init()
         mmap_file = -1;
         return FAILED; // 1
     }
-    
+
+    semaphore = sem_open(sem_name, O_CREAT, 0644, 1);
+    if (semaphore == SEM_FAILED) {
+        PRINT_ERROR("sem_open failed\n");
+        return FAILED;
+    }
+
+    if (sem_wait(semaphore) < 0) {
+        PRINT_ERROR("sem_wait failed\n");
+        return FAILED;
+    }
+
+    printf("Semaphore created and locked\n");
+
+    // Release the semaphore
+    if (sem_post(semaphore) < 0) {
+        PRINT_ERROR("sem_post failed\n");
+        return FAILED;
+    }
+
+    printf("Semaphore unlocked\n");
+
     return SUCCESS; // 0
 }
 
@@ -57,6 +82,11 @@ int mmap_deinit() {
         }
         mmap_file = -1;
     }
+
+    if (sem_close(semaphore) < 0) {
+        PRINT_ERROR("sem_close failed\n");
+        return FAILED;
+    }
     
     return SUCCESS; // 0
 }
@@ -67,7 +97,21 @@ int mmap_copy() {
         PRINT_ERROR("gp_vin_out_buffer or mapped_buffer_out is NULL\n");
         return FAILED; // 1
     }
+
+    semaphore = sem_open(sem_name, O_CREAT, 0644, 1);
+    if (semaphore == SEM_FAILED) {
+        PRINT_ERROR("sem_open failed\n");
+        return FAILED;
+    }
+
     memcpy((void*)mapped_buffer_out, gp_vin_out_buffer, size);
+
+    // Release the semaphore
+    if (sem_post(semaphore) < 0) {
+        PRINT_ERROR("sem_post failed\n");
+        return FAILED;
+    }
+
     return SUCCESS; // 0
 }
 
