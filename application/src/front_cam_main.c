@@ -1960,7 +1960,7 @@ void fpsCount(int dev)
     if (usec[dev] >= 1000000) 
     {
         g_fps[dev] = ((unsigned long long)frames[dev] * 10000000 + usec[dev] - 1) / usec[dev];
-        fprintf(stderr, " FPS: %3u.%1u\n", g_fps[dev] / 10, g_fps[dev] % 10);
+        //fprintf(stderr, " FPS: %3u.%1u\n", g_fps[dev] / 10, g_fps[dev] % 10);
         usec[dev] = 0;
         frames[dev] = 0;
     }
