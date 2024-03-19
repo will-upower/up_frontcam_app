@@ -250,6 +250,8 @@ int main(int argc, char * argv[])
         g_customize.Image_Video_Height = 256;
         g_customize.Image_Video_Width = 512;
         ret = R_CustomizeLoad(&g_customize, FC_CustomizeFile);
+        g_customize.mmap_in_height = 768;
+        g_customize.mmap_in_width = 1024;
         if (FAILED == ret)
         {
             PRINT_INFO("Cannot find a customize file. customization paramters are used default values\n");
@@ -289,12 +291,12 @@ int main(int argc, char * argv[])
         }
         if (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable)
         {
-            g_customize.Frame_Width         = 1024;
-            g_customize.Frame_Height        = 768;
+            g_customize.Frame_Width         = g_customize.mmap_in_width;
+            g_customize.Frame_Height        = g_customize.mmap_in_height;
             g_customize.VOUT_Pos_X          = 0;
             g_customize.VOUT_Pos_Y          = 0;
-            g_customize.VOUT_Display_Width  = 1024;
-            g_customize.VOUT_Display_Height = 768;
+            g_customize.VOUT_Display_Width  = g_customize.mmap_in_width;
+            g_customize.VOUT_Display_Height = g_customize.mmap_in_height;
             g_customize.VIN_Capture_Format = 1; //YUYV, need to convert from RGB to YUYV            
         }
         R_CustomizePrint(&g_customize);            /* Print customization parameters */
@@ -333,7 +335,7 @@ re-run the application\n FC App terminating...\n ");
         if (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) 
         {
             printf("[%s]\n", g_customize.Frame_File_Name);
-            in_mmap_init(g_customize.Frame_File_Name);
+            
         }
 
         e_osal_return_t osal_ret;
@@ -716,7 +718,7 @@ int64_t R_Capture_Task()
     VideoCaptureWrapper* fcVideoCaptureWrapper;
     if (true == g_customize.Image_Folder_Video_Enable && true == g_customize.Image_Folder_Enable)
     {
-        fcVideoCaptureWrapper = openVideoStream(g_customize.Video_File_Path);
+        fcVideoCaptureWrapper = open_video_stream(g_customize.Video_File_Path);
     }
     else if (true == g_customize.Image_Folder_Enable)            /* Image read from folder enabled */
     {
@@ -776,7 +778,7 @@ int64_t R_Capture_Task()
                     PRINT_ERROR("sending message to image read MQ was failed, osal_ret = %d\n", osal_ret);
                 }
                 R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);       
-                ret = readFrame(fcVideoCaptureWrapper, gp_vin_out_buffer);
+                ret = read_frame(fcVideoCaptureWrapper, gp_vin_out_buffer);
                 R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
                 /* if (FAILED == ret)
                 {
@@ -809,10 +811,17 @@ int64_t R_Capture_Task()
             }
             else if (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) 
             {
-                write_image(mapped_buffer_in, "mmaped_in.png", g_frame_width, g_frame_height);
-                Conv_RGB2YUYV(mapped_buffer_in, gp_vin_out_buffer, g_frame_width, g_frame_height);
+                int in_mmap_ret = in_mmap_init(g_customize.Image_Folder_Enable);
+                if (in_mmap_ret != FAILED) 
+                {
+                    Conv_RGB2YUYV(mapped_buffer_in, gp_vin_out_buffer, g_frame_width, g_frame_height);
+                    in_mmap_deinit();
+                }
+                else
+                {
+                    R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);
+                }
             }
-
             R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);            
         }
 
@@ -1305,16 +1314,6 @@ int64_t R_Deinit_Modules()
             return FAILED;
         }
     }
-    if (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable)
-    {
-        ret = in_mmap_deinit();
-        if (FAILED == ret)
-        {
-            PRINT_ERROR("Failed in_mmap DeInitialize \n");
-            return FAILED;
-        }
-    }
-
     free(gp_opencv_buffer);
 
     if (SUCCESS == g_fcStatus.vout.status)

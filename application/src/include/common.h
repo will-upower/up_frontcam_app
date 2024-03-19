@@ -411,9 +411,9 @@ int read_png_frames(void* buffer, const char* filename, int expected_buffer_size
 int write_image(void* buffer, const char* filename, int height, int width);
 
 typedef struct VideoCaptureWrapper VideoCaptureWrapper;
-VideoCaptureWrapper* openVideoStream(const char* filename);
-int releaseVideoStream(VideoCaptureWrapper* capture);
-int readFrame(VideoCaptureWrapper* capture, void* frame_data);
+VideoCaptureWrapper* open_video_stream(const char* filename);
+int release_video_stream(VideoCaptureWrapper* capture);
+int read_frame(VideoCaptureWrapper* capture, void* frame_data);
 void Conv_RGB2YUYV(unsigned char * bgr, unsigned char * yuyv, int width, int height);
 
 #ifdef __cplusplus

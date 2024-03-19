@@ -513,6 +513,7 @@ int f_opencv_execute()
         {
             cv::Mat bgr_image(g_frame_width, g_frame_height, CV_8UC3);
             cv::cvtColor(image, bgr_image, COLOR_RGB2BGR);
+            std::cout << "Image Shape: " << image.rows << " rows x " << image.cols << " columns" << std::endl;
             imshow("frontcam_demo", bgr_image);
             waitKey(1);
         }
