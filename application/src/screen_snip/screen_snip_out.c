@@ -8,6 +8,7 @@ static Display *display;
 static int screen;
 static Window root;
 static XImage *image;
+static unsigned int width = 896, height = 504;
 
 int screen_capture_init()
 {
@@ -31,7 +32,6 @@ void screen_capture_deinit()
 void *screen_capture_begin()
 {
     int x = 10, y = 10;
-    unsigned int width = 1024, height = 768;
 
     image = XGetImage(display, root, x, y, width, height, AllPlanes, ZPixmap);
 
@@ -46,8 +46,7 @@ void *screen_capture_begin()
 // Must call every frame after processing image
 int screen_capture_end()
 {
-    if (image != NULL)
-    {
+    if (image != NULL) {
         XDestroyImage(image);
     }
     else {

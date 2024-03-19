@@ -252,6 +252,7 @@ int main(int argc, char * argv[])
         ret = R_CustomizeLoad(&g_customize, FC_CustomizeFile);
         g_customize.mmap_in_height = 768;
         g_customize.mmap_in_width = 1024;
+        g_customize.screen_capture_enable = 1;
         if (FAILED == ret)
         {
             PRINT_INFO("Cannot find a customize file. customization paramters are used default values\n");
@@ -563,6 +564,14 @@ re-run the application\n FC App terminating...\n ");
             }
         }
 
+        if (true == g_customize.screen_capture_enable && false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) {
+            int result = screen_capture_init();
+            if (result == FAILED) {
+                PRINT_ERROR("Failed to init screen capture\n");
+                break;
+            }
+        }
+
 #if(CDNN)
         if(true == g_customize.CDNN_Enable)
         {
@@ -659,6 +668,10 @@ re-run the application\n FC App terminating...\n ");
             PRINT_ERROR("OSAL vout thread join failed with error %d\n", osal_ret);
             R_Deinit_Modules();
             break;
+        }
+
+        if (true == g_customize.screen_capture_enable && false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) {
+            screen_capture_deinit();
         }
 
         printf("Please press Enter to Exit \n");
@@ -809,7 +822,7 @@ int64_t R_Capture_Task()
                     printf("Read Image from folder completed! Starting over now...\n");
                 }
             }
-            else if (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) 
+            else if (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable && false == g_customize.screen_capture_enable) 
             {
                 int in_mmap_ret = in_mmap_init(g_customize.Image_Folder_Enable);
                 if (in_mmap_ret != FAILED) 
@@ -822,9 +835,20 @@ int64_t R_Capture_Task()
                     R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);
                 }
             }
-            R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);            
-        }
+            else if (true == g_customize.screen_capture_enable && false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) {
+                void *screen_image = screen_capture_begin();
 
+                if (screen_image != NULL) {
+                    Conv_RGB2YUYV(screen_image, gp_vin_out_buffer, g_frame_width, g_frame_height);
+                    screen_capture_end();
+                }
+                else {
+                    PRINT_ERROR("Screen capture init failed\n");
+                    R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);
+                }
+            }
+            R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);            
+        }
 
         if (true == g_customize.ISP_Enable)
         {

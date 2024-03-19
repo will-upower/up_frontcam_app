@@ -127,7 +127,7 @@ int in_mmap_init(const char* filename)
 
     // printf("Semaphore created and locked\n");
 
-    // // Release the semaphore
+    // Release the semaphore
     // if (sem_post(semaphore) < 0) {
     //     PRINT_ERROR("sem_post failed\n");
     //     return FAILED;
