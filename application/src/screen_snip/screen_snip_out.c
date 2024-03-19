@@ -10,30 +10,29 @@ static int screen_handle;
 static Window X11_window_handle;
 static unsigned int capture_width, capture_height;
 
-void Conv_RGB2BGR(XImage *image, unsigned char *bgr_data, unsigned long image_height, unsigned long image_width) {
-    printf("Conv_RGB2BGR begin\n");
-    // printf("Conv_RGB2BGR red_mask: %x\n", image->red_mask);
+void Conv_RGBA2RGB(XImage *image, unsigned char *bgr_data, unsigned long image_height, unsigned long image_width) {
+    printf("Conv_RGBA2BGR begin\n");
+    // printf("Conv_RGBA2BGR red_mask: %x\n", image->red_mask);
     // unsigned long red_mask = image->red_mask;
-    // printf("Conv_RGB2BGR green_mask: %x\n", image->green_mask);
+    // printf("Conv_RGBA2BGR green_mask: %x\n", image->green_mask);
     // unsigned long green_mask = image->green_mask;
-    // printf("Conv_RGB2BGR blue_mask: %x\n", image->blue_mask);
+    // printf("Conv_RGBA2BGR blue_mask: %x\n", image->blue_mask);
     // unsigned long blue_mask = image->blue_mask;
 
-    printf("Masking\n");
+    // printf("Masking\n");
     unsigned long red_mask = image->red_mask;
     unsigned long blue_mask = image->blue_mask;
     unsigned long green_mask = image->green_mask;
 
     // Allocate memory for the BGR data
-    printf("num_pixels\n");
+    // printf("num_pixels\n");
     int num_pixels = image_width * image_height;
 
-    printf("Conv_RGB2BGR for loop\n");
+    // printf("Conv_RGBA2BGR for loop\n");
     for (int i = 0; i < num_pixels; i++) {
         // Extract the pixel value
         // printf("XGetPixel\n");
         unsigned long pixel = XGetPixel(image, i % image_width, i / image_height);
-
 
         // Extract RGB components
         // printf("Extract\n");
@@ -43,9 +42,9 @@ void Conv_RGB2BGR(XImage *image, unsigned char *bgr_data, unsigned long image_he
 
         // Store in BGR format
         // printf("bgr_data\n");
-        bgr_data[i * 3] = blue;
+        bgr_data[i * 3] = red;
         bgr_data[i * 3 + 1] = green;
-        bgr_data[i * 3 + 2] = red;
+        bgr_data[i * 3 + 2] = blue;
     }
 }
 

@@ -246,7 +246,7 @@ int main(int argc, char * argv[])
     fp_syncend = R_FC_SyncEnd;
     FcModuleInitFlags();                            /* Initialize flags */
 
-    do 
+    do
     {
         signal(SIGINT, sigint_handler);
         
@@ -870,15 +870,20 @@ int64_t R_Capture_Task()
                 printf("width\n");
                 printf("width: %d\n", screen_image->width);
                 printf("height: %d\n", screen_image->height);
-                printf("red_mask:   0x%x\n", screen_image->red_mask);
-                printf("blue_mask:  0x%x\n", screen_image->blue_mask);
-                printf("green_mask: 0x%x\n", screen_image->green_mask);
+                printf("red_mask:       0x%x\n", screen_image->red_mask);
+                printf("blue_mask:      0x%x\n", screen_image->blue_mask);
+                printf("green_mask:     0x%x\n", screen_image->green_mask);
+                printf("bitmap_pad:     0x%x\n", screen_image->bitmap_pad);
+                printf("bytes_per_line: 0x%x\n", screen_image->bytes_per_line);
+                printf("format:         0x%x\n", screen_image->format);
+                printf("byte_order:     0x%x\n", screen_image->byte_order);
+                printf("bits_per_pixel: 0x%x\n", screen_image->bits_per_pixel);
 
                 if (screen_image != NULL) {
                     printf("bgr_out malloc\n");
                     unsigned char *bgr_out = (unsigned char *)malloc(g_frame_width * g_frame_height * 3);
-                    printf("Conv_RGB2BGR\n");
-                    Conv_RGB2BGR(screen_image, bgr_out);
+                    printf("Conv_RGBA2BGR\n");
+                    Conv_RGBA2RGB(screen_image, bgr_out);
                     if (screen_image != NULL) {
                         XDestroyImage(screen_image);
                     }
