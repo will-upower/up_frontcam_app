@@ -78,7 +78,7 @@ int mmap_copy() {
     //     return FAILED;
     // }
 
-    memcpy((void*)mapped_buffer_out, gp_vin_out_buffer, size);
+    memcpy((void*)mapped_buffer_out, (void*)gp_vin_out_buffer, size);
 
     // // Release the semaphore
     // if (sem_post(semaphore) < 0) {

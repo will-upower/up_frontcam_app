@@ -105,6 +105,7 @@ set(source
     ### new
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/mmap/frontcam_mmap.c
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/opencv/read_image.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/application/src/screen_snip/screen_snip_out.c
 )
 
 if(RCAR_SOC STREQUAL "v4h2")
@@ -152,6 +153,7 @@ set(header
     ${CMAKE_CURRENT_SOURCE_DIR}/application/3rdparty/libdrm/tests/os/vout/vout_wrapper.h
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/customize/include/customize.h
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/mmap/include/frontcam_mmap.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/application/src/screen_snip/screen_snip_out.h
 )
 
 if(RCAR_SOC STREQUAL "v4h2")
@@ -283,6 +285,7 @@ if(RCAR_SOC STREQUAL "v4h2")
         ${OpenCV_LIBS}
         dl
         adas_ref_fwk
+        X11
     )
 endif()
 
