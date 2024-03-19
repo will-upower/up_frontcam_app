@@ -2,7 +2,11 @@
 
 size_t get_buffer_size() {
     size_t size = 0;
-    if (YUYV == g_customize.VIN_Capture_Format)                     
+    if (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) 
+    {
+        size = g_frame_width * g_frame_height * BPP_RGB; 
+    }
+    else if (YUYV == g_customize.VIN_Capture_Format)                     
     {
         size = g_frame_width * g_frame_height * BPP_YUV; 
     }

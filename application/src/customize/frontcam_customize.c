@@ -317,7 +317,7 @@ int R_CustomizeLoad(st_customize_t *custom_param, const char *file_name)
         sscanf(buf, "Image_Video_Width %d", &custom_param->Image_Video_Width);
         sscanf(buf, "Video_File_Path ", &custom_param->Video_File_Path);
         sscanf(buf, "mmap_in_height %d", &custom_param->mmap_in_height);
-        sscanf(buf, "mmap_in_width ", &custom_param->mmap_in_width);
+        sscanf(buf, "mmap_in_width %d", &custom_param->mmap_in_width);
     }
 
 

@@ -249,9 +249,9 @@ int main(int argc, char * argv[])
         strcpy(g_customize.Video_File_Path, "input.avi");
         g_customize.Image_Video_Height = 256;
         g_customize.Image_Video_Width = 512;
-        ret = R_CustomizeLoad(&g_customize, FC_CustomizeFile);
         g_customize.mmap_in_height = 768;
         g_customize.mmap_in_width = 1024;
+        ret = R_CustomizeLoad(&g_customize, FC_CustomizeFile);
         if (FAILED == ret)
         {
             PRINT_INFO("Cannot find a customize file. customization paramters are used default values\n");
@@ -335,7 +335,7 @@ re-run the application\n FC App terminating...\n ");
         if (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) 
         {
             printf("[%s]\n", g_customize.Frame_File_Name);
-            
+            int in_mmap_ret = in_mmap_init(g_customize.Frame_File_Name);
         }
 
         e_osal_return_t osal_ret;
@@ -811,16 +811,9 @@ int64_t R_Capture_Task()
             }
             else if (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) 
             {
-                int in_mmap_ret = in_mmap_init(g_customize.Image_Folder_Enable);
-                if (in_mmap_ret != FAILED) 
-                {
-                    Conv_RGB2YUYV(mapped_buffer_in, gp_vin_out_buffer, g_frame_width, g_frame_height);
-                    in_mmap_deinit();
-                }
-                else
-                {
-                    R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);
-                }
+                R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
+                Conv_RGB2YUYV(mapped_buffer_in, gp_vin_out_buffer, g_frame_width, g_frame_height);
+                R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
             }
             R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);            
         }
@@ -1314,6 +1307,16 @@ int64_t R_Deinit_Modules()
             return FAILED;
         }
     }
+    if (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable)
+    {
+        ret = in_mmap_deinit();
+        if (FAILED == ret)
+        {
+            PRINT_ERROR("Failed in_mmap DeInitialize \n");
+            return FAILED;
+        }
+    }
+
     free(gp_opencv_buffer);
 
     if (SUCCESS == g_fcStatus.vout.status)
@@ -2402,7 +2405,7 @@ static int64_t syncflow_disable(e_fc_module_t module)
             break;
         case eIMR_RS:
             if (true == g_customize.VIN_Enable || true == g_customize.ISP_Enable || 
-                true == g_customize.Image_Folder_Enable)
+                true == g_customize.Image_Folder_Enable || (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable))
             {
                 g_imr_in_done = 0;
             }

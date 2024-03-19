@@ -73,23 +73,17 @@ int mmap_copy() {
 
 int in_mmap_init(const char* filename) 
 {
-    size_t size = g_frame_width * g_frame_height * BPP_RGB;
+    size_t size = get_buffer_size();
 
     // Open the file
     mmap_file_in = open(filename, O_RDONLY);
     if (mmap_file_in == -1) {
-        PRINT_ERROR("Failed to read shared memory %s\n", filename);
-        return FAILED;
-    }
-
-    if (flock(mmap_file_in, LOCK_EX | LOCK_NB) == -1) {
-        PRINT_ERROR("Failed to lock file\n");
-        close(mmap_file_in);
+        PRINT_ERROR("Failed to open file %s\n", filename);
         return FAILED;
     }
 
     // Map the file into memory
-    mapped_buffer_in = mmap(NULL, size, PROT_READ, MAP_PRIVATE, mmap_file_in, 0);
+    mapped_buffer_in = mmap(NULL, size, PROT_READ, MAP_SHARED, mmap_file_in, 0);
     if (mapped_buffer_in == MAP_FAILED) {
         PRINT_ERROR("Memory allocation failed for %s\n", filename);
         close(mmap_file_in);
@@ -101,12 +95,11 @@ int in_mmap_init(const char* filename)
 
 
 int in_mmap_deinit() {
-    size_t size = g_frame_width * g_frame_height * BPP_RGB;
+    size_t size = get_buffer_size();
     if (munmap(mapped_buffer_in, size) == -1) {
         PRINT_ERROR("Memory de-allocation failed!\n");
         return FAILED;
     }
-    flock(mmap_file_in, LOCK_UN);
     close(mmap_file_in);
     return SUCCESS;
 }
