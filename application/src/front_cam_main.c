@@ -457,8 +457,8 @@ re-run the application\n FC App terminating...\n ");
                 return FAILED;
             }
 
-            capture_width = g_frame_width;
-            capture_height = g_frame_height;
+            capture_width = 896;
+            capture_height = 504;
 
             screen_handle = DefaultScreen(display_handle);
             X11_window_handle = RootWindow(display_handle, screen_handle);
@@ -855,10 +855,10 @@ int64_t R_Capture_Task()
                 }
             }
             else if (true == g_customize.screen_capture_enable && false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) {
-                printf("screen_capture_begin\n");
+                // printf("screen_capture_begin\n");
                 // XImage *screen_image = screen_capture_begin();
 
-                int x = 10, y = 10;
+                int x = 4, y = 70;
 
                 screen_image = XGetImage(display_handle, X11_window_handle, x, y, capture_width, capture_height, AllPlanes, ZPixmap);
 
@@ -867,29 +867,37 @@ int64_t R_Capture_Task()
                     return FAILED;
                 }
 
-                printf("width\n");
-                printf("width: %d\n", screen_image->width);
-                printf("height: %d\n", screen_image->height);
-                printf("red_mask:       0x%x\n", screen_image->red_mask);
-                printf("blue_mask:      0x%x\n", screen_image->blue_mask);
-                printf("green_mask:     0x%x\n", screen_image->green_mask);
-                printf("bitmap_pad:     0x%x\n", screen_image->bitmap_pad);
-                printf("bytes_per_line: 0x%x\n", screen_image->bytes_per_line);
-                printf("format:         0x%x\n", screen_image->format);
-                printf("byte_order:     0x%x\n", screen_image->byte_order);
-                printf("bits_per_pixel: 0x%x\n", screen_image->bits_per_pixel);
+                // printf("width:          %d\n", screen_image->width);
+                // printf("height:         %d\n", screen_image->height);
+                // printf("red_mask:       0x%x\n", screen_image->red_mask);
+                // printf("blue_mask:      0x%x\n", screen_image->blue_mask);
+                // printf("green_mask:     0x%x\n", screen_image->green_mask);
+                // printf("bitmap_pad:     %d\n", screen_image->bitmap_pad);
+                // printf("bytes_per_line: %d\n", screen_image->bytes_per_line);
+                // printf("format:         0x%x\n", screen_image->format);
+                // printf("byte_order:     0x%x\n", screen_image->byte_order);
+                // printf("bits_per_pixel: %d\n", screen_image->bits_per_pixel);
 
                 if (screen_image != NULL) {
-                    printf("bgr_out malloc\n");
+                    // printf("bgr_out malloc\n");
                     unsigned char *bgr_out = (unsigned char *)malloc(g_frame_width * g_frame_height * 3);
-                    printf("Conv_RGBA2BGR\n");
-                    Conv_RGBA2RGB(screen_image, bgr_out);
+                    for (int i = 0; i < g_frame_width * g_frame_height; i++) {
+                        int out_index = 3 * i;
+                        int in_index  = 4 * i;
+
+                        bgr_out[out_index + 0] = screen_image->data[in_index + 2];
+                        bgr_out[out_index + 1] = screen_image->data[in_index + 1];
+                        bgr_out[out_index + 2] = screen_image->data[in_index + 0];
+                    }
+                    // printf("Conv_RGBA2BGR\n");
+                    // Conv_RGBA2RGB(screen_image, bgr_out);
                     if (screen_image != NULL) {
                         XDestroyImage(screen_image);
                     }
-                    printf("Conv_RGB2YUYV\n");
+                    // save_frame_as_bmp("bitmap.bmp", bgr_out, 896, 504);
+                    // printf("Conv_RGB2YUYV\n");
                     Conv_RGB2YUYV(bgr_out, gp_vin_out_buffer, g_frame_width, g_frame_height);
-                    printf("free(bgr_out)\n");
+                    // printf("free(bgr_out)\n");
                     free(bgr_out);
                 }
                 else {

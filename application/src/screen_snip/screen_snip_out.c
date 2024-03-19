@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <X11/Xlib.h>
 
 #include "common.h"
@@ -111,4 +112,51 @@ int screen_capture_end()
     }
 
     return SUCCESS;
+}
+
+void save_frame_as_bmp(const char *filename, unsigned char *frame_data, int width, int height) {
+    printf("Writing to bmp\n");
+    FILE *fp;
+    unsigned int file_size = width * height * 3 + 54; // 3 bytes per pixel + 54 BMP header size
+
+    unsigned char file_size_1 = file_size & 0xFF;
+    unsigned char file_size_2 = (file_size >> 8) & 0xFF;
+    unsigned char file_size_3 = (file_size >> 16) & 0xFF;
+    unsigned char file_size_4 = (file_size >> 24) & 0xFF;
+
+    unsigned char bmp_header[54] = {
+        0x42, 0x4D,           // BMP signature
+        file_size_1, file_size_2, file_size_3, file_size_4,  // File size in bytes
+        0x00, 0x00, 0x00, 0x00,  // Reserved
+        0x36, 0x00, 0x00, 0x00,  // Image data offset
+        0x28, 0x00, 0x00, 0x00,  // Header size
+        0x00, 0x05, 0x00, 0x00,  // Image width
+        0x20, 0x03, 0x00, 0x00,  // Image height
+        0x01, 0x00,           // Number of color planes
+        0x18, 0x00,           // Bits per pixel (24 bits)
+        0x00, 0x00, 0x00, 0x00,  // Compression method
+        0x00, 0x00, 0x00, 0x00,  // Image size (uncompressed)
+        0x00, 0x00, 0x00, 0x00,  // Horizontal resolution (pixels per meter)
+        0x00, 0x00, 0x00, 0x00,  // Vertical resolution (pixels per meter)
+        0x00, 0x00, 0x00, 0x00,  // Colors in color table
+        0x00, 0x00, 0x00, 0x00,  // Important color count
+    };
+
+    // Update the BMP header with the image dimensions
+    bmp_header[18] = (width & 0xFF);
+    bmp_header[19] = (width >> 8) & 0xFF;
+    bmp_header[22] = (height & 0xFF);
+    bmp_header[23] = (height >> 8) & 0xFF;
+
+    fp = fopen(filename, "wb");
+    if (!fp) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+
+    fwrite(bmp_header, sizeof(bmp_header), 1, fp);
+    fwrite(frame_data, width * height * 3, 1, fp);
+
+    fclose(fp);
+    printf("bitmap writing complete\n");
 }

@@ -7,3 +7,4 @@ int screen_capture_init();
 void screen_capture_deinit();
 XImage *screen_capture_begin();
 int screen_capture_end();
+void save_frame_as_bmp(const char *filename, unsigned char *frame_data, int width, int height);
