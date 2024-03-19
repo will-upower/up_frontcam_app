@@ -51,6 +51,13 @@
 #include "rcar-xos/ai_lib/ai_lib.h"
 #include "cdnn_main.h"
 #endif
+#include <X11/Xlib.h>
+
+XImage *screen_image;
+Display *display_handle;
+int screen_handle;
+Window X11_window_handle;
+unsigned int capture_width, capture_height;
 
 /**********************************************************************************************************************
  Exported global variables and functions
@@ -250,8 +257,8 @@ int main(int argc, char * argv[])
         g_customize.Image_Video_Height = 256;
         g_customize.Image_Video_Width = 512;
         ret = R_CustomizeLoad(&g_customize, FC_CustomizeFile);
-        g_customize.mmap_in_height = 768;
-        g_customize.mmap_in_width = 1024;
+        g_customize.mmap_in_height = 504;
+        g_customize.mmap_in_width = 896;
         g_customize.screen_capture_enable = 1;
         if (FAILED == ret)
         {
@@ -301,6 +308,7 @@ int main(int argc, char * argv[])
             g_customize.VIN_Capture_Format = 1; //YUYV, need to convert from RGB to YUYV            
         }
         R_CustomizePrint(&g_customize);            /* Print customization parameters */
+
 
         /* ret = R_CustomizeValidate(&g_customize);   
         if (FAILED == ret)
@@ -441,6 +449,25 @@ re-run the application\n FC App terminating...\n ");
                 break;
             }
         }
+        
+        if (true == g_customize.screen_capture_enable && false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) {
+            display_handle = XOpenDisplay(NULL);
+            if (display_handle == NULL) {
+                PRINT_ERROR("Cannot open display\n");
+                return FAILED;
+            }
+
+            capture_width = g_frame_width;
+            capture_height = g_frame_height;
+
+            screen_handle = DefaultScreen(display_handle);
+            X11_window_handle = RootWindow(display_handle, screen_handle);
+            // int result = screen_capture_init();
+            // if (result == FAILED) {
+            //     PRINT_ERROR("Failed to init screen capture\n");
+            //     break;
+            // }
+        }
 
         if (true == g_customize.Image_Folder_Enable) /* Configure message queue when image read from folder enabled */
         {
@@ -560,14 +587,6 @@ re-run the application\n FC App terminating...\n ");
             {
                 PRINT_ERROR("OSAL IMR thread creation failed with error %d\n", osal_ret);
                 R_Deinit_Modules();
-                break;
-            }
-        }
-
-        if (true == g_customize.screen_capture_enable && false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) {
-            int result = screen_capture_init();
-            if (result == FAILED) {
-                PRINT_ERROR("Failed to init screen capture\n");
                 break;
             }
         }
@@ -836,18 +855,44 @@ int64_t R_Capture_Task()
                 }
             }
             else if (true == g_customize.screen_capture_enable && false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) {
-                void *screen_image = screen_capture_begin();
+                printf("screen_capture_begin\n");
+                // XImage *screen_image = screen_capture_begin();
+
+                int x = 10, y = 10;
+
+                screen_image = XGetImage(display_handle, X11_window_handle, x, y, capture_width, capture_height, AllPlanes, ZPixmap);
+
+                if(screen_image == NULL) {
+                    PRINT_ERROR("Cannot capture screen\n");
+                    return FAILED;
+                }
+
+                printf("width\n");
+                printf("width: %d\n", screen_image->width);
+                printf("height: %d\n", screen_image->height);
+                printf("red_mask:   0x%x\n", screen_image->red_mask);
+                printf("blue_mask:  0x%x\n", screen_image->blue_mask);
+                printf("green_mask: 0x%x\n", screen_image->green_mask);
 
                 if (screen_image != NULL) {
-                    Conv_RGB2YUYV(screen_image, gp_vin_out_buffer, g_frame_width, g_frame_height);
-                    screen_capture_end();
+                    printf("bgr_out malloc\n");
+                    unsigned char *bgr_out = (unsigned char *)malloc(g_frame_width * g_frame_height * 3);
+                    printf("Conv_RGB2BGR\n");
+                    Conv_RGB2BGR(screen_image, bgr_out);
+                    if (screen_image != NULL) {
+                        XDestroyImage(screen_image);
+                    }
+                    printf("Conv_RGB2YUYV\n");
+                    Conv_RGB2YUYV(bgr_out, gp_vin_out_buffer, g_frame_width, g_frame_height);
+                    printf("free(bgr_out)\n");
+                    free(bgr_out);
                 }
                 else {
                     PRINT_ERROR("Screen capture init failed\n");
                     R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);
                 }
             }
-            R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);            
+            R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);
         }
 
         if (true == g_customize.ISP_Enable)

@@ -1,53 +1,110 @@
-#include <X11/Xlib.h>
 #include <stdio.h>
+#include <X11/Xlib.h>
 
 #include "common.h"
 #include "screen_snip_out.h"
 
-static Display *display;
-static int screen;
-static Window root;
-static XImage *image;
-static unsigned int width = 896, height = 504;
+XImage *screen_image;
+static Display *display_handle;
+static int screen_handle;
+static Window X11_window_handle;
+static unsigned int capture_width, capture_height;
+
+void Conv_RGB2BGR(XImage *image, unsigned char *bgr_data, unsigned long image_height, unsigned long image_width) {
+    printf("Conv_RGB2BGR begin\n");
+    // printf("Conv_RGB2BGR red_mask: %x\n", image->red_mask);
+    // unsigned long red_mask = image->red_mask;
+    // printf("Conv_RGB2BGR green_mask: %x\n", image->green_mask);
+    // unsigned long green_mask = image->green_mask;
+    // printf("Conv_RGB2BGR blue_mask: %x\n", image->blue_mask);
+    // unsigned long blue_mask = image->blue_mask;
+
+    printf("Masking\n");
+    unsigned long red_mask = image->red_mask;
+    unsigned long blue_mask = image->blue_mask;
+    unsigned long green_mask = image->green_mask;
+
+    // Allocate memory for the BGR data
+    printf("num_pixels\n");
+    int num_pixels = image_width * image_height;
+
+    printf("Conv_RGB2BGR for loop\n");
+    for (int i = 0; i < num_pixels; i++) {
+        // Extract the pixel value
+        // printf("XGetPixel\n");
+        unsigned long pixel = XGetPixel(image, i % image_width, i / image_height);
+
+
+        // Extract RGB components
+        // printf("Extract\n");
+        unsigned char red   = (pixel & red_mask) >> 16;
+        unsigned char green = (pixel & green_mask) >> 8;
+        unsigned char blue  = (pixel & blue_mask);
+
+        // Store in BGR format
+        // printf("bgr_data\n");
+        bgr_data[i * 3] = blue;
+        bgr_data[i * 3 + 1] = green;
+        bgr_data[i * 3 + 2] = red;
+    }
+}
 
 int screen_capture_init()
 {
-    display = XOpenDisplay(NULL);
-    if (display == NULL) {
+    display_handle = XOpenDisplay(NULL);
+    if (display_handle == NULL) {
         PRINT_ERROR("Cannot open display\n");
         return FAILED;
     }
 
-    screen = DefaultScreen(display);
-    root = RootWindow(display, screen);
+    capture_width = g_frame_width;
+    capture_height = g_frame_height;
+
+    screen_handle = DefaultScreen(display_handle);
+    X11_window_handle = RootWindow(display_handle, screen_handle);
 
     return SUCCESS;
 }
 
 void screen_capture_deinit()
 {
-    XCloseDisplay(display);
+    XCloseDisplay(display_handle);
 }
 
-void *screen_capture_begin()
+XImage *screen_capture_begin()
 {
     int x = 10, y = 10;
 
-    image = XGetImage(display, root, x, y, width, height, AllPlanes, ZPixmap);
+    screen_image = XGetImage(display_handle, X11_window_handle, x, y, capture_width, capture_height, AllPlanes, ZPixmap);
 
-    if(image == NULL) {
+    if(screen_image == NULL) {
         PRINT_ERROR("Cannot capture screen\n");
         return FAILED;
     }
 
-    return (void*)image;
+    printf("image pointer: %x\n", screen_image);
+
+    printf("width: %d\n", screen_image->width);
+    printf("height: %d\n", screen_image->height);
+    printf("bpp: %d\n", screen_image->bits_per_pixel);
+    printf("offset: %d\n", screen_image->xoffset);
+    printf("red_mask: %d\n", screen_image->red_mask);
+    printf("blue_mask: %d\n", screen_image->blue_mask);
+    printf("green_mask: %d\n", screen_image->green_mask);
+
+    printf("Beginning data of image from screen_capture_begin:\n");
+    for (size_t i = 0; i < 30; i++) {
+        printf("i[%d]: 0x%x\n", i, screen_image->data[i]);
+    }
+
+    return screen_image;
 }
 
 // Must call every frame after processing image
 int screen_capture_end()
 {
-    if (image != NULL) {
-        XDestroyImage(image);
+    if (screen_image != NULL) {
+        XDestroyImage(screen_image);
     }
     else {
         PRINT_ERROR("Did not capture screen\n");

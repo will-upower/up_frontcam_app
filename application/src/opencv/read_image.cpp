@@ -1,7 +1,9 @@
-#include <stdio.h>
-#include "common.h"
 #include "opencv.h"
 #include <opencv2/opencv.hpp>
+#include <stdio.h>
+#include "common.h"
+// #include <X11/Xlib.h>
+// #include <X11/Xutil.h>
 
 using namespace cv;
 
@@ -112,9 +114,6 @@ int read_frame(VideoCaptureWrapper* capture, void* buffer)
     return SUCCESS;
 }
 
-
-
-
 void Conv_RGB2YUYV(unsigned char * bgr, unsigned char * yuyv, int width, int height)
 {
     int z = 0;
@@ -123,6 +122,7 @@ void Conv_RGB2YUYV(unsigned char * bgr, unsigned char * yuyv, int width, int hei
 
     for (yline = 0; yline < height; yline++)
     {
+        // printf("yline: %d\n", yline);
         for (x = 0; x < width; x++) 
         {
             int r = *bgr++;

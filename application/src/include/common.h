@@ -47,7 +47,7 @@
 
 #include "rcar-xos/osal/r_osal.h"
 #include "customize.h"
-# include "rcar-xos/impfw/r_impfw.h"
+#include "rcar-xos/impfw/r_impfw.h"
 
 /**********************************************************************************************************************
  Macro definitions
@@ -414,7 +414,8 @@ typedef struct VideoCaptureWrapper VideoCaptureWrapper;
 VideoCaptureWrapper* open_video_stream(const char* filename);
 int release_video_stream(VideoCaptureWrapper* capture);
 int read_frame(VideoCaptureWrapper* capture, void* frame_data);
-void Conv_RGB2YUYV(unsigned char * bgr, unsigned char * yuyv, int width, int height);
+void Conv_RGB2YUYV(unsigned char * bgr, unsigned char * yuyv, int width, 
+int height);
 
 #ifdef __cplusplus
 }
