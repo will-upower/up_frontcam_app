@@ -48,6 +48,7 @@
 #include "common.h"
 #include "customize.h"
 #include "cpuload.h"
+#include "utils/timers/timers.h"
 #if(CDNN)
 #include "rcar-xos/ai_lib/ai_lib.h"
 #include "cdnn_main.h"
@@ -59,14 +60,9 @@ Display *display_handle;
 int screen_handle;
 Window X11_window_handle;
 unsigned int capture_width, capture_height;
+
 long color_conversion_millisecond_time;
 long screen_grab_millisecond_time;
-
-long long currentTimeMillis() {
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    return (ts.tv_sec * 1000LL) + (ts.tv_nsec / 1000000LL);
-}
 
 /**********************************************************************************************************************
  Exported global variables and functions
@@ -864,60 +860,33 @@ int64_t R_Capture_Task()
                 }
             }
             else if (true == g_customize.screen_capture_enable && false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) {
-                // printf("screen_capture_begin\n");
-                // XImage *screen_image = screen_capture_begin();
-
-                int x = 4, y = 70;
-
-                long long before_time = currentTimeMillis();
-                struct timespec spec1_sg;
-                struct timespec spec2_sg;
-
-                clock_gettime(CLOCK_REALTIME, &spec1_sg);
-                screen_image = XGetImage(display_handle, X11_window_handle, x, y, capture_width, capture_height, AllPlanes, ZPixmap);
+                long long before_screen_grab = currentTimeMillis();
+                screen_image = XGetImage(display_handle, X11_window_handle, 4, 70, capture_width, capture_height, AllPlanes, ZPixmap);
 
                 if(screen_image == NULL) {
                     PRINT_ERROR("Cannot capture screen\n");
                     return FAILED;
                 }
-                clock_gettime(CLOCK_REALTIME, &spec2_sg);
-                long long after_time = currentTimeMillis();
 
-                screen_grab_millisecond_time = after_time - before_time;
+                long long after_screen_grab = currentTimeMillis();
+                screen_grab_millisecond_time = after_screen_grab - before_screen_grab;
 
-                // printf("width:          %d\n", screen_image->width);
-                // printf("height:         %d\n", screen_image->height);
-                // printf("red_mask:       0x%x\n", screen_image->red_mask);
-                // printf("blue_mask:      0x%x\n", screen_image->blue_mask);
-                // printf("green_mask:     0x%x\n", screen_image->green_mask);
-                // printf("bitmap_pad:     %d\n", screen_image->bitmap_pad);
-                // printf("bytes_per_line: %d\n", screen_image->bytes_per_line);
-                // printf("format:         0x%x\n", screen_image->format);
-                // printf("byte_order:     0x%x\n", screen_image->byte_order);
-                // printf("bits_per_pixel: %d\n", screen_image->bits_per_pixel);
+                // print_XImage_info(screen_image);
 
                 if (screen_image != NULL) {
-                    // printf("bgr_out malloc\n");
                     long long before_time_cc = currentTimeMillis();
 
                     unsigned char *bgr_out = (unsigned char *)malloc(g_frame_width * g_frame_height * 3);
-                    for (int i = 0; i < g_frame_width * g_frame_height; i++) {
-                        int out_index = 3 * i;
-                        int in_index  = 4 * i;
+                    Conv_XImage2BGR(bgr_out, screen_image, g_frame_width, g_frame_height);
 
-                        bgr_out[out_index + 0] = screen_image->data[in_index + 2];
-                        bgr_out[out_index + 1] = screen_image->data[in_index + 1];
-                        bgr_out[out_index + 2] = screen_image->data[in_index + 0];
-                    }
-                    // printf("Conv_RGBA2BGR\n");
-                    // Conv_RGBA2RGB(screen_image, bgr_out);
                     if (screen_image != NULL) {
                         XDestroyImage(screen_image);
                     }
+
                     // save_frame_as_bmp("bitmap.bmp", bgr_out, 896, 504);
-                    // printf("Conv_RGB2YUYV\n");
+
                     Conv_RGB2YUYV(bgr_out, gp_vin_out_buffer, g_frame_width, g_frame_height);
-                    // printf("free(bgr_out)\n");
+
                     free(bgr_out);
                     long long after_time_cc = currentTimeMillis();
                 

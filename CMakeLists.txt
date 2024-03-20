@@ -106,6 +106,7 @@ set(source
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/mmap/frontcam_mmap.c
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/opencv/read_image.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/screen_snip/screen_snip_out.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/application/src/utils/timers/timers.c
 )
 
 if(RCAR_SOC STREQUAL "v4h2")
@@ -154,6 +155,7 @@ set(header
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/customize/include/customize.h
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/mmap/include/frontcam_mmap.h
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/screen_snip/screen_snip_out.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/application/src/utils/timers/timers.h
 )
 
 if(RCAR_SOC STREQUAL "v4h2")
@@ -189,6 +191,7 @@ set(include_dir
     ${SDKROOT}/sysroots/aarch64-poky-linux/usr/src/debug/libdrm/2.4.101-r0/libdrm-2.4.101
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/customize/include/
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/mmap/include/
+    ${CMAKE_CURRENT_SOURCE_DIR}/application/src
 )
 
 if(RCAR_SOC STREQUAL "v4h2")

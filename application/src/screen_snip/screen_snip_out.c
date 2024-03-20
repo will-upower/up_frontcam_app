@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include "screen_snip_out.h"
+#include "screen_snip/screen_snip_out.h"
 
 XImage *screen_image;
 static Display *display_handle;
@@ -47,6 +48,20 @@ void Conv_RGBA2RGB(XImage *image, unsigned char *bgr_data, unsigned long image_h
         bgr_data[i * 3 + 1] = green;
         bgr_data[i * 3 + 2] = blue;
     }
+}
+
+void print_XImage_info(XImage *image)
+{
+    printf("width:          %d\n", screen_image->width);
+    printf("height:         %d\n", screen_image->height);
+    printf("red_mask:       0x%x\n", screen_image->red_mask);
+    printf("blue_mask:      0x%x\n", screen_image->blue_mask);
+    printf("green_mask:     0x%x\n", screen_image->green_mask);
+    printf("bitmap_pad:     %d\n", screen_image->bitmap_pad);
+    printf("bytes_per_line: %d\n", screen_image->bytes_per_line);
+    printf("format:         0x%x\n", screen_image->format);
+    printf("byte_order:     0x%x\n", screen_image->byte_order);
+    printf("bits_per_pixel: %d\n", screen_image->bits_per_pixel);
 }
 
 int screen_capture_init()
@@ -159,4 +174,16 @@ void save_frame_as_bmp(const char *filename, unsigned char *frame_data, int widt
 
     fclose(fp);
     printf("bitmap writing complete\n");
+}
+
+Conv_XImage2BGR(unsigned char *bgr_out, XImage *image, int width, int height)
+{
+    for (int i = 0; i < width * height; i++) {
+        int out_index = 3 * i;
+        int in_index  = 4 * i;
+
+        bgr_out[out_index + 0] = image->data[in_index + 2];
+        bgr_out[out_index + 1] = image->data[in_index + 1];
+        bgr_out[out_index + 2] = image->data[in_index + 0];
+    }
 }
