@@ -491,15 +491,21 @@ int f_opencv_execute()
         }
 #endif
 #endif    
-    Point text_fps_position(20, 30);
-    Point text_ai_fps_position(20, 70);
+    // Point text_fps_position(20, 30);
+    Point text_ai_fps_position(20, 30);
+    Point text_color_conversion_time_position(20, 70);
+    Point text_screen_grab_time_position(20, 110);
     if (0 != g_customize.Proc_Time)
     {
         char fps_text[20];
-        sprintf(fps_text, "Display FPS: %3u.%1u", g_fps[0] / 10, g_fps[0] % 10);
-        cv::putText(image, fps_text, text_fps_position, 2, font_size, font_Color_others, 2, true);
-        sprintf(fps_text,"Inference FPS :%3u.%1u", g_fps[1] / 10, g_fps[1] % 10);
+        // sprintf(fps_text, "Display FPS: %3u.%1u", g_fps[0] / 10, g_fps[0] % 10);
+        // cv::putText(image, fps_text, text_fps_position, 2, font_size, font_Color_others, 2, true);
+        sprintf(fps_text,"Inference frame time: %2.1fms", 1000.0f / g_fps[1]);
         cv::putText(image, fps_text, text_ai_fps_position, 2, font_size, font_Color_others, 2, true);
+        sprintf(fps_text,"Color conversion time: %3ums", color_conversion_millisecond_time);
+        cv::putText(image, fps_text, text_color_conversion_time_position, 2, font_size, font_Color_others, 2, true);
+        sprintf(fps_text,"Screen grab time: %3ums", screen_grab_millisecond_time);
+        cv::putText(image, fps_text, text_screen_grab_time_position, 2, font_size, font_Color_others, 2, true);
     }
     memcpy((void *)gp_opencv_buffer, (void *)image.data, g_frame_width * g_frame_height * g_vout_pix_fmt);
     if (0 == g_customize.VOUT_Enable) 

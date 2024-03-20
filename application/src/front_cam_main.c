@@ -42,6 +42,7 @@
 #include <dirent.h>
 #include <signal.h>
 #include <sys/stat.h>
+#include <time.h>
 #include <unistd.h> // MISRA
 #include "rcar-xos/rcar_xos_config.h"
 #include "common.h"
@@ -58,6 +59,14 @@ Display *display_handle;
 int screen_handle;
 Window X11_window_handle;
 unsigned int capture_width, capture_height;
+long color_conversion_millisecond_time;
+long screen_grab_millisecond_time;
+
+long long currentTimeMillis() {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (ts.tv_sec * 1000LL) + (ts.tv_nsec / 1000000LL);
+}
 
 /**********************************************************************************************************************
  Exported global variables and functions
@@ -860,12 +869,21 @@ int64_t R_Capture_Task()
 
                 int x = 4, y = 70;
 
+                long long before_time = currentTimeMillis();
+                struct timespec spec1_sg;
+                struct timespec spec2_sg;
+
+                clock_gettime(CLOCK_REALTIME, &spec1_sg);
                 screen_image = XGetImage(display_handle, X11_window_handle, x, y, capture_width, capture_height, AllPlanes, ZPixmap);
 
                 if(screen_image == NULL) {
                     PRINT_ERROR("Cannot capture screen\n");
                     return FAILED;
                 }
+                clock_gettime(CLOCK_REALTIME, &spec2_sg);
+                long long after_time = currentTimeMillis();
+
+                screen_grab_millisecond_time = after_time - before_time;
 
                 // printf("width:          %d\n", screen_image->width);
                 // printf("height:         %d\n", screen_image->height);
@@ -880,6 +898,8 @@ int64_t R_Capture_Task()
 
                 if (screen_image != NULL) {
                     // printf("bgr_out malloc\n");
+                    long long before_time_cc = currentTimeMillis();
+
                     unsigned char *bgr_out = (unsigned char *)malloc(g_frame_width * g_frame_height * 3);
                     for (int i = 0; i < g_frame_width * g_frame_height; i++) {
                         int out_index = 3 * i;
@@ -899,6 +919,9 @@ int64_t R_Capture_Task()
                     Conv_RGB2YUYV(bgr_out, gp_vin_out_buffer, g_frame_width, g_frame_height);
                     // printf("free(bgr_out)\n");
                     free(bgr_out);
+                    long long after_time_cc = currentTimeMillis();
+                
+                    color_conversion_millisecond_time = after_time_cc - before_time_cc;
                 }
                 else {
                     PRINT_ERROR("Screen capture init failed\n");
