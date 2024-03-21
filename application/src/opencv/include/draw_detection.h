@@ -1,7 +1,7 @@
 #ifndef __DRAW_DETECTION_H__
 #define __DRAW_DETECTION_H__
 
-#include <stdio.h>
+#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/stdio.h>
 #include <opencv2/opencv.hpp>
 #include "common.h"
 

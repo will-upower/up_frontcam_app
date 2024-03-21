@@ -25,8 +25,8 @@
 * History : Version DD.MM.YYYY Description
 *         : 0.1.0   17.01.2022 Initial version
 ***********************************************************************************************************************/
-#include <stdio.h>
-#include <string.h>
+#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/stdio.h>
+#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/string.h>
 #include <math.h>
 #include <inttypes.h>
 

@@ -36,12 +36,13 @@
 /**********************************************************************************************************************
  Includes   <System Includes> , "Project Includes"
  *********************************************************************************************************************/
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include <CL/cl.h>
+#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/stdio.h>
+#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/string.h>
+#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/stdlib.h>
 #include <signal.h>
 #include <sys/stat.h>
-#include <unistd.h> // MISRA
+#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/unistd.h> // MISRA
 #include "rcar-xos/rcar_xos_config.h"
 #include "common.h"
 #include "customize.h"

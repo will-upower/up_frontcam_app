@@ -1,6 +1,6 @@
 #include <fcntl.h>
 #include <sys/mman.h>
-#include <string.h>
+#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/string.h>
 #include <unistd.h>
 #include "common.h"
 #include "frontcam_mmap.h"

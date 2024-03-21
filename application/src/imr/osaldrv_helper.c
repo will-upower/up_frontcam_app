@@ -35,7 +35,7 @@
 /**********************************************************************************************************************
  Includes   <System Includes> , "Project Includes"
  *********************************************************************************************************************/
-#include <stdio.h>
+#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/stdio.h>
 
 #include "rcar-xos/imr/r_imrdrv_api.h"
 #include "rcar-xos/imrdlg/r_imrdlg.h"

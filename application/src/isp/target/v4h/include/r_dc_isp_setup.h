@@ -29,8 +29,8 @@
 #ifndef _R_ISP_SETUP_H_
 #define _R_ISP_SETUP_H_       0
 
-#include <stdio.h>
-#include <string.h>
+#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/stdio.h>
+#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/string.h>
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <fcntl.h>
