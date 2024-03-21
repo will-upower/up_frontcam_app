@@ -211,11 +211,32 @@ void R_CustomizeInit(st_customize_t *custom_param)
     custom_param->SEM_SEG_Height              = 256;
     custom_param->POSE_EST_Width              = 224;
     custom_param->POSE_EST_Height             = 224;
-
 }
 /**********************************************************************************************************************
  End of function  R_CustomizeInit
  *********************************************************************************************************************/
+
+int R_CheckConfig(st_customize_t *custom_param)
+{
+    // Config file paradox error checking
+    if (g_customize.screen_capture_enable == true && g_customize.Image_Folder_Enable == true) {
+        printf("In the config file, do not enable both Screen_Capture_Enable and Image_Folder_Enable at the same time\n");
+        return FAILED;
+    }
+
+    if (g_customize.screen_capture_enable == true && g_customize.VIN_Enable == true) {
+        printf("In the config file, do not enable both Screen_Capture_Enable and VIN_Enable at the same time\n");
+        return FAILED;
+    }
+
+    if (g_customize.screen_capture_enable == true && g_customize.mmap_out_enable == true) {
+        printf("In the config file, do not enable both Screen_Capture_Enable and mmap_out_enable at the same time\n");
+        return FAILED;
+    }
+
+    return SUCCESS;
+}
+
 
 /*********************************************************************************************************************/
 /* Function Name : R_CustomizeLoad */
@@ -293,25 +314,25 @@ int R_CustomizeLoad(st_customize_t *custom_param, const char *file_name)
         getstr(buf, "Frame_File_Name ", custom_param->Frame_File_Name);
         sscanf(buf, "Image_Folder_Enable %d", &custom_param->Image_Folder_Enable);
         getstr(buf, "Frame_Folder_Name ", custom_param->Frame_Folder_Name);
-        
+
         sscanf(buf, "Max_Camera_Width %d", &custom_param->Max_Camera_Width);
         sscanf(buf, "Max_Camera_Height %d", &custom_param->Max_Camera_Height);
-#if(CDNN)  
+#if(CDNN)
         sscanf(buf, "CDNN_Enable %d", &custom_param->CDNN_Enable);
-        sscanf(buf, "OBJ_DET_Enable %d", &custom_param->OBJ_DET_Enable);    
+        sscanf(buf, "OBJ_DET_Enable %d", &custom_param->OBJ_DET_Enable);
         sscanf(buf, "SEM_SEG_Enable %d", &custom_param->SEM_SEG_Enable);
         sscanf(buf, "POSE_EST_Enable %d", &custom_param->POSE_EST_Enable);
         sscanf(buf, "CDNN_Load_Enable %d", &custom_param->CDNN_Load_Enable);
 #endif
         sscanf(buf, "OBJ_DET_Width %d", &custom_param->OBJ_DET_Width);
-        sscanf(buf, "OBJ_DET_Height %d", &custom_param->OBJ_DET_Height);    
+        sscanf(buf, "OBJ_DET_Height %d", &custom_param->OBJ_DET_Height);
         sscanf(buf, "SEM_SEG_Width %d", &custom_param->SEM_SEG_Width);
         sscanf(buf, "SEM_SEG_Height %d", &custom_param->SEM_SEG_Height);
         sscanf(buf, "POSE_EST_Width %d", &custom_param->POSE_EST_Width);
         sscanf(buf, "POSE_EST_Height %d", &custom_param->POSE_EST_Height);
         //new
         sscanf(buf, "mmap_out_enable %d", &custom_param->mmap_out_enable);
-        sscanf(buf, "Image_Folder_Video_Enable %d", &custom_param->Image_Folder_Video_Enable);    
+        sscanf(buf, "Image_Folder_Video_Enable %d", &custom_param->Image_Folder_Video_Enable);
         sscanf(buf, "Image_Folder_RGB2YUV_Enable %d", &custom_param->Image_Folder_RGB2YUV_Enable);
         sscanf(buf, "Image_Video_Height %d", &custom_param->Image_Video_Height);
         sscanf(buf, "Image_Video_Width %d", &custom_param->Image_Video_Width);

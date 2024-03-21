@@ -182,7 +182,6 @@ static int log_display(cv::Mat &src)
 ***********************************************************************************************************************/
 static int graph_display(cv::Mat &src, int core_index, std::vector<int64_t> load_arr)
 {
-
     int thickness = 1;
     int font_type = FONT_HERSHEY_PLAIN;
     int graph_start_pnt_x = 60;

@@ -311,6 +311,9 @@ int main(int argc, char * argv[])
         }
         R_CustomizePrint(&g_customize);            /* Print customization parameters */
 
+        if (R_CheckConfig(&g_customize) == FAILED) {
+            break;
+        }
 
         /* ret = R_CustomizeValidate(&g_customize);   
         if (FAILED == ret)
