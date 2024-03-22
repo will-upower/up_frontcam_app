@@ -211,6 +211,8 @@ void R_CustomizeInit(st_customize_t *custom_param)
     custom_param->SEM_SEG_Height              = 256;
     custom_param->POSE_EST_Width              = 224;
     custom_param->POSE_EST_Height             = 224;
+
+    custom_param->screen_capture_enable       = 0;
 }
 /**********************************************************************************************************************
  End of function  R_CustomizeInit
@@ -339,6 +341,7 @@ int R_CustomizeLoad(st_customize_t *custom_param, const char *file_name)
         sscanf(buf, "Video_File_Path ", &custom_param->Video_File_Path);
         sscanf(buf, "mmap_in_height %d", &custom_param->mmap_in_height);
         sscanf(buf, "mmap_in_width ", &custom_param->mmap_in_width);
+
         sscanf(buf, "screen_capture_enable %d", &custom_param->screen_capture_enable);
     }
 
@@ -360,7 +363,7 @@ int R_CustomizeLoad(st_customize_t *custom_param, const char *file_name)
  *********************************************************************************************************************/
 int R_CustomizeValidate(st_customize_t *custom_param)
 {
-    int ret =0;
+    int ret = 0;
 
     ret += CustomizeRangeCheck("VIN_Enable", custom_param->VIN_Enable, 0, 1);
     ret += CustomizeRangeCheck("VIN_Device", custom_param->VIN_Device, 0, 7);
@@ -392,6 +395,9 @@ int R_CustomizeValidate(st_customize_t *custom_param)
     ret += CustomizeRangeCheck("IMR_Ch_2_Enable", custom_param->IMR_Ch_2_Enable, 0, 1);
     ret += CustomizeRangeCheck("IMR_Ch_3_Enable", custom_param->IMR_Ch_3_Enable, 0, 1);
     ret += CustomizeRangeCheck("IMR_Ch_4_Enable", custom_param->IMR_Ch_4_Enable, 0, 1);
+
+    ret += CustomizeRangeCheck("Screen_Capture_Enable", custom_param->screen_capture_enable, 0, 1);
+
     if(true == g_customize.IMR_Ch_0_Enable)
     {
         ret += CustomizeRangeCheck("IMR_Resize_Width_Ch_0", custom_param->IMR_Resize_Width_Ch_0, 1, custom_param->Max_Camera_Width);
@@ -471,8 +477,7 @@ int R_CustomizeValidate(st_customize_t *custom_param)
  *********************************************************************************************************************/
 int R_CustomizePrint(st_customize_t *custom_param)
 {
-
-printf("FC V4H PIPE-LINE \n");
+    printf("FC V4H PIPE-LINE \n");
     printf("-------------------------------\n");
 
     if (true == custom_param->VIN_Enable)
@@ -553,7 +558,10 @@ printf("FC V4H PIPE-LINE \n");
     printf("IMR_Resize_Width_Ch_4       : %d \n", custom_param->IMR_Resize_Width_Ch_4);
     printf("IMR_Resize_Height_Ch_4      : %d \n", custom_param->IMR_Resize_Height_Ch_4);
 
-#if(CDNN)  
+    printf("\n[Screen Capture]\n");
+    printf("Screen_Capture_Enable       : %d \n", custom_param->screen_capture_enable);
+
+#if(CDNN)
     printf("\n[CDNN] \n");
     printf("CDNN_Enable                 : %d \n", custom_param->CDNN_Enable);
     printf("OBJ_DET_Enable              : %d \n", custom_param->OBJ_DET_Enable);    

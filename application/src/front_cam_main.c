@@ -251,7 +251,7 @@ int main(int argc, char * argv[])
     do
     {
         signal(SIGINT, sigint_handler);
-        
+
         g_customize.mmap_out_enable = 0;
         g_customize.Image_Folder_Video_Enable = 0;
         g_customize.Image_Folder_RGB2YUV_Enable = 1;
@@ -259,8 +259,8 @@ int main(int argc, char * argv[])
         g_customize.Image_Video_Height = 256;
         g_customize.Image_Video_Width = 512;
         ret = R_CustomizeLoad(&g_customize, FC_CustomizeFile);
-        g_customize.mmap_in_height = 504;
         g_customize.mmap_in_width = 896;
+        g_customize.mmap_in_height = 504;
         g_customize.screen_capture_enable = 1;
         if (FAILED == ret)
         {
