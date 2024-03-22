@@ -42,15 +42,18 @@
 #include <dirent.h>
 #include <signal.h>
 #include <sys/stat.h>
+#include <time.h>
 #include <unistd.h> // MISRA
 #include "rcar-xos/rcar_xos_config.h"
 #include "common.h"
 #include "customize.h"
 #include "cpuload.h"
+#include "utils/timers/timers.h"
 #if(CDNN)
 #include "rcar-xos/ai_lib/ai_lib.h"
 #include "cdnn_main.h"
 #endif
+#include <X11/Xlib.h>
 
 /**********************************************************************************************************************
  Exported global variables and functions
@@ -162,18 +165,26 @@ int32_t g_ai_done         = 0;
 int32_t g_vout_done       = 0;
 
 int g_fps[5];
-extern int R_VIN_Start_Capturing (int VIN_Device);
+extern int R_VIN_Start_Capturing(int VIN_Device);
 
 //new
 int mmap_file = 0;
 int mmap_file_in = 0;
 unsigned char * mapped_buffer_out = NULL;
 unsigned char * mapped_buffer_in = NULL;
+
+long color_conversion_millisecond_time;
+long screen_grab_millisecond_time;
+
+// Screen capture
+Display *display_handle;
+Window X11_window_handle;
+
 /**********************************************************************************************************************
  Private (static) variables and functions
  *********************************************************************************************************************/
-static int64_t R_FC_SystemInit ();
-static int64_t buffer_map ();
+static int64_t R_FC_SystemInit();
+static int64_t buffer_map();
 static int64_t Vin_Buffer_Alloc();
 static int64_t Isp_Buffer_Alloc();
 static int64_t Imr_Buffer_Alloc();
@@ -185,34 +196,33 @@ static void opencv_inputcustom();
 static void vout_inputcustom();
 static int64_t syncflow_enable(e_fc_module_t module);
 static int64_t syncflow_disable(e_fc_module_t module);
-static void    sigint_handler (int signum);
-static void    FcModuleInitFlags ();
-static inline unsigned long uSecElapsed (struct timeval *t2, struct timeval *t1);
-static int st_r_vin_execute_main (void);
+static void    sigint_handler(int signum);
+static void    FcModuleInitFlags();
+static inline unsigned long uSecElapsed(struct timeval *t2, struct timeval *t1);
+static int st_r_vin_execute_main(void);
 static int Opencv_buffer_alloc();
-
 
 /**********************************************************************************************************************
  Function Declarations
 *********************************************************************************************************************/
-int64_t R_Init_Modules ();
-int64_t R_Deinit_Modules ();
-int64_t R_Capture_Task ();
-int64_t R_VOUT_Task ();
-int64_t R_CTRL_Task ();
-int64_t R_Inference_Task ();
-int64_t R_IMR_Task ();
-int64_t R_CPULOAD_Task ();
-int     f_opencv_execute ();
+int64_t R_Init_Modules();
+int64_t R_Deinit_Modules();
+int64_t R_Capture_Task();
+int64_t R_VOUT_Task();
+int64_t R_CTRL_Task();
+int64_t R_Inference_Task();
+int64_t R_IMR_Task();
+int64_t R_CPULOAD_Task();
+int     f_opencv_execute();
 int     R_PipelineParamValidate();
 int64_t R_Create_Mutex();
 int64_t R_Mutex_Map();
-int get_syncstatus (e_fc_module_t module, int flow);
-int set_syncstatus (e_fc_module_t module, int flow);
+int get_syncstatus(e_fc_module_t module, int flow);
+int set_syncstatus(e_fc_module_t module, int flow);
 int (* fp_syncstart) (e_fc_module_t , osal_mutex_handle_t *, osal_cond_handle_t *, int);
 int (* fp_syncend) (e_fc_module_t , osal_mutex_handle_t *, osal_cond_handle_t *, int);
-int R_FC_SyncStart (e_fc_module_t module, osal_mutex_handle_t *ptr_mtx, osal_cond_handle_t *ptr_cond, int flow);
-int R_FC_SyncEnd (e_fc_module_t module, osal_mutex_handle_t *ptr_mtx, osal_cond_handle_t *ptr_cond, int flow);
+int R_FC_SyncStart(e_fc_module_t module, osal_mutex_handle_t *ptr_mtx, osal_cond_handle_t *ptr_cond, int flow);
+int R_FC_SyncEnd(e_fc_module_t module, osal_mutex_handle_t *ptr_mtx, osal_cond_handle_t *ptr_cond, int flow);
 
 /******************************************************************************************************************//**
 /* Function Name : main */
@@ -239,18 +249,18 @@ int main(int argc, char * argv[])
     fp_syncend = R_FC_SyncEnd;
     FcModuleInitFlags();                            /* Initialize flags */
 
-    do 
+    do
     {
         signal(SIGINT, sigint_handler);
-        
         g_customize.mmap_out_enable = 0;
         g_customize.Image_Folder_Video_Enable = 0;
         g_customize.Image_Folder_RGB2YUV_Enable = 1;
         strcpy(g_customize.Video_File_Path, "input.avi");
         g_customize.Image_Video_Height = 256;
         g_customize.Image_Video_Width = 512;
-        g_customize.mmap_in_height = 768;
-        g_customize.mmap_in_width = 1024;
+        g_customize.mmap_in_width = 896;
+        g_customize.mmap_in_height = 504;
+        g_customize.screen_capture_enable = 1;
         ret = R_CustomizeLoad(&g_customize, FC_CustomizeFile);
         if (FAILED == ret)
         {
@@ -300,6 +310,10 @@ int main(int argc, char * argv[])
             g_customize.VIN_Capture_Format = 1; //YUYV, need to convert from RGB to YUYV            
         }
         R_CustomizePrint(&g_customize);            /* Print customization parameters */
+
+        /* if (R_CheckConfig(&g_customize) == FAILED) { // to be modified by me later
+            break;
+        } */
 
         /* ret = R_CustomizeValidate(&g_customize);   
         if (FAILED == ret)
@@ -439,6 +453,22 @@ re-run the application\n FC App terminating...\n ");
                 break;
             }
         }
+        
+        if (true == g_customize.screen_capture_enable && false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) {
+            display_handle = XOpenDisplay(NULL);
+            if (display_handle == NULL) {
+                PRINT_ERROR("Cannot open display\n");
+                return FAILED;
+            }
+
+            int screen_handle = DefaultScreen(display_handle);
+            X11_window_handle = RootWindow(display_handle, screen_handle);
+            int result = screen_capture_init();
+            if (result == FAILED) {
+                PRINT_ERROR("Failed to init screen capture\n");
+                break;
+            }
+        }
 
         if (true == g_customize.Image_Folder_Enable) /* Configure message queue when image read from folder enabled */
         {
@@ -551,7 +581,7 @@ re-run the application\n FC App terminating...\n ");
         }
 
         /* Start IMR Thread */
-        if(true == g_customize.IMR_LDC || true == g_customize.IMR_Resize)
+        if (true == g_customize.IMR_LDC || true == g_customize.IMR_Resize)
         {
             osal_ret = R_OSAL_ThreadCreate(&imr_thrd_cfg, 0xf004, &imr_thrd_hndl);
             if (OSAL_RETURN_OK != osal_ret)
@@ -563,7 +593,7 @@ re-run the application\n FC App terminating...\n ");
         }
 
 #if(CDNN)
-        if(true == g_customize.CDNN_Enable)
+        if (true == g_customize.CDNN_Enable)
         {
             osal_ret = R_OSAL_ThreadCreate(&ai_thrd_cfg, 0xf001, &ai_thrd_hndl);
             if (OSAL_RETURN_OK != osal_ret)
@@ -609,7 +639,7 @@ re-run the application\n FC App terminating...\n ");
             break;
         }
 
-        if(true == g_customize.IMR_LDC || true == g_customize.IMR_Resize)
+        if (true == g_customize.IMR_LDC || true == g_customize.IMR_Resize)
         {
             osal_ret = R_OSAL_ThreadJoin(imr_thrd_hndl, &imr_thrd_return_value);
             if (OSAL_RETURN_OK != osal_ret)
@@ -622,7 +652,7 @@ re-run the application\n FC App terminating...\n ");
 
         /*Wait until Inference Thread*/
 #if (CDNN)
-        if(true == g_customize.CDNN_Enable)
+        if (true == g_customize.CDNN_Enable)
 
         {
             osal_ret = R_OSAL_ThreadJoin(ai_thrd_hndl, &ai_thrd_return_value);
@@ -660,6 +690,10 @@ re-run the application\n FC App terminating...\n ");
             break;
         }
 
+        if (true == g_customize.screen_capture_enable && false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) {
+            screen_capture_deinit();
+        }
+
         printf("Please press Enter to Exit \n");
         /* wait until control thread finished */
         osal_ret = R_OSAL_ThreadJoin(ctrl_thrd_hndl, &ctrl_thrd_return_value);
@@ -673,7 +707,7 @@ re-run the application\n FC App terminating...\n ");
         /* De-Initialize */
         R_Deinit_Modules();
     }
-    while (0);
+    while(0);
     printf("FC App terminated successfully.\n");
 
     return SUCCESS;
@@ -734,7 +768,7 @@ int64_t R_Capture_Task()
 
         for (int i = 0; i < num_entries; ++i) {
 
-            if(entries[i]->d_type == 8) //DT_REG // Only Files are allowed
+            if (entries[i]->d_type == 8) //DT_REG // Only Files are allowed
             {
             fprintf(fp_list, "%s\n", entries[i]->d_name);
             free(entries[i]);
@@ -808,15 +842,55 @@ int64_t R_Capture_Task()
                     printf("Read Image from folder completed! Starting over now...\n");
                 }
             }
-            else if (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) 
+            else if (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable && false == g_customize.screen_capture_enable) 
             {
                 R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
                 Conv_RGB2YUYV(mapped_buffer_in, gp_vin_out_buffer, g_frame_width, g_frame_height);
                 R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
             }
-            R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);            
-        }
+            else if (true == g_customize.screen_capture_enable && false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) {
+                long long before_screen_grab = currentTimeMillis();
+                unsigned int capture_width = 896;
+                unsigned int capture_height = 504;
 
+                XImage *screen_image = XGetImage(display_handle, X11_window_handle, 4, 70, capture_width, capture_height, AllPlanes, ZPixmap);
+
+                if (screen_image == NULL) {
+                    PRINT_ERROR("Cannot capture screen\n");
+                    return FAILED;
+                }
+
+                long long after_screen_grab = currentTimeMillis();
+                screen_grab_millisecond_time = after_screen_grab - before_screen_grab;
+
+                // print_XImage_info(screen_image);
+
+                if (screen_image != NULL) {
+                    long long before_time_cc = currentTimeMillis();
+
+                    unsigned char *bgr_out = (unsigned char *)malloc(g_frame_width * g_frame_height * 3);
+                    Conv_XImage2BGR(bgr_out, screen_image, g_frame_width, g_frame_height);
+
+                    if (screen_image != NULL) {
+                        XDestroyImage(screen_image);
+                    }
+
+                    // save_frame_as_bmp("bitmap.bmp", bgr_out, 896, 504);
+
+                    Conv_RGB2YUYV(bgr_out, gp_vin_out_buffer, g_frame_width, g_frame_height);
+
+                    free(bgr_out);
+                    long long after_time_cc = currentTimeMillis();
+                
+                    color_conversion_millisecond_time = after_time_cc - before_time_cc;
+                }
+                else {
+                    PRINT_ERROR("Screen capture init failed\n");
+                    R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);
+                }
+            }
+            R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);
+        }
 
         if (true == g_customize.ISP_Enable)
         {
@@ -872,7 +946,7 @@ int64_t R_IMR_Task()
 {
     int ret;
 
-    R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_50MS_SLEEP);
+    R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_50MS_SLEEP);
     while (!g_is_thread_exit)
     {
 
@@ -921,14 +995,14 @@ int64_t R_CPULOAD_Task()
     st_cpuload load_0;
     st_cpuload load_1;
 
-    R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_50MS_SLEEP);
+    R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_50MS_SLEEP);
     
     if (true == g_customize.CPU_Load_Enable)                        /* If CPU Load is enabled */
     {
         while (!g_is_thread_exit)
         {
             R_CPU_Getstats(&load_0, &pid_temp);                     /* Get status of load 0 */
-            R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_1_S);
+            R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_1_S);
             R_CPU_Getstats(&load_1, &pid_temp);                     /* Get status of load 1 */
             g_cpu_usage = R_CPU_CalculateLoad(&load_0, &load_1);    /* Calculate CPU load */
             DEBUG_PRINT("CPU: %lf%%\n", g_cpu_usage);               /* Print CPU load */
@@ -939,7 +1013,7 @@ int64_t R_CPULOAD_Task()
     {
         while (!g_is_thread_exit)
         {
-            R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_1_S);
+            R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_1_S);
             g_load_flag = true;
         }
     }
@@ -962,7 +1036,7 @@ int64_t R_CPULOAD_Task()
  * @retval      false           fail
  *********************************************************************************************************************/
 int64_t R_VOUT_Task()
-{   
+{
     int ret = INVALID;
     char folder[] = OUTPUT_BUFFER;
     char image_name[64];
@@ -971,7 +1045,7 @@ int64_t R_VOUT_Task()
     e_osal_return_t osal_ret = OSAL_RETURN_OK;
     bool is_queue_empty = false;
  
-    R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_50MS_SLEEP);
+    R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_50MS_SLEEP);
     while (!g_is_thread_exit)
     {   
         if (g_customize.mmap_out_enable) 
@@ -1110,7 +1184,7 @@ int64_t R_Init_Modules()
 
     
     /* Initialize all modules */
-    if(true == g_customize.VIN_Enable)                  /* If VIN enabled */
+    if (true == g_customize.VIN_Enable)                  /* If VIN enabled */
     {
         ret = R_VIN_Initilize(g_customize.VIN_Device, 
                      g_frame_width, g_frame_height, g_customize.VIN_Offset_X, 
@@ -1132,7 +1206,7 @@ int64_t R_Init_Modules()
         g_fcStatus.vin.status = SUCCESS;
     }
 
-    if(true == g_customize.IMR_LDC || true == g_customize.IMR_Resize)
+    if (true == g_customize.IMR_LDC || true == g_customize.IMR_Resize)
     {
         ret = R_IMR_Init();
         if (FAILED == ret)
@@ -1239,17 +1313,17 @@ int64_t R_Deinit_Modules()
     R_OSAL_ThsyncMutexDestroy(g_mtx_handle_imrrs_out);
 
     osal_ret = R_OSAL_MqIsEmpty(g_mq_handle_aiactivity, &isEmpty);
-    if(OSAL_RETURN_OK != osal_ret)
+    if (OSAL_RETURN_OK != osal_ret)
     {
         // Notifying that R_OSAL_MqIsEmpty() failed.
         // Not returning from here as resource de-allocation required to perform.
         PRINT_ERROR("R_OSAL_MqIsEmpty failed, osal_ret = %d\n", osal_ret);
     }
 
-    if(false == isEmpty)
+    if (false == isEmpty)
     {
         osal_ret = R_OSAL_MqReset(g_mq_handle_aiactivity);
-        if(OSAL_RETURN_OK != osal_ret)
+        if (OSAL_RETURN_OK != osal_ret)
         {
             // Notifying that R_OSAL_MqReset() failed.
             // Not returning from here as resource de-allocation required to perform.
@@ -1258,7 +1332,7 @@ int64_t R_Deinit_Modules()
     }
 
     osal_ret = R_OSAL_MqDelete(g_mq_handle_aiactivity);
-    if(OSAL_RETURN_OK != osal_ret)
+    if (OSAL_RETURN_OK != osal_ret)
     {
         PRINT_ERROR("Failed R_OSAL_MqDelete, osal_ret = %d\n", osal_ret);
     }
@@ -1290,7 +1364,7 @@ int64_t R_Deinit_Modules()
     free(gp_imr_rs_buffer_ch4);
     free(gp_ai_rgb_buffer);
 
-    if(true == g_customize.IMR_LDC || true == g_customize.IMR_Resize)
+    if (true == g_customize.IMR_LDC || true == g_customize.IMR_Resize)
     {
         ret = R_IMR_Deinit();
         if (FAILED == ret)
@@ -1388,7 +1462,7 @@ static int64_t R_FC_SystemInit()
 
     /* memory allocation for VIN buffer */
     ret = Vin_Buffer_Alloc();
-    if(FAILED == ret)
+    if (FAILED == ret)
     {
         DEBUG_PRINT("Failed to allocate vin_buffer \n");
         return ret;
@@ -1396,7 +1470,7 @@ static int64_t R_FC_SystemInit()
 
     /* memory allocation for ISP buffers */
     ret = Isp_Buffer_Alloc();
-    if(FAILED == ret)
+    if (FAILED == ret)
     {
         DEBUG_PRINT("Failed to allocate isp buffer \n");
         return ret;
@@ -1404,7 +1478,7 @@ static int64_t R_FC_SystemInit()
 
     /* memory allocation for IMR buffers */
     ret = Imr_Buffer_Alloc();
-    if(FAILED == ret)
+    if (FAILED == ret)
     {
         DEBUG_PRINT("Failed to allocate isp buffer \n");
         return ret;
@@ -1412,7 +1486,7 @@ static int64_t R_FC_SystemInit()
 
     /* buffer allocation for OpenCV buffers */
     ret = Opencv_buffer_alloc();
-    if(FAILED == ret)
+    if (FAILED == ret)
     {
         DEBUG_PRINT("Failed to allocate opencv buffer \n");
         return ret;
@@ -1465,12 +1539,12 @@ ISP_Enable=1 are invalid configuration for the application \n");
         return FAILED;
     }
 
-    else if((g_customize.Frame_Width * 2) % MAX_LEN_IMG_BUFF != 0)
+    else if ((g_customize.Frame_Width * 2) % MAX_LEN_IMG_BUFF != 0)
     {
         PRINT_WARNING("Please give a valid stride value(Frame Width * BPP) as multiple of 256 to run the pipeline \n");
         return FAILED;
     }
-    else if((true == g_customize.Image_Folder_Enable) && (true == g_customize.ISP_Enable) )
+    else if ((true == g_customize.Image_Folder_Enable) && (true == g_customize.ISP_Enable) )
     {
         PRINT_WARNING("Currently FC App only support to read single ISP buffer. Application pipeline shall not \
                          handle ISP buffers from image folder\n");
@@ -1809,7 +1883,7 @@ int set_syncstatus(e_fc_module_t module, int flow)
     if (flow == 1)
     {
         ret =    syncflow_enable(module);
-        if(FAILED == ret)
+        if (FAILED == ret)
         {
         DEBUG_PRINT("Failed to enable sync status\n");
         return ret;
@@ -1818,7 +1892,7 @@ int set_syncstatus(e_fc_module_t module, int flow)
     else
     {
         ret =    syncflow_disable(module);
-        if(FAILED == ret)
+        if (FAILED == ret)
         {
         DEBUG_PRINT("Failed to disable sync status\n");
         return ret;
@@ -1994,7 +2068,7 @@ static int64_t Vin_Buffer_Alloc()
     }
     else if (false == g_customize.Image_Folder_RGB2YUV_Enable && true == g_customize.Image_Folder_Enable)
     {
-        gp_vin_out_buffer = (char *)malloc (g_frame_width * g_frame_height * BPP_RGB); 
+        gp_vin_out_buffer = (char *)malloc(g_frame_width * g_frame_height * BPP_RGB); 
     }
     else                                                            /* vin buffer allocation for other formats */
     {
@@ -2449,26 +2523,26 @@ static int64_t syncflow_disable(e_fc_module_t module)
  * @retval      true            success(0)
  * @retval      false           fail(1) 
  *********************************************************************************************************************/
-static int st_r_vin_execute_main (void)
+static int st_r_vin_execute_main(void)
 {
     int ret = FAILED;
 
-    ret = R_VIN_Execute (g_customize.VIN_Capture_Format, g_customize.VIN_Device);
+    ret = R_VIN_Execute(g_customize.VIN_Capture_Format, g_customize.VIN_Device);
     if (FAILED == ret)
     {
         PRINT_ERROR("Failed R_VIN_Execute \n");
         return ret;
     }
     
-    if(true == g_customize.ISP_Enable)
+    if (true == g_customize.ISP_Enable)
     {
-        ret = R_VIN_Copy_Data (g_customize.VIN_Capture_Format, gp_vin_out_buffer, g_customize.VIN_Device);
+        ret = R_VIN_Copy_Data(g_customize.VIN_Capture_Format, gp_vin_out_buffer, g_customize.VIN_Device);
     }
     else
     {
         R_FC_SyncStart(eVIN, gp_mtx_handle_vin, gp_vin_cond_handle, 1);
         
-        ret = R_VIN_Copy_Data (g_customize.VIN_Capture_Format, gp_vin_out_buffer, g_customize.VIN_Device);
+        ret = R_VIN_Copy_Data(g_customize.VIN_Capture_Format, gp_vin_out_buffer, g_customize.VIN_Device);
         
         R_FC_SyncEnd(eVIN, gp_mtx_handle_vin, gp_vin_cond_handle, 1);
     }

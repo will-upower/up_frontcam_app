@@ -47,7 +47,7 @@
 
 #include "rcar-xos/osal/r_osal.h"
 #include "customize.h"
-# include "rcar-xos/impfw/r_impfw.h"
+#include "rcar-xos/impfw/r_impfw.h"
 
 /**********************************************************************************************************************
  Macro definitions
@@ -354,7 +354,7 @@ extern int g_fps[5];
 extern void fpsCount(int dev);
 
 /* VIN */
-extern int R_VIN_Initilize (int VIN_Device,
+extern int R_VIN_Initilize(int VIN_Device,
                      int Frame_Width,
                      int Frame_Height,
                      int VIN_Offset_X,
@@ -363,44 +363,44 @@ extern int R_VIN_Initilize (int VIN_Device,
                      int VIN_Req_Buffer_Num,
                      int Debug_Enable);
 extern int R_VIN_Execute(int VIN_Capture_Format, int VIN_Device);
-extern int R_VIN_Copy_Data (int VIN_Capture_Format, unsigned char *vin_out_buf, int VIN_Device);
-extern int R_VIN_DeInitialize (int VIN_Device);
+extern int R_VIN_Copy_Data(int VIN_Capture_Format, unsigned char *vin_out_buf, int VIN_Device);
+extern int R_VIN_DeInitialize(int VIN_Device);
 extern int R_Create_Image_List(char * Frame_Folder_Name);
 /* ISP */
-extern int R_ISP_Initialize ();
-extern int R_ISP_Execute ();
-extern int R_ISP_DeInitialize ();
+extern int R_ISP_Initialize();
+extern int R_ISP_Execute();
+extern int R_ISP_DeInitialize();
 /* IMR */
-extern int R_IMR_Init ();
-extern int R_IMR_SetupLDC ();
-extern int R_IMR_SetupResize (void);
-extern int R_IMR_ExecuteLDC (void);
-extern int R_IMR_ExecuteResize (void);
-extern int R_IMR_AllocImageLDC (void);
-extern int R_IMR_AllocImageResize (void);
-extern int init_mmgr (void);
-extern int R_IMR_Deinit (void);
+extern int R_IMR_Init();
+extern int R_IMR_SetupLDC();
+extern int R_IMR_SetupResize(void);
+extern int R_IMR_ExecuteLDC(void);
+extern int R_IMR_ExecuteResize(void);
+extern int R_IMR_AllocImageLDC(void);
+extern int R_IMR_AllocImageResize(void);
+extern int init_mmgr(void);
+extern int R_IMR_Deinit(void);
 extern int imrdrv_wait_ch2();
 extern int imrdrv_wait_ch3();
 /* color conv */
-extern int y_uv2yuyv (char * pdst, char * py, char * puv, int width, int height);
+extern int y_uv2yuyv(char * pdst, char * py, char * puv, int width, int height);
 extern int conv_raw10_yuv8(void *p, char * pdst, int size);
 extern void y_uv2yuyv_8(uint8_t *pdst, uint8_t *py, uint8_t *puv, int width, int height);
 /* VOUT */
-extern int vout_init ();
-extern int execute ();
-extern int64_t vout_deinit ();
+extern int vout_init();
+extern int execute();
+extern int64_t vout_deinit();
 extern int get_syncstatus(e_fc_module_t module, int flow);
 extern int set_syncstatus(e_fc_module_t module, int flow);
 
 /* OSAL */
-extern int deinit_mmgr ();
+extern int deinit_mmgr();
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-int f_opencv_execute ();
+int f_opencv_execute();
 int create_opencv_window();
 void self_destruct_ocv();
 int R_FC_SyncStart(e_fc_module_t module, osal_mutex_handle_t *ptr_mtx, osal_cond_handle_t *ptr_cond, int flow);
@@ -409,12 +409,11 @@ int R_FC_SyncEnd(e_fc_module_t module, osal_mutex_handle_t *ptr_mtx, osal_cond_h
 //new: found in read_image.cpp
 int read_png_frames(void* buffer, const char* filename, int expected_buffer_size);
 int write_image(void* buffer, const char* filename, int height, int width);
-
 typedef struct VideoCaptureWrapper VideoCaptureWrapper;
 VideoCaptureWrapper* open_video_stream(const char* filename);
 int release_video_stream(VideoCaptureWrapper* capture);
 int read_frame(VideoCaptureWrapper* capture, void* frame_data);
-void Conv_RGB2YUYV(unsigned char * bgr, unsigned char * yuyv, int width, int height);
+void Conv_RGB2YUYV(unsigned char* bgr, unsigned char * yuyv, int width, int height);
 
 #ifdef __cplusplus
 }
@@ -425,10 +424,13 @@ extern int mmap_deinit();
 extern int mmap_copy();
 extern int mmap_file;
 extern int mmap_file_in;
-extern unsigned char * mapped_buffer_out;
-extern unsigned char * mapped_buffer_in;
+extern unsigned char* mapped_buffer_out;
+extern unsigned char* mapped_buffer_in;
 extern int in_mmap_init(const char* filename);
 extern int in_mmap_deinit();
+
+extern long color_conversion_millisecond_time;
+extern long screen_grab_millisecond_time;
 
 extern unsigned char sem_seg_array[];
 extern float pe_array_heatmaps[];

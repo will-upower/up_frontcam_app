@@ -112,9 +112,6 @@ int read_frame(VideoCaptureWrapper* capture, void* buffer)
     return SUCCESS;
 }
 
-
-
-
 void Conv_RGB2YUYV(unsigned char * bgr, unsigned char * yuyv, int width, int height)
 {
     int z = 0;

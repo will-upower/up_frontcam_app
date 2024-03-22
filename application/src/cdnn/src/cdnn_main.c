@@ -94,7 +94,7 @@ static int R_FC_SyncStartWrapperAI();
 static int R_FC_SyncEndWrapperAI();
 static void softmax(float *x, int n);
 char * gp_ai_final_buffer;
-void Conv_YUYV2RGB(unsigned char * yuyv, unsigned char * bgr, int width, int height);
+void Conv_YUYV2RGB(unsigned char * bgr, unsigned char * yuyv, int width, int height);
 static unsigned char * get_imr_resize_buffer (int channel);
 /**********************************************************************************************************************
  Function Declarations

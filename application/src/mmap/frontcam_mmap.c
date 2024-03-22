@@ -78,7 +78,7 @@ int mmap_copy() {
     //     return FAILED;
     // }
 
-    memcpy((void*)mapped_buffer_out, gp_vin_out_buffer, size);
+    memcpy((void*)mapped_buffer_out, (void*)gp_vin_out_buffer, size);
 
     // // Release the semaphore
     // if (sem_post(semaphore) < 0) {
@@ -120,7 +120,7 @@ int in_mmap_init(const char* filename)
 
     // printf("Semaphore created and locked\n");
 
-    // // Release the semaphore
+    // Release the semaphore
     // if (sem_post(semaphore) < 0) {
     //     PRINT_ERROR("sem_post failed\n");
     //     return FAILED;
