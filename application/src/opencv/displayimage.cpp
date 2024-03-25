@@ -34,7 +34,7 @@
 /**********************************************************************************************************************
  Includes   <System Includes> , "Project Includes"
  *********************************************************************************************************************/
-#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/stdio.h>
+#include <stdio.h>
 #include <opencv2/opencv.hpp>
 #include "common.h"
 #include "opencv.h"

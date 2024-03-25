@@ -36,8 +36,8 @@
  Includes   <System Includes> , "Project Includes"
  *********************************************************************************************************************/
 #include <stdbool.h>
-#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/stdio.h>
-#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/stdlib.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include "vout_wrapper.h"
 

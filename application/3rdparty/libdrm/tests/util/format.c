@@ -27,9 +27,9 @@
  * IN THE SOFTWARE.
  */
 
-#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/stdint.h>
-#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/stdlib.h>
-#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/string.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 #include <drm_fourcc.h>
 
 #include "common.h"

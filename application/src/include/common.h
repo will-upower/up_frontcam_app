@@ -43,7 +43,7 @@
  Includes   <System Includes> , "Project Includes"
  *********************************************************************************************************************/
 #include <sys/time.h>
-#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/stdio.h>
+#include <stdio.h>
 
 #include "rcar-xos/osal/r_osal.h"
 #include "customize.h"

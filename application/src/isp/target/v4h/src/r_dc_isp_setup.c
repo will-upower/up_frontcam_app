@@ -28,9 +28,9 @@
 *         : 0.3.0   13.02.2023 Removed compiler switch of each module and added enable/disable by option
 *         : 0.4.0   13.03.2023 Added option that specify DMA mode, direct writing CPU mode and Display List mode
 ***********************************************************************************************************************/
-#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/stdio.h>  /* printf , */
-#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/string.h> /* memset, ...*/
-#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/stdlib.h>
+#include <stdio.h>  /* printf , */
+#include <string.h> /* memset, ...*/
+#include <stdlib.h>
 #include <math.h>
 #include <inttypes.h>
 

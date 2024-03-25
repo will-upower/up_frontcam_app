@@ -43,11 +43,11 @@
  Includes   <System Includes> , "Project Includes"
  *********************************************************************************************************************/
 #include <assert.h>
-#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/stdlib.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <inttypes.h>
 #include <unistd.h>
-#include </home/ubuntu/Renesas/rcar-xos/v3.18.0/tools/toolchains/poky/sysroots/aarch64-poky-linux/usr/include/string.h>
+#include <string.h>
 #include <strings.h>
 #include <errno.h>
 #include <poll.h>
