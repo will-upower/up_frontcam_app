@@ -346,7 +346,7 @@ re-run the application\n FC App terminating...\n ");
             break;
         }
         
-        if (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) 
+        if (false == g_customize.screen_capture_enable && false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) 
         {
             printf("[%s]\n", g_customize.Frame_File_Name);
             int in_mmap_ret = in_mmap_init(g_customize.Frame_File_Name);
@@ -853,6 +853,7 @@ int64_t R_Capture_Task()
                 unsigned int capture_width = 896;
                 unsigned int capture_height = 504;
 
+                R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
                 XImage *screen_image = XGetImage(display_handle, X11_window_handle, 4, 70, capture_width, capture_height, AllPlanes, ZPixmap);
 
                 if (screen_image == NULL) {
@@ -888,6 +889,7 @@ int64_t R_Capture_Task()
                     PRINT_ERROR("Screen capture init failed\n");
                     R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);
                 }
+                R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
             }
             R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);
         }
@@ -1383,7 +1385,7 @@ int64_t R_Deinit_Modules()
             return FAILED;
         }
     }
-    if (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable)
+    if (false == g_customize.screen_capture_enable && false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable)
     {
         ret = in_mmap_deinit();
         if (FAILED == ret)
