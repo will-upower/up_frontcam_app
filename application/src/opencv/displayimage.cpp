@@ -40,6 +40,7 @@
 #include "opencv.h"
 #include "customize.h"
 #include "draw_detection.h"
+#include <chrono>
 
 using namespace cv;
 
@@ -312,7 +313,11 @@ int f_opencv_execute()
     }
     else 
     {
+        auto before_process_task = std::chrono::steady_clock::now();
         process_yuv(gp_opencv_in, image,PLN_1);
+        auto after_process_task = std::chrono::steady_clock::now();
+        auto difference_process_task = after_process_task - before_process_task;
+        vout_task_timer = std::chrono::duration_cast<std::chrono::milliseconds>(difference_process_task).count();
     }
 
     //Point text_ai_fps_position(20, 110);
@@ -494,6 +499,9 @@ int f_opencv_execute()
     Point text_ai_fps_position(20, 30);
     Point text_color_conversion_time_position(20, 70);
     Point text_screen_grab_time_position(20, 110);
+    Point text_imr_task_timer(20, 150);
+    Point text_vout_task_timer(20, 190);
+
     if (0 != g_customize.Proc_Time)
     {
         char fps_text[20];
@@ -505,6 +513,10 @@ int f_opencv_execute()
         cv::putText(image, fps_text, text_color_conversion_time_position, 2, font_size, font_Color_others, 2, true);
         sprintf(fps_text,"Screen grab time: %3ums", screen_grab_millisecond_time);
         cv::putText(image, fps_text, text_screen_grab_time_position, 2, font_size, font_Color_others, 2, true);
+        sprintf(fps_text,"imr_task_timer: %3ums", imr_task_timer);
+        cv::putText(image, fps_text, text_imr_task_timer, 2, font_size, font_Color_others, 2, true);
+        sprintf(fps_text,"vout_task_timer: %3ums", vout_task_timer);
+        cv::putText(image, fps_text, text_vout_task_timer, 2, font_size, font_Color_others, 2, true);
     }
     memcpy((void *)gp_opencv_buffer, (void *)image.data, g_frame_width * g_frame_height * g_vout_pix_fmt);
     if (0 == g_customize.VOUT_Enable) 
