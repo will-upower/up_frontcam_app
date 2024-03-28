@@ -86,6 +86,10 @@ add_definitions("-DRCAR_SOC_${RCAR_SOC_CLASS}${RCAR_SOC_GEN}${RCAR_SOC_LEVEL}${R
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS} )
 
+# OpenCL required
+# find_package(OpenCL REQUIRED)
+# include_directories(${OpenCL_INCLUDE_DIRS})
+
 #----------------------------------------------------------------------------------------------------------------------
 # Source files
 #----------------------------------------------------------------------------------------------------------------------
@@ -152,6 +156,7 @@ set(header
     ${CMAKE_CURRENT_SOURCE_DIR}/application/3rdparty/libdrm/tests/os/vout/vout_wrapper.h
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/customize/include/customize.h
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/mmap/include/frontcam_mmap.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/up_api/up_api.h
 )
 
 if(RCAR_SOC STREQUAL "v4h2")
@@ -187,6 +192,7 @@ set(include_dir
     ${SDKROOT}/sysroots/aarch64-poky-linux/usr/src/debug/libdrm/2.4.101-r0/libdrm-2.4.101
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/customize/include/
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/mmap/include/
+    ${CMAKE_CURRENT_SOURCE_DIR}/up_api/
 )
 
 if(RCAR_SOC STREQUAL "v4h2")
@@ -307,6 +313,10 @@ set(link_dir
     # Additional Link Directories for 3rd party libraries
     #${CMAKE_CURRENT_SOURCE_DIR}/../refapp_common_fwk/build_linux_dev_board/
 )
+
+# set(link_dir 
+#    ${OpenCL_LIBRARIES}
+# )
 
 #----------------------------------------------------------------------------------------------------------------------
 # Set document file list

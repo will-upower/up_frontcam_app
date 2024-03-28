@@ -349,6 +349,7 @@ extern uint8_t model_num;
 extern uint32_t g_hs_width;
 extern uint32_t g_hs_height;
 
+
 extern void Conv_YUYV2RGB(unsigned char * yuyv, unsigned char * bgr, int width, int height);
 extern int g_fps[5];
 extern void fpsCount(int dev);
