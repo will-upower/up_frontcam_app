@@ -96,9 +96,7 @@ static int R_FC_SyncStartWrapperAI();
 static int R_FC_SyncEndWrapperAI();
 static void softmax(float *x, int n);
 char * gp_ai_final_buffer;
-void Conv_YUYV2RGB(unsigned char * bgr, unsigned char * yuyv, int width, int height);
-void Conv_YUYV2RGB(unsigned char * yuyv, unsigned char * bgr, int width, int height);
-// void Conv_YUYV2RGB_OpenCL(unsigned char *yuyv, unsigned char *bgr, int width, int height);
+void Conv_YUYV2RGB(unsigned char * yuyv, unsigned char * rgb, int width, int height);
 static unsigned char * get_imr_resize_buffer (int channel);
 /**********************************************************************************************************************
  Function Declarations
@@ -864,7 +862,7 @@ void inferencePostprocess_pe(signed char * data)
         }
     }
 
-
+    
 
 
     e_osal_return_t osal_ret = R_OSAL_MqSendForTimePeriod(g_mq_handle_aiactivity, TIMEOUT_MS, (void *)&det_que, 
@@ -993,25 +991,23 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
                 }
                 else if (g_customize.POSE_EST_Enable == 1)
                 {
-
-                        if ((g_customize.SEM_SEG_Enable == 0) && (g_customize.OBJ_DET_Enable == 0))
-                        {   
-                            R_FC_SyncStart(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
-                        }
-                        // Conv_YUYV2RGB(get_imr_resize_buffer(g_pose_est_map_ch), gp_ai_rgb_buffer, POSE_EST_IMG_WIDTH, POSE_EST_IMG_HEIGHT);
-                        Conv_YUYV2RGB_OpenCL(get_imr_resize_buffer(g_pose_est_map_ch), gp_ai_rgb_buffer, POSE_EST_IMG_WIDTH, POSE_EST_IMG_HEIGHT);
-                        inferencePreprocess_pe();
-                        if (g_customize.SEM_SEG_Enable == 1)
-                        {
-                            R_FC_Pre_cnt = 0;
-                        }
-                        else if (g_customize.SEM_SEG_Enable == 0 && g_customize.OBJ_DET_Enable == 1)
-                        {
-                            R_FC_Pre_cnt = 1;
-                        }
-
-                        R_FC_SyncEnd(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
+                    if ((g_customize.SEM_SEG_Enable == 0) && (g_customize.OBJ_DET_Enable == 0))
+                    {   
+                        R_FC_SyncStart(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
                     }
+                    // Conv_YUYV2RGB(get_imr_resize_buffer(g_pose_est_map_ch), gp_ai_rgb_buffer, POSE_EST_IMG_WIDTH, POSE_EST_IMG_HEIGHT);
+                    Conv_YUYV2RGB_OpenCL(get_imr_resize_buffer(g_pose_est_map_ch), gp_ai_rgb_buffer, POSE_EST_IMG_WIDTH, POSE_EST_IMG_HEIGHT);
+                    inferencePreprocess_pe();
+                    if (g_customize.SEM_SEG_Enable == 1)
+                    {
+                        R_FC_Pre_cnt = 0;
+                    }
+                    else if (g_customize.SEM_SEG_Enable == 0 && g_customize.OBJ_DET_Enable == 1)
+                    {
+                        R_FC_Pre_cnt = 1;
+                    }
+
+                    R_FC_SyncEnd(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
                     inferencePreprocess_pe(); //inference
                     if (g_customize.SEM_SEG_Enable == 1)
                     {
@@ -1024,13 +1020,11 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
 
                     R_FC_SyncEnd(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
                 }
-                
                 if (0 != g_customize.Proc_Time)                           /* If processing time is enabled */
                 {
                     fpsCount(1);                                           /* Calculate inference FPS */
                 }
                 break;
-
             case eInfPostProcess:
                 if (R_FC_Post_cnt ==0 && g_customize.SEM_SEG_Enable == 1)
                 {

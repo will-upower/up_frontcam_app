@@ -782,14 +782,7 @@ int64_t R_Capture_Task()
     }
     
     int64_t read_image_size, png_size;
-    if (false == g_customize.Image_Folder_RGB2YUV_Enable && true == g_customize.Image_Folder_Enable) 
-    {
-        png_size = g_frame_height * g_frame_width * BPP_RGB;
-    }
-    else
-    {
-        png_size = g_frame_height * g_frame_width * BPP_YUV;
-    }
+    png_size = g_frame_height * g_frame_width * BPP_YUV;
     while (!g_is_thread_exit)
     {
         
@@ -817,11 +810,6 @@ int64_t R_Capture_Task()
                 R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);       
                 ret = read_frame(fcVideoCaptureWrapper, gp_vin_out_buffer);
                 R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
-                /* if (FAILED == ret)
-                {
-                    g_is_thread_exit = true;
-                    return FAILED;
-                } */
             }
             else if (true == g_customize.Image_Folder_Enable)       /* Image read from folder enabled */
             {
@@ -853,11 +841,10 @@ int64_t R_Capture_Task()
                 R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
             }
             else if (true == g_customize.screen_capture_enable && false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) {
-                long long before_screen_grab = currentTimeMillis();
                 unsigned int capture_width = 896;
                 unsigned int capture_height = 504;
 
-                //R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
+                long long before_screen_grab = currentTimeMillis();
                 XImage *screen_image = XGetImage(display_handle, X11_window_handle, 4, 70, capture_width, capture_height, AllPlanes, ZPixmap);
 
                 if (screen_image == NULL) {
@@ -881,10 +868,10 @@ int64_t R_Capture_Task()
                     }
 
                     // save_frame_as_bmp("bitmap.bmp", bgr_out, 896, 504);
-
+                    R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
                     Conv_RGB2YUYV(bgr_out, gp_vin_out_buffer, g_frame_width, g_frame_height);
-
                     free(bgr_out);
+                    R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
                     long long after_time_cc = currentTimeMillis();
                 
                     color_conversion_millisecond_time = after_time_cc - before_time_cc;
@@ -893,7 +880,7 @@ int64_t R_Capture_Task()
                     PRINT_ERROR("Screen capture init failed\n");
                     R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);
                 }
-                //R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
+                
             }
             R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);
         }
@@ -951,11 +938,11 @@ int64_t R_Capture_Task()
 int64_t R_IMR_Task()
 {
     int ret;
-    long long before_imr_task = currentTimeMillis();
+    
     R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_50MS_SLEEP);
     while (!g_is_thread_exit)
     {
-
+        long long before_imr_task = currentTimeMillis();
         if (true == g_customize.IMR_LDC)
         {
             ret = R_IMR_ExecuteLDC();
@@ -977,9 +964,9 @@ int64_t R_IMR_Task()
                 return FAILED;
             }
         }
+        long long after_imr_task = currentTimeMillis();
+        imr_task_timer = after_imr_task - before_imr_task;
     }
-    long long after_imr_task = currentTimeMillis();
-    imr_task_timer = after_imr_task - before_imr_task;
     return SUCCESS;
 }
 /**********************************************************************************************************************
@@ -1133,12 +1120,9 @@ int64_t R_Inference_Task()
     static int counter = 0;
     static int start_time=0;
     DEBUG_PRINT("running R_Inference_Task \n");
-    long long before_inference_task = currentTimeMillis();
 #if(CDNN)
     R_CDNN_Execute();
 #endif
-    long long after_inference_task = currentTimeMillis();
-    inference_task_timer = after_inference_task - before_inference_task;
     return 0;
 }
 /**********************************************************************************************************************
@@ -2081,10 +2065,6 @@ static int64_t Vin_Buffer_Alloc()
     else if (Y10 == g_customize.VIN_Capture_Format)                 /* Y10 capture format */
     {
         gp_vin_out_buffer = (char *)malloc(g_frame_width * g_frame_height * BPP_Y10); /* vin buffer allocation */
-    }
-    else if (false == g_customize.Image_Folder_RGB2YUV_Enable && true == g_customize.Image_Folder_Enable)
-    {
-        gp_vin_out_buffer = (char *)malloc(g_frame_width * g_frame_height * BPP_RGB); 
     }
     else                                                            /* vin buffer allocation for other formats */
     {
