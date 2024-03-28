@@ -753,10 +753,10 @@ void inferencePostprocess_od(signed char * data)
                 final_array[row][col][b][2] *= (float) (OBJ_WIDTH / WIDTH_ADJUST_OBJ);
                 final_array[row][col][b][3] *= (float) (OBJ_HEIGHT / HEIGHT_ADJUST_OBJ);
 
-                final_array[row][col][b][0]  = round(final_array[row][col][b][0]  * g_customize.Frame_Width);
-                final_array[row][col][b][1]  = round(final_array[row][col][b][1]  * g_customize.Frame_Height);
-                final_array[row][col][b][2]  = round(final_array[row][col][b][2]  * g_customize.Frame_Width);
-                final_array[row][col][b][3]  = round(final_array[row][col][b][3]  * g_customize.Frame_Height);
+                final_array[row][col][b][0]  = round(final_array[row][col][b][0]  * g_frame_width);
+                final_array[row][col][b][1]  = round(final_array[row][col][b][1]  * g_frame_height);
+                final_array[row][col][b][2]  = round(final_array[row][col][b][2]  * g_frame_width);
+                final_array[row][col][b][3]  = round(final_array[row][col][b][3]  * g_frame_height);
 
                 for(int j = 0; j < (NUM_CLASS + 5); j++)
                 { 
@@ -908,9 +908,16 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
     do
     {
         switch(inf_work)
-            {
-                case eInfPreProcess:
-                    if (R_FC_Pre_cnt == 0 && g_customize.SEM_SEG_Enable == 1)
+        {
+            case eInfPreProcess:
+                if (R_FC_Pre_cnt == 0 && g_customize.SEM_SEG_Enable == 1)
+                {
+                    R_FC_SyncStart(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);   
+                    if (false == g_customize.Image_Folder_RGB2YUV_Enable && true == g_customize.Image_Folder_Enable) 
+                    {
+                        gp_ai_rgb_buffer = get_imr_resize_buffer(g_sem_seg_map_ch);
+                    } 
+                    else 
                     {
                         R_FC_SyncStart(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);   
                         // Conv_YUYV2RGB(get_imr_resize_buffer(g_sem_seg_map_ch), gp_ai_rgb_buffer, g_customize.IMR_Resize_Width_Ch_0, 
@@ -927,7 +934,27 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
                             R_FC_SyncEnd(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
                         }
                     }
-                    else if (R_FC_Pre_cnt == 1 && g_customize.OBJ_DET_Enable == 1)
+                    inferencePreprocess_ss(); // inference
+                    if (g_customize.OBJ_DET_Enable == 1 || g_customize.POSE_EST_Enable == 1)
+                    {
+                        R_FC_Pre_cnt = 1;
+                    }
+                    else
+                    {
+                        R_FC_SyncEnd(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
+                    }
+                }
+                else if (R_FC_Pre_cnt == 1 && g_customize.OBJ_DET_Enable == 1)
+                {
+                    if (g_customize.SEM_SEG_Enable == 0)
+                    {
+                        R_FC_SyncStart(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
+                    }
+                    if (false == g_customize.Image_Folder_RGB2YUV_Enable && true == g_customize.Image_Folder_Enable) 
+                    {
+                        gp_ai_rgb_buffer = get_imr_resize_buffer(g_obj_det_map_ch);
+                    } 
+                    else 
                     {
                         if (g_customize.SEM_SEG_Enable == 0)
                         {
@@ -949,8 +976,22 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
                             R_FC_SyncEnd(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
                         }
                     }
-                    else if (g_customize.POSE_EST_Enable == 1)
+                    inferencePreprocess_od(); // inference
+                    if (g_customize.SEM_SEG_Enable == 1 && g_customize.POSE_EST_Enable == 0)
                     {
+                        R_FC_Pre_cnt = 0;
+                    }
+                    else if(g_customize.POSE_EST_Enable == 1)
+                    {
+                        R_FC_Pre_cnt = 2;
+                    }
+                    if (g_customize.POSE_EST_Enable == 0)
+                    {
+                        R_FC_SyncEnd(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
+                    }
+                }
+                else if (g_customize.POSE_EST_Enable == 1)
+                {
 
                         if ((g_customize.SEM_SEG_Enable == 0) && (g_customize.OBJ_DET_Enable == 0))
                         {   
@@ -970,54 +1011,66 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
 
                         R_FC_SyncEnd(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
                     }
+                    inferencePreprocess_pe(); //inference
+                    if (g_customize.SEM_SEG_Enable == 1)
+                    {
+                        R_FC_Pre_cnt = 0;
+                    }
+                    else if (g_customize.SEM_SEG_Enable == 0 && g_customize.OBJ_DET_Enable == 1)
+                    {
+                        R_FC_Pre_cnt = 1;
+                    }
+
+                    R_FC_SyncEnd(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
+                }
+                
+                if (0 != g_customize.Proc_Time)                           /* If processing time is enabled */
+                {
+                    fpsCount(1);                                           /* Calculate inference FPS */
+                }
+                break;
+
+            case eInfPostProcess:
+                if (R_FC_Post_cnt ==0 && g_customize.SEM_SEG_Enable == 1)
+                {
+                    inferencePostprocess_ss((signed char*)data);
+                    if (g_customize.OBJ_DET_Enable == 1 || g_customize.POSE_EST_Enable == 1)
+                    {
+                        R_FC_Post_cnt = 1;
+                    }
+                }
+                else if (R_FC_Post_cnt ==1 && g_customize.OBJ_DET_Enable == 1)
+                {
+                    inferencePostprocess_od((signed char*)data);
+                    if (g_customize.SEM_SEG_Enable == 1 && g_customize.POSE_EST_Enable == 0)
+                    {
+                        R_FC_Post_cnt = 0;
+                    }
+                    else if(g_customize.POSE_EST_Enable == 1)
+                    {
+
+                        R_FC_Post_cnt = 2;
+                    }
                     
-                    if (0 != g_customize.Proc_Time)                           /* If processing time is enabled */
+                }
+                else if (g_customize.POSE_EST_Enable == 1)
+                {
+                    inferencePostprocess_pe((signed char*)data);
+                    if (g_customize.SEM_SEG_Enable == 1)
                     {
-                        fpsCount(1);                                           /* Calculate inference FPS */
+                        R_FC_Post_cnt = 0;
                     }
-                    break;
+                    else if(g_customize.SEM_SEG_Enable == 0 && g_customize.OBJ_DET_Enable == 1 )
+                    {
+                        R_FC_Post_cnt = 1;
+                    }
+                }
+                break;
 
-                case eInfPostProcess:
-                    if (R_FC_Post_cnt ==0 && g_customize.SEM_SEG_Enable == 1)
-                    {
-                        inferencePostprocess_ss((signed char*)data);
-                        if (g_customize.OBJ_DET_Enable == 1 || g_customize.POSE_EST_Enable == 1)
-                        {
-                            R_FC_Post_cnt = 1;
-                        }
-                    }
-                    else if (R_FC_Post_cnt ==1 && g_customize.OBJ_DET_Enable == 1)
-                    {
-                        inferencePostprocess_od((signed char*)data);
-                        if (g_customize.SEM_SEG_Enable == 1 && g_customize.POSE_EST_Enable == 0)
-                        {
-                            R_FC_Post_cnt = 0;
-                        }
-                        else if(g_customize.POSE_EST_Enable == 1)
-                        {
-
-                            R_FC_Post_cnt = 2;
-                        }
-                        
-                    }
-                    else if (g_customize.POSE_EST_Enable == 1)
-                    {
-                        inferencePostprocess_pe((signed char*)data);
-                        if (g_customize.SEM_SEG_Enable == 1)
-                        {
-                            R_FC_Post_cnt = 0;
-                        }
-                        else if(g_customize.SEM_SEG_Enable == 0 && g_customize.OBJ_DET_Enable == 1 )
-                        {
-                            R_FC_Post_cnt = 1;
-                        }
-                    }
-                    break;
-
-                default:
-                    printf("\r\n Wrong inference action");
-                    retVal = false;
-                    break;
+            default:
+                printf("\r\n Wrong inference action");
+                retVal = false;
+                break;
         }
     } while (0);
 

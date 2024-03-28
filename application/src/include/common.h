@@ -349,8 +349,8 @@ extern uint8_t model_num;
 extern uint32_t g_hs_width;
 extern uint32_t g_hs_height;
 
-extern void Conv_YUYV2RGB (unsigned char * yuyv, unsigned char * bgr, int width, int height);
-extern void Conv_YUYV2RGB_OpenCL(unsigned char *yuyv, unsigned char *bgr, int width, int height);
+
+extern void Conv_YUYV2RGB(unsigned char * yuyv, unsigned char * bgr, int width, int height);
 extern int g_fps[5];
 extern void fpsCount(int dev);
 
@@ -407,6 +407,15 @@ void self_destruct_ocv();
 int R_FC_SyncStart(e_fc_module_t module, osal_mutex_handle_t *ptr_mtx, osal_cond_handle_t *ptr_cond, int flow);
 int R_FC_SyncEnd(e_fc_module_t module, osal_mutex_handle_t *ptr_mtx, osal_cond_handle_t *ptr_cond, int flow);
 
+//new: found in read_image.cpp
+int read_png_frames(void* buffer, const char* filename, int expected_buffer_size);
+int write_image(void* buffer, const char* filename, int height, int width);
+
+typedef struct VideoCaptureWrapper VideoCaptureWrapper;
+VideoCaptureWrapper* openVideoStream(const char* filename);
+int releaseVideoStream(VideoCaptureWrapper* capture);
+int readFrame(VideoCaptureWrapper* capture, void* frame_data);
+
 #ifdef __cplusplus
 }
 #endif
@@ -417,6 +426,7 @@ extern int mmap_copy();
 extern int mmap_file;
 extern unsigned char * mapped_buffer_out;
 
+
 extern unsigned char sem_seg_array[];
 extern float pe_array_heatmaps[];
 extern float pe_array_pafs[];
@@ -425,5 +435,7 @@ extern uint32_t g_output_stride;
 extern uint32_t g_output_buf_hwaddr_uv; 
 
 extern bool g_is_thread_exit;
+
+extern void Conv_RGB2YUYV(unsigned char * bgr, unsigned char * yuyv, int width, int height);
 
 #endif /* COMMON_H_ */

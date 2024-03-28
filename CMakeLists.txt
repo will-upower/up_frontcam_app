@@ -106,7 +106,9 @@ set(source
     ${CMAKE_CURRENT_SOURCE_DIR}/application/3rdparty/libdrm/tests/os/vout/Linux/vout_display_linux.c
     ${CMAKE_CURRENT_SOURCE_DIR}/application/3rdparty/libdrm/tests/os/vout/vout_wrapper.c
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/customize/frontcam_customize.c
+    ### new
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/mmap/frontcam_mmap.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/application/src/opencv/read_image.cpp
 )
 
 if(RCAR_SOC STREQUAL "v4h2")
