@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <X11/Xlib.h>
+#include <X11/Xatom.h>
 
 #include "common.h"
 #include "screen_snip_out.h"
@@ -133,5 +134,37 @@ Conv_XImage2BGR(unsigned char *bgr_out, XImage *image, int width, int height)
         bgr_out[out_index + 0] = image->data[in_index + 2];
         bgr_out[out_index + 1] = image->data[in_index + 1];
         bgr_out[out_index + 2] = image->data[in_index + 0];
+    }
+}
+
+void find_window_by_pid(Display* display, Window window, Atom pidAtom, unsigned long pid, Window* outWindow) {
+    Atom actualType;
+    int actualFormat;
+    unsigned long i, numItems, bytesAfter;
+    unsigned char* propPID = NULL;
+    Window* children;
+    unsigned int numChildren;
+
+    if (XGetWindowProperty(display, window, pidAtom, 0, 1, False, XA_CARDINAL,
+                           &actualType, &actualFormat, &numItems, &bytesAfter, &propPID) == Success) {
+        if (propPID != NULL) {
+            if (pid == *((unsigned long*)propPID)) {
+                *outWindow = window; // Found the window
+                XFree(propPID);
+                return;
+            }
+            XFree(propPID);
+        }
+    }
+
+    // This window didn't match, check its children
+    if (XQueryTree(display, window, &window, &window, &children, &numChildren)) {
+        for (i = 0; i < numChildren; i++) {
+            find_window_by_pid(display, children[i], pidAtom, pid, outWindow);
+            if (*outWindow) { // If found, no need to continue searching
+                break;
+            }
+        }
+        if (children) XFree(children);
     }
 }

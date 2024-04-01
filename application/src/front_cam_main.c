@@ -179,6 +179,8 @@ long screen_grab_millisecond_time;
 // Screen capture
 Display *display_handle;
 Window X11_window_handle;
+int screen_capture_top_left_x = 4;
+int screen_capture_top_left_y = 70;
 
 /**********************************************************************************************************************
  Private (static) variables and functions
@@ -260,7 +262,7 @@ int main(int argc, char * argv[])
         g_customize.Image_Video_Width = 512;
         g_customize.mmap_in_width = 896;
         g_customize.mmap_in_height = 504;
-        g_customize.screen_capture_enable = 1;
+        
         ret = R_CustomizeLoad(&g_customize, FC_CustomizeFile);
         if (FAILED == ret)
         {
@@ -468,12 +470,36 @@ re-run the application\n FC App terminating...\n ");
                 PRINT_ERROR("Failed to init screen capture\n");
                 break;
             }
+
+            unsigned long target_pid = g_customize.process_id;
+            Atom pidAtom = XInternAtom(display_handle, "_NET_WM_PID", True);
+            Window root_window = XDefaultRootWindow(display_handle);
+            Window foundWindow;
+
+            find_window_by_pid(display_handle, root_window, pidAtom, target_pid, &foundWindow);
+
+            if (foundWindow) {
+                printf("Found window: %lu\n", (unsigned long)foundWindow);
+            }
+            else {
+                printf("ERROR: no window found for PID: %lu\n", target_pid);
+            }
+
+            XWindowAttributes attributes;
+            if (XGetWindowAttributes(display_handle, foundWindow, &attributes)) {
+                screen_capture_top_left_x = attributes.x;
+                screen_capture_top_left_y = attributes.y;
+                printf("Window coordinates: (%d, %d)\n", screen_capture_top_left_x, screen_capture_top_left_y);
+                // Note: These are relative to the window's parent. For screen coordinates, use XTranslateCoordinates.
+            }
+
+
         }
 
         if (true == g_customize.Image_Folder_Enable) /* Configure message queue when image read from folder enabled */
         {
             osal_ret = R_OSAL_MqInitializeMqConfigSt(&g_mq_config_imgread);
-            
+
             if (OSAL_RETURN_OK != osal_ret)
             {
                 R_Deinit_Modules();
@@ -854,7 +880,7 @@ int64_t R_Capture_Task()
                 unsigned int capture_height = 504;
 
                 R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
-                XImage *screen_image = XGetImage(display_handle, X11_window_handle, 4, 70, capture_width, capture_height, AllPlanes, ZPixmap);
+                XImage *screen_image = XGetImage(display_handle, X11_window_handle, screen_capture_top_left_x, screen_capture_top_left_y, capture_width, capture_height, AllPlanes, ZPixmap);
 
                 if (screen_image == NULL) {
                     PRINT_ERROR("Cannot capture screen\n");

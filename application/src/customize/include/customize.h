@@ -141,6 +141,8 @@ typedef struct
     int mmap_in_height;
     int mmap_in_width;
     int screen_capture_enable;
+    int process_coordinate_lookup_enable;
+    int process_id;
 } st_customize_t;
 
 /**********************************************************************************************************************
