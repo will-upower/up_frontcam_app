@@ -432,6 +432,10 @@ extern int in_mmap_deinit();
 extern long color_conversion_millisecond_time;
 extern long screen_grab_millisecond_time;
 
+extern long imr_task_timer;
+extern long inference_task_timer;
+extern long vout_task_timer;   
+
 extern unsigned char sem_seg_array[];
 extern float pe_array_heatmaps[];
 extern float pe_array_pafs[];

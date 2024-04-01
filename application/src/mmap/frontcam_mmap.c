@@ -72,19 +72,7 @@ int mmap_copy() {
         return FAILED; // 1
     }
 
-    // semaphore = sem_open(sem_name, O_CREAT, 0644, 1);
-    // if (semaphore == SEM_FAILED) {
-    //     PRINT_ERROR("sem_open failed\n");
-    //     return FAILED;
-    // }
-
     memcpy((void*)mapped_buffer_out, (void*)gp_vin_out_buffer, size);
-
-    // // Release the semaphore
-    // if (sem_post(semaphore) < 0) {
-    //     PRINT_ERROR("sem_post failed\n");
-    //     return FAILED;
-    // }
 
     return SUCCESS; // 0
 }
@@ -107,27 +95,6 @@ int in_mmap_init(const char* filename)
         return FAILED;
     }
 
-    // semaphore = sem_open(sem_name, O_CREAT, 0644, 1);
-    // if (semaphore == SEM_FAILED) {
-    //     PRINT_ERROR("sem_open failed\n");
-    //     return FAILED;
-    // }
-
-    // if (sem_wait(semaphore) < 0) {
-    //     PRINT_ERROR("sem_wait failed\n");
-    //     return FAILED;
-    // }
-
-    // printf("Semaphore created and locked\n");
-
-    // Release the semaphore
-    // if (sem_post(semaphore) < 0) {
-    //     PRINT_ERROR("sem_post failed\n");
-    //     return FAILED;
-    // }
-
-    // printf("Semaphore unlocked\n");
-
     return SUCCESS;
 }
 
@@ -139,12 +106,6 @@ int in_mmap_deinit() {
         return FAILED;
     }
     close(mmap_file_in);
-
-    // // Close semaphore
-    // if (sem_close(semaphore) < 0) {
-    //     PRINT_ERROR("sem_close failed\n");
-    //     return FAILED;
-    // }
-
+    
     return SUCCESS;
 }

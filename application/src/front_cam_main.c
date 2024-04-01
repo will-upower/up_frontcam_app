@@ -175,6 +175,9 @@ unsigned char * mapped_buffer_in = NULL;
 
 long color_conversion_millisecond_time;
 long screen_grab_millisecond_time;
+long imr_task_timer;
+long inference_task_timer;
+long vout_task_timer;
 
 // Screen capture
 Display *display_handle;
@@ -879,8 +882,8 @@ int64_t R_Capture_Task()
                 unsigned int capture_width = 896;
                 unsigned int capture_height = 504;
 
-                R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
-                XImage *screen_image = XGetImage(display_handle, X11_window_handle, screen_capture_top_left_x, screen_capture_top_left_y, capture_width, capture_height, AllPlanes, ZPixmap);
+                //R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
+                XImage *screen_image = XGetImage(display_handle, X11_window_handle, 4, 70, capture_width, capture_height, AllPlanes, ZPixmap);
 
                 if (screen_image == NULL) {
                     PRINT_ERROR("Cannot capture screen\n");
@@ -915,7 +918,7 @@ int64_t R_Capture_Task()
                     PRINT_ERROR("Screen capture init failed\n");
                     R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);
                 }
-                R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
+                //R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
             }
             R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);
         }
@@ -973,7 +976,7 @@ int64_t R_Capture_Task()
 int64_t R_IMR_Task()
 {
     int ret;
-
+    long long before_imr_task = currentTimeMillis();
     R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_50MS_SLEEP);
     while (!g_is_thread_exit)
     {
@@ -1000,6 +1003,8 @@ int64_t R_IMR_Task()
             }
         }
     }
+    long long after_imr_task = currentTimeMillis();
+    imr_task_timer = after_imr_task - before_imr_task;
     return SUCCESS;
 }
 /**********************************************************************************************************************
@@ -1074,8 +1079,10 @@ int64_t R_VOUT_Task()
     bool is_queue_empty = false;
  
     R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_50MS_SLEEP);
+    
     while (!g_is_thread_exit)
     {   
+        
         if (g_customize.mmap_out_enable) 
         {
             ret = mmap_copy();
@@ -1085,7 +1092,10 @@ int64_t R_VOUT_Task()
             g_is_thread_exit = true;
             return FAILED;
         }
+        //long long before_vout_task = currentTimeMillis();
         ret = f_opencv_execute();                   /* OpenCV execute */
+        //long long after_vout_task = currentTimeMillis();
+        //vout_task_timer = after_vout_task - before_vout_task;
         if (FAILED == ret)
         {
             g_is_thread_exit = true;
@@ -1118,7 +1128,7 @@ int64_t R_VOUT_Task()
                 PRINT_ERROR("receiving message to image read MQ was failed, osal_ret = %d\n", osal_ret);
             }
         }
-
+        
     }
 
     is_queue_empty = false;
@@ -1148,9 +1158,12 @@ int64_t R_Inference_Task()
     static int counter = 0;
     static int start_time=0;
     DEBUG_PRINT("running R_Inference_Task \n");
+    long long before_inference_task = currentTimeMillis();
 #if(CDNN)
     R_CDNN_Execute();
 #endif
+    long long after_inference_task = currentTimeMillis();
+    inference_task_timer = after_inference_task - before_inference_task;
     return 0;
 }
 /**********************************************************************************************************************
