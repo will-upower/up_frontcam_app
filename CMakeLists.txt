@@ -86,6 +86,10 @@ add_definitions("-DRCAR_SOC_${RCAR_SOC_CLASS}${RCAR_SOC_GEN}${RCAR_SOC_LEVEL}${R
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS} )
 
+# OpenCL required
+# find_package(OpenCL REQUIRED)
+# include_directories(${OpenCL_INCLUDE_DIRS})
+
 #----------------------------------------------------------------------------------------------------------------------
 # Source files
 #----------------------------------------------------------------------------------------------------------------------
@@ -156,6 +160,7 @@ set(header
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/mmap/include/frontcam_mmap.h
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/screen_snip/screen_snip_out.h
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/utils/timers/timers.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/up_api/up_api.h
 )
 
 if(RCAR_SOC STREQUAL "v4h2")
@@ -192,6 +197,7 @@ set(include_dir
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/customize/include/
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src/mmap/include/
     ${CMAKE_CURRENT_SOURCE_DIR}/application/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/up_api/
 )
 
 if(RCAR_SOC STREQUAL "v4h2")
@@ -313,6 +319,10 @@ set(link_dir
     # Additional Link Directories for 3rd party libraries
     #${CMAKE_CURRENT_SOURCE_DIR}/../refapp_common_fwk/build_linux_dev_board/
 )
+
+# set(link_dir 
+#    ${OpenCL_LIBRARIES}
+# )
 
 #----------------------------------------------------------------------------------------------------------------------
 # Set document file list
