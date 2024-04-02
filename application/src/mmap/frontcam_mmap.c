@@ -12,8 +12,7 @@
 // static const char *sem_name = "/global_semaphore";
 // static sem_t *semaphore;
 
-int mmap_image_init()
-{
+int mmap_image_init() {
     //gp_vin_out_buffer
     //g_customize, g_frame_width, g_frame_height, BPP_*, get_buffer_size() are all defined in the common.h or mmap.h file
     size_t size = get_buffer_size();
@@ -77,8 +76,7 @@ int mmap_copy() {
     return SUCCESS; // 0
 }
 
-int in_mmap_init(const char* filename) 
-{
+int in_mmap_init(const char* filename) {
     size_t size = get_buffer_size();
 
     // Open the file
@@ -97,7 +95,6 @@ int in_mmap_init(const char* filename)
 
     return SUCCESS;
 }
-
 
 int in_mmap_deinit() {
     size_t size = get_buffer_size();
