@@ -862,9 +862,6 @@ void inferencePostprocess_pe(signed char * data)
         }
     }
 
-
-
-
     e_osal_return_t osal_ret = R_OSAL_MqSendForTimePeriod(g_mq_handle_aiactivity, TIMEOUT_MS, (void *)&det_que, 
                                                             g_mq_config_aiactivity.msg_size);
     if(OSAL_RETURN_OK != osal_ret)
