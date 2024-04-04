@@ -444,14 +444,22 @@ int process_yuv(void *inImage, Mat &outimg, int plane) {
         }
     }
 #endif
-
-    if(plane == PLN_1)
+    if (g_customize.CDNN_Enable) 
     {
-        draw_map(src, 1);
-        draw_detection(src);
-        draw_pose(src);
+        if (g_customize.SEM_SEG_Enable) 
+        {
+            draw_map(src, 1);
+        }
+        if (g_customize.OBJ_DET_Enable)
+        {
+            draw_detection(src);
+        }
+        if (g_customize.POSE_EST_Enable)
+        {
+            draw_pose(src);
+        }
     }
-    cv::imwrite("src.png", src);
+    //cv::imwrite("src.png", src);
     outimg = src;
 
     return 0;
