@@ -437,6 +437,15 @@ extern long imr_task_timer;
 extern long inference_task_timer;
 extern long vout_task_timer;   
 
+extern long long t1; //start of the vin call
+extern long long t2; //start of the imr
+extern long long t4; //start of the vout call
+
+extern long long t1_0; //start of the vin call
+extern long long t2_0; //start of the imr
+extern long long t4_0; //start of the vout call
+
+
 extern unsigned char sem_seg_array[];
 extern float pe_array_heatmaps[];
 extern float pe_array_pafs[];

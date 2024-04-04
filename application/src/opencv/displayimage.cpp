@@ -498,9 +498,9 @@ int f_opencv_execute()
     if (0 != g_customize.Proc_Time)
     {
         char fps_text[20];
-        // sprintf(fps_text, "Display FPS: %3u.%1u", g_fps[0] / 10, g_fps[0] % 10);
-        // cv::putText(image, fps_text, text_fps_position, 2, font_size, font_Color_others, 2, true);
-        sprintf(fps_text,"Inference frame time: %2.1fms", 1000.0f / g_fps[1]);
+        sprintf(fps_text, "Display FPS: %3u.%1u", g_fps[0] / 10, g_fps[0] % 10);
+        cv::putText(image, fps_text, text_ai_fps_position, 2, font_size, font_Color_others, 2, true);
+        /* sprintf(fps_text,"Inference frame time: %2.1fms", 1000.0f / g_fps[1]);
         cv::putText(image, fps_text, text_ai_fps_position, 2, font_size, font_Color_others, 2, true);
         sprintf(fps_text,"Color conversion time: %3ums", color_conversion_millisecond_time);
         cv::putText(image, fps_text, text_color_conversion_time_position, 2, font_size, font_Color_others, 2, true);
@@ -509,7 +509,18 @@ int f_opencv_execute()
         sprintf(fps_text,"imr_task_timer: %3ums", imr_task_timer);
         cv::putText(image, fps_text, text_imr_task_timer, 2, font_size, font_Color_others, 2, true);
         sprintf(fps_text,"vout_task_timer: %3ums", vout_task_timer);
+        cv::putText(image, fps_text, text_vout_task_timer, 2, font_size, font_Color_others, 2, true); */
+        sprintf(fps_text,"T1: %ld ms", t1 - t1_0);
+        cv::putText(image, fps_text, text_color_conversion_time_position, 2, font_size, font_Color_others, 2, true);
+        sprintf(fps_text,"T2: %ld ms", t2 - t2_0);
+        cv::putText(image, fps_text, text_screen_grab_time_position, 2, font_size, font_Color_others, 2, true);
+        sprintf(fps_text,"vout_task_timer: %ld ms", vout_task_timer);
+        cv::putText(image, fps_text, text_imr_task_timer, 2, font_size, font_Color_others, 2, true);
+        sprintf(fps_text,"T4: %ld ms", t4 - t4_0);
         cv::putText(image, fps_text, text_vout_task_timer, 2, font_size, font_Color_others, 2, true);
+        t1_0 = t1;
+        t2_0 = t2;
+        t4_0 = t4;
     }
     memcpy((void *)gp_opencv_buffer, (void *)image.data, g_frame_width * g_frame_height * g_vout_pix_fmt);
     if (0 == g_customize.VOUT_Enable) 

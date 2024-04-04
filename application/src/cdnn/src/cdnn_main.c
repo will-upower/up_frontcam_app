@@ -160,7 +160,7 @@ int R_CDNN_Execute()
 
     if(true == g_customize.CDNN_Enable)
     {
-        R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_50MS_SLEEP);
+        //R_OSAL_ThreadSleepForTimePeriod ((osal_milli_sec_t)TIMEOUT_50MS_SLEEP);
         params_to_cdnn(AI_SYNC_ENABLE, get_imr_resize_buffer(g_sem_seg_map_ch), 
             gp_ai_rgb_buffer, g_customize.IMR_Resize_Width_Ch_0, g_customize.IMR_Resize_Height_Ch_0, &g_is_thread_exit, 
             s_imp_dev_axi_bus_id, fp_syncstart, fp_syncend, g_customize.Proc_Time, 
@@ -862,7 +862,7 @@ void inferencePostprocess_pe(signed char * data)
         }
     }
 
-    
+
 
 
     e_osal_return_t osal_ret = R_OSAL_MqSendForTimePeriod(g_mq_handle_aiactivity, TIMEOUT_MS, (void *)&det_que, 
@@ -912,28 +912,8 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
                 if (R_FC_Pre_cnt == 0 && g_customize.SEM_SEG_Enable == 1)
                 {
                     R_FC_SyncStart(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);   
-                    if (false == g_customize.Image_Folder_RGB2YUV_Enable && true == g_customize.Image_Folder_Enable) 
-                    {
-                        gp_ai_rgb_buffer = get_imr_resize_buffer(g_sem_seg_map_ch);
-                    } 
-                    else 
-                    {
-                        R_FC_SyncStart(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);   
-                        // Conv_YUYV2RGB(get_imr_resize_buffer(g_sem_seg_map_ch), gp_ai_rgb_buffer, g_customize.IMR_Resize_Width_Ch_0, 
-                        //             g_customize.IMR_Resize_Height_Ch_0);
-                        Conv_YUYV2RGB_OpenCL(get_imr_resize_buffer(g_sem_seg_map_ch), gp_ai_rgb_buffer, g_customize.IMR_Resize_Width_Ch_0, 
-                                    g_customize.IMR_Resize_Height_Ch_0);
-                        inferencePreprocess_ss();
-                        if (g_customize.OBJ_DET_Enable == 1 || g_customize.POSE_EST_Enable == 1)
-                        {
-                            R_FC_Pre_cnt = 1;
-                        }
-                        else
-                        {
-                            R_FC_SyncEnd(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
-                        }
-                    }
-                    inferencePreprocess_ss(); // inference
+                    Conv_YUYV2RGB_OpenCL(get_imr_resize_buffer(g_sem_seg_map_ch), gp_ai_rgb_buffer, g_customize.IMR_Resize_Width_Ch_0, g_customize.IMR_Resize_Height_Ch_0);
+                    inferencePreprocess_ss();
                     if (g_customize.OBJ_DET_Enable == 1 || g_customize.POSE_EST_Enable == 1)
                     {
                         R_FC_Pre_cnt = 1;
@@ -949,33 +929,9 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
                     {
                         R_FC_SyncStart(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
                     }
-                    if (false == g_customize.Image_Folder_RGB2YUV_Enable && true == g_customize.Image_Folder_Enable) 
-                    {
-                        gp_ai_rgb_buffer = get_imr_resize_buffer(g_obj_det_map_ch);
-                    } 
-                    else 
-                    {
-                        if (g_customize.SEM_SEG_Enable == 0)
-                        {
-                            R_FC_SyncStart(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
-                        }
-                        // Conv_YUYV2RGB(get_imr_resize_buffer(g_obj_det_map_ch), gp_ai_rgb_buffer, OBJ_WIDTH, OBJ_HEIGHT);
-                        Conv_YUYV2RGB_OpenCL(get_imr_resize_buffer(g_obj_det_map_ch), gp_ai_rgb_buffer, OBJ_WIDTH, OBJ_HEIGHT);
-                        inferencePreprocess_od();
-                        if (g_customize.SEM_SEG_Enable == 1 && g_customize.POSE_EST_Enable == 0)
-                        {
-                            R_FC_Pre_cnt = 0;
-                        }
-                        else if(g_customize.POSE_EST_Enable == 1)
-                        {
-                            R_FC_Pre_cnt = 2;
-                        }
-                        if (g_customize.POSE_EST_Enable == 0)
-                        {
-                            R_FC_SyncEnd(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
-                        }
-                    }
-                    inferencePreprocess_od(); // inference
+                    Conv_YUYV2RGB_OpenCL(get_imr_resize_buffer(g_obj_det_map_ch), gp_ai_rgb_buffer, OBJ_WIDTH, OBJ_HEIGHT);
+                    
+                    inferencePreprocess_od();
                     if (g_customize.SEM_SEG_Enable == 1 && g_customize.POSE_EST_Enable == 0)
                     {
                         R_FC_Pre_cnt = 0;
@@ -991,11 +947,11 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
                 }
                 else if (g_customize.POSE_EST_Enable == 1)
                 {
+
                     if ((g_customize.SEM_SEG_Enable == 0) && (g_customize.OBJ_DET_Enable == 0))
                     {   
                         R_FC_SyncStart(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
                     }
-                    // Conv_YUYV2RGB(get_imr_resize_buffer(g_pose_est_map_ch), gp_ai_rgb_buffer, POSE_EST_IMG_WIDTH, POSE_EST_IMG_HEIGHT);
                     Conv_YUYV2RGB_OpenCL(get_imr_resize_buffer(g_pose_est_map_ch), gp_ai_rgb_buffer, POSE_EST_IMG_WIDTH, POSE_EST_IMG_HEIGHT);
                     inferencePreprocess_pe();
                     if (g_customize.SEM_SEG_Enable == 1)
@@ -1008,23 +964,14 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
                     }
 
                     R_FC_SyncEnd(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
-                    inferencePreprocess_pe(); //inference
-                    if (g_customize.SEM_SEG_Enable == 1)
-                    {
-                        R_FC_Pre_cnt = 0;
-                    }
-                    else if (g_customize.SEM_SEG_Enable == 0 && g_customize.OBJ_DET_Enable == 1)
-                    {
-                        R_FC_Pre_cnt = 1;
-                    }
-
-                    R_FC_SyncEnd(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
                 }
+                
                 if (0 != g_customize.Proc_Time)                           /* If processing time is enabled */
                 {
                     fpsCount(1);                                           /* Calculate inference FPS */
                 }
                 break;
+
             case eInfPostProcess:
                 if (R_FC_Post_cnt ==0 && g_customize.SEM_SEG_Enable == 1)
                 {
@@ -1045,8 +992,7 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
                     {
 
                         R_FC_Post_cnt = 2;
-                    }
-                    
+                    } 
                 }
                 else if (g_customize.POSE_EST_Enable == 1)
                 {
@@ -1067,8 +1013,7 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
                 retVal = false;
                 break;
         }
-    } while (0);
-
+    } while(0);
     return SUCCESS;
 }
 /**********************************************************************************************************************
@@ -1188,7 +1133,7 @@ static void softmax(float *x, int n)
 /**********************************************************************************************************************
  * End of function softmax function
  ********************************************************************************************************************/
-void Conv_YUYV2RGB(unsigned char * yuyv, unsigned char * bgr, int width, int height)
+void Conv_YUYV2RGB(unsigned char * yuyv, unsigned char * rgb, int width, int height)
 {
     int z = 0;
     int x;
@@ -1219,9 +1164,9 @@ void Conv_YUYV2RGB(unsigned char * yuyv, unsigned char * bgr, int width, int hei
             g = ((y - (88 * u)) - (183 * v)) >> 8;                              /* Green component calculation */
             b = (y + (454 * u)) >> 8;                                           /* Blue component calculation */
                                                                                 /* Combining r, g, b components */
-            *(bgr ++) = (unsigned char)((r > 255) ? 255 : ((r < 0) ? 0 : r));
-            *(bgr ++) = (unsigned char)((g > 255) ? 255 : ((g < 0) ? 0 : g));
-            *(bgr ++) = (unsigned char)((b > 255) ? 255 : ((b < 0) ? 0 : b));
+            *(rgb ++) = (unsigned char)((r > 255) ? 255 : ((r < 0) ? 0 : r));
+            *(rgb ++) = (unsigned char)((g > 255) ? 255 : ((g < 0) ? 0 : g));
+            *(rgb ++) = (unsigned char)((b > 255) ? 255 : ((b < 0) ? 0 : b));
 
             if (z++)
             {
