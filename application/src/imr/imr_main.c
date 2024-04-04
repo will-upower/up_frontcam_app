@@ -819,14 +819,13 @@ static int imr_SetupResize_ch0(void)
     map_func                              = CustomMapResize;                            /* Set up mapping function */
     
     stride_size                           = (pixfmt == PIXFMT_YUYV) ? BPP_YUV : BPP_Y;
-
     imr_param_scaling_0.src_data.stride     = (uint32_t)imr_param_scaling_0.src_data.stride * stride_size;
     imr_param_scaling_0.dst_data.stride     = (uint32_t)imr_param_scaling_0.dst_data.stride * stride_size;
     DEBUG_PRINT("Image stride IMR Scaling = %d\n", imr_param_scaling_0.src_data.stride);
 
     st_imrdlg_imr_properties_t iprops =                                         /* For IMR display list generation */
     {
-        .target_device           = IMRDLG_TARGET_V4H, 
+        .target_device           = IMRDLG_TARGET_V3H_2_0, 
         .frame_format            = IMRDLG_FMT_YUYV, 
         .input_frame_width       = (uint16_t)imr_param_scaling_0.src_data.width, 
         .input_frame_height      = (uint16_t)imr_param_scaling_0.src_data.height, 
