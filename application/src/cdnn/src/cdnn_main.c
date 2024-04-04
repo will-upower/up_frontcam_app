@@ -993,25 +993,13 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
                 else if (g_customize.POSE_EST_Enable == 1)
                 {
 
-                        if ((g_customize.SEM_SEG_Enable == 0) && (g_customize.OBJ_DET_Enable == 0))
-                        {   
-                            R_FC_SyncStart(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
-                        }
-                        // Conv_YUYV2RGB(get_imr_resize_buffer(g_pose_est_map_ch), gp_ai_rgb_buffer, POSE_EST_IMG_WIDTH, POSE_EST_IMG_HEIGHT);
-                        Conv_YUYV2RGB_OpenCL(get_imr_resize_buffer(g_pose_est_map_ch), gp_ai_rgb_buffer, POSE_EST_IMG_WIDTH, POSE_EST_IMG_HEIGHT);
-                        inferencePreprocess_pe();
-                        if (g_customize.SEM_SEG_Enable == 1)
-                        {
-                            R_FC_Pre_cnt = 0;
-                        }
-                        else if (g_customize.SEM_SEG_Enable == 0 && g_customize.OBJ_DET_Enable == 1)
-                        {
-                            R_FC_Pre_cnt = 1;
-                        }
-
-                        R_FC_SyncEnd(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
+                    if ((g_customize.SEM_SEG_Enable == 0) && (g_customize.OBJ_DET_Enable == 0))
+                    {   
+                        R_FC_SyncStart(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
                     }
-                    inferencePreprocess_pe(); //inference
+                    // Conv_YUYV2RGB(get_imr_resize_buffer(g_pose_est_map_ch), gp_ai_rgb_buffer, POSE_EST_IMG_WIDTH, POSE_EST_IMG_HEIGHT);
+                    Conv_YUYV2RGB_OpenCL(get_imr_resize_buffer(g_pose_est_map_ch), gp_ai_rgb_buffer, POSE_EST_IMG_WIDTH, POSE_EST_IMG_HEIGHT);
+                    inferencePreprocess_pe();
                     if (g_customize.SEM_SEG_Enable == 1)
                     {
                         R_FC_Pre_cnt = 0;
@@ -1072,7 +1060,7 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
                 retVal = false;
                 break;
         }
-    } while (0);
+    } while(0);
 
     return SUCCESS;
 }
