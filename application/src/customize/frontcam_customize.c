@@ -212,9 +212,7 @@ void R_CustomizeInit(st_customize_t *custom_param)
     custom_param->POSE_EST_Width              = 224;
     custom_param->POSE_EST_Height             = 224;
 
-    custom_param->screen_capture_enable             = 0;
-    custom_param->process_coordinate_lookup_enable  = 0;
-    custom_param->process_id                        = 0;
+    custom_param->screen_capture_enable       = 0;
 }
 /**********************************************************************************************************************
  End of function  R_CustomizeInit
@@ -345,8 +343,6 @@ int R_CustomizeLoad(st_customize_t *custom_param, const char *file_name)
         sscanf(buf, "mmap_in_width %d", &custom_param->mmap_in_width);
 
         sscanf(buf, "screen_capture_enable %d", &custom_param->screen_capture_enable);
-        sscanf(buf, "process_coordinate_lookup_enable %d", &custom_param->process_coordinate_lookup_enable);
-        sscanf(buf, "process_id %d", &custom_param->process_id);
     }
 
     return SUCCESS;
@@ -401,7 +397,6 @@ int R_CustomizeValidate(st_customize_t *custom_param)
     ret += CustomizeRangeCheck("IMR_Ch_4_Enable", custom_param->IMR_Ch_4_Enable, 0, 1);
 
     ret += CustomizeRangeCheck("Screen_Capture_Enable", custom_param->screen_capture_enable, 0, 1);
-    ret += CustomizeRangeCheck("Process_Coordinate_Lookup_Enable", custom_param->process_coordinate_lookup_enable, 0, 1);
 
     if(true == g_customize.IMR_Ch_0_Enable)
     {
