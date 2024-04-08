@@ -287,7 +287,7 @@ static int draw_detection(cv::Mat &src) {
     bbox_cor bb_list[30] = {0};
 
     memcpy((void*)bb_list,(void *)_bbox_cor,sizeof(bb_list));
-
+    //printf("detObjCount: %d\n",detObjCount);
     for (det = 0; det < detObjCount; det++) 
     {  
         bbox_cor bb_data = bb_list[det];
@@ -427,7 +427,7 @@ int process_yuv(void *inImage, Mat &outimg, int plane) {
     cv::Mat mSrc(inSize, cv_mat_type, inImage);
     R_FC_SyncEnd(eFC_DRAW, gp_mtx_handle_opencv, gp_opencv_cond_handle, 0);
     cv::Mat mSrc_BGR(inSize, CV_8UC3);
-    cvtColor(mSrc, mSrc_BGR, COLOR_YUV2RGB_YUYV);
+    cvtColor(mSrc, mSrc_BGR, COLOR_YUV2BGR_YUYV);
     
     cv::Mat src = mSrc_BGR;
 
@@ -444,54 +444,23 @@ int process_yuv(void *inImage, Mat &outimg, int plane) {
         }
     }
 #endif
-
-    if(plane == PLN_1)
+    if (g_customize.CDNN_Enable) 
     {
-#if (1)        
+        if (g_customize.SEM_SEG_Enable) 
         {
             draw_map(src, 1);
+        }
+        if (g_customize.OBJ_DET_Enable)
+        {
             draw_detection(src);
+        }
+        if (g_customize.POSE_EST_Enable)
+        {
             draw_pose(src);
         }
-#endif
     }
+    //cv::imwrite("src.png", src);
     outimg = src;
-
-    return 0;
-}
-
-int process_rgb(void *inImage, Mat &outimg, int plane) {
-    int ret = 0;
-    int cv_mat_type = CV_8UC3; 
-    cv::Size inSize(g_frame_width, g_frame_height);
-    R_FC_SyncStart(eFC_DRAW, gp_mtx_handle_opencv, gp_opencv_cond_handle, 0);
-    cv::Mat mSrc(inSize, cv_mat_type, inImage);
-    R_FC_SyncEnd(eFC_DRAW, gp_mtx_handle_opencv, gp_opencv_cond_handle, 0);
-    static uint32_t det_que_rcv =0;
-#if(CDNN)
-    if(true == g_customize.CDNN_Enable)
-    {
-        //TODO chek the hadle is proper after AI implementation
-        e_osal_return_t osal_ret = R_OSAL_MqReceiveForTimePeriod(g_mq_handle_aiactivity, TIMEOUT_MS, 
-                                                            (void *)&det_que_rcv, g_mq_config_aiactivity.msg_size);
-        if(OSAL_RETURN_OK != osal_ret)
-        {
-            PRINT_ERROR("receiving message to MQ was failed, osal_ret = %d\n", osal_ret);
-        }
-    }
-#endif
-
-    if(plane == PLN_1)
-    {
-#if (1)        
-        {
-            draw_map(mSrc, 1);
-            draw_detection(mSrc);
-            draw_pose(mSrc);
-        }
-#endif
-    }
-    outimg = mSrc;
 
     return 0;
 }

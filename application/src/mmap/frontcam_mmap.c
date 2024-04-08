@@ -1,13 +1,18 @@
 #include <fcntl.h>
+#include <stdio.h>
+#include <sys/file.h>
 #include <sys/mman.h>
 #include <string.h>
 #include <unistd.h>
 #include "common.h"
 #include "frontcam_mmap.h"
 
+// #include <semaphore.h>
 
-int mmap_image_init() 
-{   
+// static const char *sem_name = "/global_semaphore";
+// static sem_t *semaphore;
+
+int mmap_image_init() {
     //gp_vin_out_buffer
     //g_customize, g_frame_width, g_frame_height, BPP_*, get_buffer_size() are all defined in the common.h or mmap.h file
     size_t size = get_buffer_size();
@@ -35,7 +40,7 @@ int mmap_image_init()
         mmap_file = -1;
         return FAILED; // 1
     }
-    
+
     return SUCCESS; // 0
 }
 
@@ -55,7 +60,7 @@ int mmap_deinit() {
         }
         mmap_file = -1;
     }
-    
+
     return SUCCESS; // 0
 }
 
@@ -65,6 +70,39 @@ int mmap_copy() {
         PRINT_ERROR("gp_vin_out_buffer or mapped_buffer_out is NULL\n");
         return FAILED; // 1
     }
-    memcpy((void*)mapped_buffer_out, gp_vin_out_buffer, size);
+
+    memcpy((void*)mapped_buffer_out, (void*)gp_vin_out_buffer, size);
+
     return SUCCESS; // 0
+}
+
+int in_mmap_init(const char* filename) {
+    size_t size = get_buffer_size();
+
+    // Open the file
+    mmap_file_in = open(filename, O_RDONLY);
+    if (mmap_file_in == -1) {
+        PRINT_ERROR("Failed to open file %s\n", filename);
+        return FAILED;
+    }
+    // Map the file into memory
+    mapped_buffer_in = mmap(NULL, size, PROT_READ, MAP_SHARED, mmap_file_in, 0);
+    if (mapped_buffer_in == MAP_FAILED) {
+        PRINT_ERROR("Memory allocation failed for %s\n", filename);
+        close(mmap_file_in);
+        return FAILED;
+    }
+
+    return SUCCESS;
+}
+
+int in_mmap_deinit() {
+    size_t size = get_buffer_size();
+    if (munmap(mapped_buffer_in, size) == -1) {
+        PRINT_ERROR("Memory de-allocation failed!\n");
+        return FAILED;
+    }
+    close(mmap_file_in);
+    
+    return SUCCESS;
 }

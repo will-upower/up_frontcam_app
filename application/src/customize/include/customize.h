@@ -138,6 +138,9 @@ typedef struct
     int Image_Video_Height;
     int Image_Video_Width;
     char Video_File_Path[64];
+    int mmap_in_height;
+    int mmap_in_width;
+    int screen_capture_enable;
 } st_customize_t;
 
 /**********************************************************************************************************************

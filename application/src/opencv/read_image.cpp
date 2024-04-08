@@ -20,7 +20,7 @@ int read_png_frames(void * buffer, const char* filename, int expected_buffer_siz
 
     if (true == g_customize.Image_Folder_RGB2YUV_Enable && true == g_customize.Image_Folder_Enable) 
     {
-        Conv_RGB2YUYV((unsigned char*)flattened_image.data, (unsigned char*)buffer, g_customize.Frame_Width, g_customize.Frame_Height);
+        Conv_RGB2YUYV((unsigned char*)flattened_image.data, (unsigned char*)buffer, g_frame_width, g_frame_height);
         return SUCCESS;
     } 
     
@@ -59,13 +59,13 @@ struct VideoCaptureWrapper {
     cv::VideoCapture cap;
 };
 
-VideoCaptureWrapper* openVideoStream(const char* filename)
+VideoCaptureWrapper* open_video_stream(const char* filename)
 {
     VideoCaptureWrapper* capture = new VideoCaptureWrapper();
     capture->cap.open(filename);
     capture->cap.set(cv::CAP_PROP_BUFFERSIZE, 2);
-    capture->cap.set(CAP_PROP_FRAME_HEIGHT, g_customize.Frame_Height);
-    capture->cap.set(CAP_PROP_FRAME_WIDTH, g_customize.Frame_Width);
+    capture->cap.set(CAP_PROP_FRAME_HEIGHT, g_frame_height);
+    capture->cap.set(CAP_PROP_FRAME_WIDTH, g_frame_width);
     if (!capture->cap.isOpened()) 
     {
         PRINT_ERROR("Could not open or find the video '%s'.\n", filename);
@@ -75,7 +75,7 @@ VideoCaptureWrapper* openVideoStream(const char* filename)
     return capture;
 }
 
-int releaseVideoStream(VideoCaptureWrapper* capture) 
+int release_video_stream(VideoCaptureWrapper* capture) 
 {
     if (capture) 
     {
@@ -85,7 +85,7 @@ int releaseVideoStream(VideoCaptureWrapper* capture)
     }
 }
 
-int readFrame(VideoCaptureWrapper* capture, void* buffer) 
+int read_frame(VideoCaptureWrapper* capture, void* buffer) 
 {
     if (!capture || !capture->cap.isOpened())
     {
@@ -111,9 +111,6 @@ int readFrame(VideoCaptureWrapper* capture, void* buffer)
     
     return SUCCESS;
 }
-
-
-
 
 void Conv_RGB2YUYV(unsigned char * bgr, unsigned char * yuyv, int width, int height)
 {
