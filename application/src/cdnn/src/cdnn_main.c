@@ -949,6 +949,8 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
                     {   
                         R_FC_SyncStart(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
                     }
+
+                    // Conv_YUYV2RGB(get_imr_resize_buffer(g_pose_est_map_ch), gp_ai_rgb_buffer, POSE_EST_IMG_WIDTH, POSE_EST_IMG_HEIGHT);
                     Conv_YUYV2RGB_OpenCL(get_imr_resize_buffer(g_pose_est_map_ch), gp_ai_rgb_buffer, POSE_EST_IMG_WIDTH, POSE_EST_IMG_HEIGHT);
                     inferencePreprocess_pe();
                     if (g_customize.SEM_SEG_Enable == 1)
@@ -1011,6 +1013,7 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
                 break;
         }
     } while(0);
+
     return SUCCESS;
 }
 /**********************************************************************************************************************
