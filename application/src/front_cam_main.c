@@ -260,414 +260,418 @@ int main(int argc, char *argv[]) {
     fp_syncend = R_FC_SyncEnd;
     FcModuleInitFlags(); /* Initialize flags */
 
-    signal(SIGINT, sigint_handler);
-    g_customize.mmap_out_enable = 0;
-    g_customize.Image_Folder_Video_Enable = 0;
-    g_customize.Image_Folder_RGB2YUV_Enable = 1;
-    strcpy(g_customize.Video_File_Path, "input.avi");
-    g_customize.Image_Video_Height = 256;
-    g_customize.Image_Video_Width = 512;
-    g_customize.mmap_in_width = 896;
-    g_customize.mmap_in_height = 504;
-    g_customize.screen_capture_enable = 0;
-    ret = R_CustomizeLoad(&g_customize, FC_CustomizeFile);
-    if (FAILED == ret) {
-        PRINT_INFO("Cannot find a customize file. customization paramters are used default values\n");
-        R_CustomizeInit(&g_customize); /* Initialize customization parameters */
-    }
-    g_customize.CPU_Load_Enable = false;  // Always disable CPU Load
+    do {
+        signal(SIGINT, sigint_handler);
+        g_customize.mmap_out_enable = 0;
+        g_customize.Image_Folder_Video_Enable = 0;
+        g_customize.Image_Folder_RGB2YUV_Enable = 1;
+        strcpy(g_customize.Video_File_Path, "input.avi");
+        g_customize.Image_Video_Height = 256;
+        g_customize.Image_Video_Width = 512;
+        g_customize.mmap_in_width = 896;
+        g_customize.mmap_in_height = 504;
+        g_customize.screen_capture_enable = 0;
+        ret = R_CustomizeLoad(&g_customize, FC_CustomizeFile);
+        if (FAILED == ret) {
+            PRINT_INFO("Cannot find a customize file. customization paramters are used default values\n");
+            R_CustomizeInit(&g_customize); /* Initialize customization parameters */
+        }
+        g_customize.CPU_Load_Enable = false;  // Always disable CPU Load
 #if (CDNN)
-    g_customize.CDNN_Load_Enable = false;                                                // Always disable CDNN Load
-    if (g_customize.CDNN_Load_Enable) || g_customize.CPU_Load_Enable) /* Graph Display */
+        g_customize.CDNN_Load_Enable = false;                                                // Always disable CDNN Load
+        if ((true == g_customize.CDNN_Load_Enable) || (true == g_customize.CPU_Load_Enable)) /* Graph Display */
 #else
-    if (g_customize.CPU_Load_Enable) /* Graph Display */  // Make sure to always disable CPU_Load
+        if (true == g_customize.CPU_Load_Enable) /* Graph Display */  // Make sure to always disable CPU_Load
 #endif
-    {
-        g_customize.Frame_Width = FRAME_WIDTH;
-        g_customize.Frame_Height = FRAME_HEIGHT;
-        g_customize.VOUT_Pos_X = 0;
-        g_customize.VOUT_Pos_Y = 0;
-        g_customize.VOUT_Display_Width = DISPLAY_WIDTH;
-        g_customize.VOUT_Display_Height = DISPLAY_HEIGHT;
-    }
-    if (g_customize.Image_Folder_Enable) {
-        g_customize.Frame_Width = g_customize.Image_Video_Width;
-        g_customize.Frame_Height = g_customize.Image_Video_Height;
-        g_customize.VOUT_Pos_X = 0;
-        g_customize.VOUT_Pos_Y = 0;
-        g_customize.VOUT_Display_Width = g_customize.Image_Video_Width;
-        g_customize.VOUT_Display_Height = g_customize.Image_Video_Height;
-        g_customize.VIN_Capture_Format = 1;
-    }
-    if (!g_customize.Image_Folder_Enable && !g_customize.VIN_Enable) {
-        g_customize.Frame_Width = g_customize.mmap_in_width;
-        g_customize.Frame_Height = g_customize.mmap_in_height;
-        g_customize.VOUT_Pos_X = 0;
-        g_customize.VOUT_Pos_Y = 0;
-        g_customize.VOUT_Display_Width = g_customize.mmap_in_width;
-        g_customize.VOUT_Display_Height = g_customize.mmap_in_height;
-        g_customize.VIN_Capture_Format = 1;  // YUYV, need to convert from RGB to YUYV
-    }
-    R_CustomizePrint(&g_customize); /* Print customization parameters */
+        {
+            g_customize.Frame_Width = FRAME_WIDTH;
+            g_customize.Frame_Height = FRAME_HEIGHT;
+            g_customize.VOUT_Pos_X = 0;
+            g_customize.VOUT_Pos_Y = 0;
+            g_customize.VOUT_Display_Width = DISPLAY_WIDTH;
+            g_customize.VOUT_Display_Height = DISPLAY_HEIGHT;
+        }
+        if (true == g_customize.Image_Folder_Enable) {
+            g_customize.Frame_Width = g_customize.Image_Video_Width;
+            g_customize.Frame_Height = g_customize.Image_Video_Height;
+            g_customize.VOUT_Pos_X = 0;
+            g_customize.VOUT_Pos_Y = 0;
+            g_customize.VOUT_Display_Width = g_customize.Image_Video_Width;
+            g_customize.VOUT_Display_Height = g_customize.Image_Video_Height;
+            g_customize.VIN_Capture_Format = 1;
+        }
+        if (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) {
+            g_customize.Frame_Width = g_customize.mmap_in_width;
+            g_customize.Frame_Height = g_customize.mmap_in_height;
+            g_customize.VOUT_Pos_X = 0;
+            g_customize.VOUT_Pos_Y = 0;
+            g_customize.VOUT_Display_Width = g_customize.mmap_in_width;
+            g_customize.VOUT_Display_Height = g_customize.mmap_in_height;
+            g_customize.VIN_Capture_Format = 1;  // YUYV, need to convert from RGB to YUYV
+        }
+        R_CustomizePrint(&g_customize); /* Print customization parameters */
 
-    /* if (R_CheckConfig(&g_customize) == FAILED) { // to be modified by me later
-        break;
-    } */
+        /* if (R_CheckConfig(&g_customize) == FAILED) { // to be modified by me later
+            break;
+        } */
 
-    /* ret = R_CustomizeValidate(&g_customize);
-    if (FAILED == ret)
-    {
-        PRINT_ERROR("Failed R_CustomizeValidate \n");
-        break;
-    }
+        /* ret = R_CustomizeValidate(&g_customize);
+        if (FAILED == ret)
+        {
+            PRINT_ERROR("Failed R_CustomizeValidate \n");
+            break;
+        }
 
-    ret = R_PipelineParamValidate();
-    if (ret != SUCCESS)
-    {
-        PRINT_WARNING("Change the customization parameters in front_cam_customize.config file and \
+        ret = R_PipelineParamValidate();
+        if (ret != SUCCESS)
+        {
+            PRINT_WARNING("Change the customization parameters in front_cam_customize.config file and \
 re-run the application\n FC App terminating...\n ");
-        break;
-    } */
+            break;
+        } */
 
-    ret = R_FC_SystemInit(); /* System initialization */
+        ret = R_FC_SystemInit(); /* System initialization */
 
-    if (FAILED == ret) {
-        PRINT_ERROR("R_FC_SystemInit failed\n");
-        break;
-    }
-
-    ret = buffer_map(); /* Mapping IN/OUT buffers */
-
-    if (FAILED == ret) {
-        PRINT_ERROR("buffer_map failed\n");
-        break;
-    }
-
-    if (!g_customize.screen_capture_enable && !g_customize.Image_Folder_Enable && !g_customize.VIN_Enable) {
-        printf("[%s]\n", g_customize.Frame_File_Name);
-        int in_mmap_ret = in_mmap_init(g_customize.Frame_File_Name);
-    }
-
-    e_osal_return_t osal_ret;
-
-    osal_ret = R_OSAL_Initialize(); /* OSAL Initialize */
-
-    if (OSAL_RETURN_OK != osal_ret) {
-        PRINT_ERROR("OSAL Initialization failed with error %d\n", osal_ret);
-        break;
-    }
-
-    ret = init_mmgr(); /* Memory manager initialisation */
-
-    if (ret) {
-        osal_ret = R_OSAL_Deinitialize(); /* OSAL deinitialize if failed */
-        if (OSAL_RETURN_OK != osal_ret) {
-            PRINT_ERROR("Failed R_OSAL_Deinitialize ret=%d\n", osal_ret);
-        }
-        break;
-    }
-
-    ret = R_Init_Modules(); /* Initialize modules */
-
-    if (FAILED == ret) {
-        R_Deinit_Modules(); /* Deinitialize modules if failed */
-        PRINT_ERROR("Failed R_Init_Modules ret\n");
-        break;
-    }
-
-    ret = R_Create_Mutex(); /* Create mutex */
-    if (FAILED == ret) {
-        R_Deinit_Modules(); /* Deinitialize modules if failed */
-        PRINT_ERROR("Failed R_Create_Mutex ret\n");
-        break;
-    }
-
-    ret = R_Mutex_Map(); /* Mutex mapping */
-
-    if (FAILED == ret) {
-        R_Deinit_Modules(); /* Deinitialize modules if failed */
-        PRINT_ERROR("Failed R_Mutex_Map ret\n");
-        break;
-    }
-
-    /* Condition handle create */
-    /* vin condition handle create */
-    osal_ret = R_OSAL_ThsyncCondCreate((osal_cond_id_t)COND_ID_NO1, &g_vin_cond_handle);
-
-    if (OSAL_RETURN_OK != osal_ret) {
-        R_Deinit_Modules();
-        PRINT_ERROR("condition creation was failed, osal_ret = %d\n", osal_ret);
-        break;
-    }
-    /* IMR LDC condition handle create */
-    osal_ret = R_OSAL_ThsyncCondCreate((osal_cond_id_t)COND_ID_NO2, &g_imr_ldc_cond_handle);
-
-    if (OSAL_RETURN_OK != osal_ret) {
-        R_Deinit_Modules();
-        PRINT_ERROR("condition creation was failed, osal_ret = %d\n", osal_ret);
-        break;
-    }
-    /* IMR resize condition handle create */
-    osal_ret = R_OSAL_ThsyncCondCreate((osal_cond_id_t)COND_ID_NO3, &g_imr_rs_cond_handle);
-
-    if (OSAL_RETURN_OK != osal_ret) {
-        R_Deinit_Modules();
-        PRINT_ERROR("condition creation was failed, osal_ret = %d\n", osal_ret);
-        break;
-    }
-
-    /*Configuration for the Message Queue for driver activity */
-    osal_ret = R_OSAL_MqInitializeMqConfigSt(&g_mq_config_aiactivity);
-
-    if (OSAL_RETURN_OK != osal_ret) {
-        R_Deinit_Modules();
-        PRINT_ERROR("Message Queue Initialization failed for driver activity with error %d\n", osal_ret);
-        break;
-    } else {
-        g_mq_config_aiactivity.max_num_msg = MAX_NUM_OF_MSG;
-        g_mq_config_aiactivity.msg_size = MSG_SIZE;
-        osal_ret = R_OSAL_MqCreate(&g_mq_config_aiactivity, (osal_mq_id_t)MQ_ID_NO2, &g_mq_handle_aiactivity);
-        if (OSAL_RETURN_OK != osal_ret) {
-            R_Deinit_Modules();
-            PRINT_ERROR("message queue creation was failed, osal_ret = %d\n", osal_ret);
+        if (FAILED == ret) {
+            PRINT_ERROR("R_FC_SystemInit failed\n");
             break;
         }
-    }
 
-    if (g_customize.screen_capture_enable && !g_customize.Image_Folder_Enable && !g_customize.VIN_Enable) {
-        display_handle = XOpenDisplay(NULL);
-        if (display_handle == NULL) {
-            PRINT_ERROR("Cannot open display\n");
-            return FAILED;
-        }
+        ret = buffer_map(); /* Mapping IN/OUT buffers */
 
-        int screen_handle = DefaultScreen(display_handle);
-        X11_window_handle = RootWindow(display_handle, screen_handle);
-        int result = screen_capture_init();
-        if (result == FAILED) {
-            PRINT_ERROR("Failed to init screen capture\n");
+        if (FAILED == ret) {
+            PRINT_ERROR("buffer_map failed\n");
             break;
         }
-    }
 
-    if (g_customize.Image_Folder_Enable) /* Configure message queue when image read from folder enabled */
-    {
-        osal_ret = R_OSAL_MqInitializeMqConfigSt(&g_mq_config_imgread);
+        if (false == g_customize.screen_capture_enable && false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) {
+            printf("[%s]\n", g_customize.Frame_File_Name);
+            int in_mmap_ret = in_mmap_init(g_customize.Frame_File_Name);
+        }
+
+        e_osal_return_t osal_ret;
+
+        osal_ret = R_OSAL_Initialize(); /* OSAL Initialize */
+
+        if (OSAL_RETURN_OK != osal_ret) {
+            PRINT_ERROR("OSAL Initialization failed with error %d\n", osal_ret);
+            break;
+        }
+
+        ret = init_mmgr(); /* Memory manager initialisation */
+
+        if (ret) {
+            osal_ret = R_OSAL_Deinitialize(); /* OSAL deinitialize if failed */
+            if (OSAL_RETURN_OK != osal_ret) {
+                PRINT_ERROR("Failed R_OSAL_Deinitialize ret=%d\n", osal_ret);
+            }
+            break;
+        }
+
+        ret = R_Init_Modules(); /* Initialize modules */
+
+        if (FAILED == ret) {
+            R_Deinit_Modules(); /* Deinitialize modules if failed */
+            PRINT_ERROR("Failed R_Init_Modules ret\n");
+            break;
+        }
+
+        ret = R_Create_Mutex(); /* Create mutex */
+        if (FAILED == ret) {
+            R_Deinit_Modules(); /* Deinitialize modules if failed */
+            PRINT_ERROR("Failed R_Create_Mutex ret\n");
+            break;
+        }
+
+        ret = R_Mutex_Map(); /* Mutex mapping */
+
+        if (FAILED == ret) {
+            R_Deinit_Modules(); /* Deinitialize modules if failed */
+            PRINT_ERROR("Failed R_Mutex_Map ret\n");
+            break;
+        }
+
+        /* Condition handle create */
+        /* vin condition handle create */
+        osal_ret = R_OSAL_ThsyncCondCreate((osal_cond_id_t)COND_ID_NO1, &g_vin_cond_handle);
 
         if (OSAL_RETURN_OK != osal_ret) {
             R_Deinit_Modules();
-            PRINT_ERROR("Message Queue Initialization failed for image read from folder with error %d\n", osal_ret);
+            PRINT_ERROR("condition creation was failed, osal_ret = %d\n", osal_ret);
+            break;
+        }
+        /* IMR LDC condition handle create */
+        osal_ret = R_OSAL_ThsyncCondCreate((osal_cond_id_t)COND_ID_NO2, &g_imr_ldc_cond_handle);
+
+        if (OSAL_RETURN_OK != osal_ret) {
+            R_Deinit_Modules();
+            PRINT_ERROR("condition creation was failed, osal_ret = %d\n", osal_ret);
+            break;
+        }
+        /* IMR resize condition handle create */
+        osal_ret = R_OSAL_ThsyncCondCreate((osal_cond_id_t)COND_ID_NO3, &g_imr_rs_cond_handle);
+
+        if (OSAL_RETURN_OK != osal_ret) {
+            R_Deinit_Modules();
+            PRINT_ERROR("condition creation was failed, osal_ret = %d\n", osal_ret);
+            break;
+        }
+
+        /*Configuration for the Message Queue for driver activity */
+        osal_ret = R_OSAL_MqInitializeMqConfigSt(&g_mq_config_aiactivity);
+
+        if (OSAL_RETURN_OK != osal_ret) {
+            R_Deinit_Modules();
+            PRINT_ERROR("Message Queue Initialization failed for driver activity with error %d\n", osal_ret);
             break;
         } else {
-            g_mq_config_imgread.max_num_msg = MAX_NUM_OF_MSG; /* maximum number of messages */
-            g_mq_config_imgread.msg_size = MSG_SIZE;
-            osal_ret = R_OSAL_MqCreate(&g_mq_config_imgread, (osal_mq_id_t)MQ_ID_NO1, &g_mq_handle_imgread);
-
+            g_mq_config_aiactivity.max_num_msg = MAX_NUM_OF_MSG;
+            g_mq_config_aiactivity.msg_size = MSG_SIZE;
+            osal_ret = R_OSAL_MqCreate(&g_mq_config_aiactivity, (osal_mq_id_t)MQ_ID_NO2, &g_mq_handle_aiactivity);
             if (OSAL_RETURN_OK != osal_ret) {
                 R_Deinit_Modules();
                 PRINT_ERROR("message queue creation was failed, osal_ret = %d\n", osal_ret);
                 break;
             }
         }
-    }
-    // Addendum: opencv window:
-    if (0 == g_customize.VOUT_Enable) {
-        create_opencv_window();
-        atexit(self_destruct_ocv);
-    }
-    t1_0 = currentTimeMillis();
-    t2_0 = currentTimeMillis();
-    t4_0 = currentTimeMillis();
-    /* Create Capture thread */
-    osal_thread_handle_t capture_thrd_hndl = OSAL_THREAD_HANDLE_INVALID;
-    int64_t thrd_return_value = -1;
-    st_osal_thread_config_t capture_thrd_cfg;
-    capture_thrd_cfg.func = R_Capture_Task;
-    capture_thrd_cfg.priority = OSAL_THREAD_PRIORITY_TYPE1;
-    capture_thrd_cfg.stack_size = 0x2000;
-    capture_thrd_cfg.task_name = "R_Capture_Task";
-    capture_thrd_cfg.userarg = NULL;
 
-    /* Create IMR thread */
-    osal_thread_handle_t imr_thrd_hndl = OSAL_THREAD_HANDLE_INVALID;
-    int64_t imr_thrd_return_value = -1;
-    st_osal_thread_config_t imr_thrd_cfg;
-    imr_thrd_cfg.func = R_IMR_Task;
-    imr_thrd_cfg.priority = OSAL_THREAD_PRIORITY_TYPE0;
-    imr_thrd_cfg.stack_size = 0x2000;
-    imr_thrd_cfg.task_name = "R_IMR_Task";
-    imr_thrd_cfg.userarg = NULL;
+        if (true == g_customize.screen_capture_enable && false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) {
+            display_handle = XOpenDisplay(NULL);
+            if (display_handle == NULL) {
+                PRINT_ERROR("Cannot open display\n");
+                return FAILED;
+            }
 
-    /* Create CNN thread */
-    osal_thread_handle_t ai_thrd_hndl = OSAL_THREAD_HANDLE_INVALID;
-    int64_t ai_thrd_return_value = -1;
-    st_osal_thread_config_t ai_thrd_cfg;
-    ai_thrd_cfg.func = R_Inference_Task;
-    ai_thrd_cfg.priority = OSAL_THREAD_PRIORITY_TYPE0;
-    ai_thrd_cfg.stack_size = 0x200000;
-    ai_thrd_cfg.task_name = "R_Inference_Task";
-    ai_thrd_cfg.userarg = NULL;
+            int screen_handle = DefaultScreen(display_handle);
+            X11_window_handle = RootWindow(display_handle, screen_handle);
+            int result = screen_capture_init();
+            if (result == FAILED) {
+                PRINT_ERROR("Failed to init screen capture\n");
+                break;
+            }
+        }
 
-    /* Create Vout thread */
-    osal_thread_handle_t vout_thrd_hndl = OSAL_THREAD_HANDLE_INVALID;
-    int64_t vout_thrd_return_value = -1;
-    st_osal_thread_config_t vout_thrd_cfg;
-    vout_thrd_cfg.func = R_VOUT_Task;
-    vout_thrd_cfg.priority = OSAL_THREAD_PRIORITY_TYPE0;
-    vout_thrd_cfg.stack_size = 0x2000;
-    vout_thrd_cfg.task_name = "R_VOUT_Task";
-    vout_thrd_cfg.userarg = NULL;
+        if (true == g_customize.Image_Folder_Enable) /* Configure message queue when image read from folder enabled */
+        {
+            osal_ret = R_OSAL_MqInitializeMqConfigSt(&g_mq_config_imgread);
 
-    /* Create control thread */
-    osal_thread_handle_t ctrl_thrd_hndl = OSAL_THREAD_HANDLE_INVALID;
-    int64_t ctrl_thrd_return_value = -1;
-    st_osal_thread_config_t ctrl_thrd_cfg;
-    ctrl_thrd_cfg.func = R_CTRL_Task;
-    ctrl_thrd_cfg.priority = OSAL_THREAD_PRIORITY_TYPE0;
-    ctrl_thrd_cfg.stack_size = 0x2000;
-    ctrl_thrd_cfg.task_name = "R_CTRL_Task";
-    ctrl_thrd_cfg.userarg = NULL;
+            if (OSAL_RETURN_OK != osal_ret) {
+                R_Deinit_Modules();
+                PRINT_ERROR("Message Queue Initialization failed for image read from folder with error %d\n", osal_ret);
+                break;
+            } else {
+                g_mq_config_imgread.max_num_msg = MAX_NUM_OF_MSG; /* maximum number of messages */
+                g_mq_config_imgread.msg_size = MSG_SIZE;
+                osal_ret = R_OSAL_MqCreate(&g_mq_config_imgread, (osal_mq_id_t)MQ_ID_NO1, &g_mq_handle_imgread);
 
-    /* Create CPU thread */
-    osal_thread_handle_t cpu_thrd_hndl = OSAL_THREAD_HANDLE_INVALID;
-    int64_t cpu_thrd_return_value = -1;
-    st_osal_thread_config_t cpu_thrd_cfg;
-    cpu_thrd_cfg.func = R_CPULOAD_Task;
-    cpu_thrd_cfg.priority = OSAL_THREAD_PRIORITY_TYPE0;
-    cpu_thrd_cfg.stack_size = 0x2000;
-    cpu_thrd_cfg.task_name = "R_CPULOAD_Task";
-    cpu_thrd_cfg.userarg = NULL;
+                if (OSAL_RETURN_OK != osal_ret) {
+                    R_Deinit_Modules();
+                    PRINT_ERROR("message queue creation was failed, osal_ret = %d\n", osal_ret);
+                    break;
+                }
+            }
+        }
+        // Addendum: opencv window:
+        if (0 == g_customize.VOUT_Enable) {
+            create_opencv_window();
+            atexit(self_destruct_ocv);
+        }
+        t1_0 = currentTimeMillis();
+        t2_0 = currentTimeMillis();
+        t4_0 = currentTimeMillis();
+        /* Create Capture thread */
+        osal_thread_handle_t capture_thrd_hndl = OSAL_THREAD_HANDLE_INVALID;
+        int64_t thrd_return_value = -1;
+        st_osal_thread_config_t capture_thrd_cfg;
+        capture_thrd_cfg.func = R_Capture_Task;
+        capture_thrd_cfg.priority = OSAL_THREAD_PRIORITY_TYPE1;
+        capture_thrd_cfg.stack_size = 0x2000;
+        capture_thrd_cfg.task_name = "R_Capture_Task";
+        capture_thrd_cfg.userarg = NULL;
 
-    /* START_THREAD: Thread starts */
+        /* Create IMR thread */
+        osal_thread_handle_t imr_thrd_hndl = OSAL_THREAD_HANDLE_INVALID;
+        int64_t imr_thrd_return_value = -1;
+        st_osal_thread_config_t imr_thrd_cfg;
+        imr_thrd_cfg.func = R_IMR_Task;
+        imr_thrd_cfg.priority = OSAL_THREAD_PRIORITY_TYPE0;
+        imr_thrd_cfg.stack_size = 0x2000;
+        imr_thrd_cfg.task_name = "R_IMR_Task";
+        imr_thrd_cfg.userarg = NULL;
 
-    /* Start control Thread */
-    osal_ret = R_OSAL_ThreadCreate(&ctrl_thrd_cfg, 0xf003, &ctrl_thrd_hndl);
-    if (OSAL_RETURN_OK != osal_ret) {
-        PRINT_ERROR("OSAL Control thread creation failed with error %d\n", osal_ret);
-        R_Deinit_Modules();
-        break;
-    }
+        /* Create CNN thread */
+        osal_thread_handle_t ai_thrd_hndl = OSAL_THREAD_HANDLE_INVALID;
+        int64_t ai_thrd_return_value = -1;
+        st_osal_thread_config_t ai_thrd_cfg;
+        ai_thrd_cfg.func = R_Inference_Task;
+        ai_thrd_cfg.priority = OSAL_THREAD_PRIORITY_TYPE0;
+        ai_thrd_cfg.stack_size = 0x200000;
+        ai_thrd_cfg.task_name = "R_Inference_Task";
+        ai_thrd_cfg.userarg = NULL;
 
-    /* Start Capture Thread */
-    osal_ret = R_OSAL_ThreadCreate(&capture_thrd_cfg, 0xf000, &capture_thrd_hndl);
-    if (OSAL_RETURN_OK != osal_ret) {
-        g_is_thread_exit = true;
-        PRINT_ERROR("OSAL capture thread creation failed with error %d\n", osal_ret);
-        R_Deinit_Modules();
-        break;
-    }
+        /* Create Vout thread */
+        osal_thread_handle_t vout_thrd_hndl = OSAL_THREAD_HANDLE_INVALID;
+        int64_t vout_thrd_return_value = -1;
+        st_osal_thread_config_t vout_thrd_cfg;
+        vout_thrd_cfg.func = R_VOUT_Task;
+        vout_thrd_cfg.priority = OSAL_THREAD_PRIORITY_TYPE0;
+        vout_thrd_cfg.stack_size = 0x2000;
+        vout_thrd_cfg.task_name = "R_VOUT_Task";
+        vout_thrd_cfg.userarg = NULL;
 
-    /* Start IMR Thread */
-    if (g_customize.IMR_LDC || g_customize.IMR_Resize) {
-        osal_ret = R_OSAL_ThreadCreate(&imr_thrd_cfg, 0xf004, &imr_thrd_hndl);
+        /* Create control thread */
+        osal_thread_handle_t ctrl_thrd_hndl = OSAL_THREAD_HANDLE_INVALID;
+        int64_t ctrl_thrd_return_value = -1;
+        st_osal_thread_config_t ctrl_thrd_cfg;
+        ctrl_thrd_cfg.func = R_CTRL_Task;
+        ctrl_thrd_cfg.priority = OSAL_THREAD_PRIORITY_TYPE0;
+        ctrl_thrd_cfg.stack_size = 0x2000;
+        ctrl_thrd_cfg.task_name = "R_CTRL_Task";
+        ctrl_thrd_cfg.userarg = NULL;
+
+        /* Create CPU thread */
+        osal_thread_handle_t cpu_thrd_hndl = OSAL_THREAD_HANDLE_INVALID;
+        int64_t cpu_thrd_return_value = -1;
+        st_osal_thread_config_t cpu_thrd_cfg;
+        cpu_thrd_cfg.func = R_CPULOAD_Task;
+        cpu_thrd_cfg.priority = OSAL_THREAD_PRIORITY_TYPE0;
+        cpu_thrd_cfg.stack_size = 0x2000;
+        cpu_thrd_cfg.task_name = "R_CPULOAD_Task";
+        cpu_thrd_cfg.userarg = NULL;
+
+        /* START_THREAD: Thread starts */
+
+        /* Start control Thread */
+        osal_ret = R_OSAL_ThreadCreate(&ctrl_thrd_cfg, 0xf003, &ctrl_thrd_hndl);
         if (OSAL_RETURN_OK != osal_ret) {
-            PRINT_ERROR("OSAL IMR thread creation failed with error %d\n", osal_ret);
+            PRINT_ERROR("OSAL Control thread creation failed with error %d\n", osal_ret);
             R_Deinit_Modules();
             break;
         }
-    }
 
-#if (CDNN)
-    if (g_customize.CDNN_Enable) {
-        osal_ret = R_OSAL_ThreadCreate(&ai_thrd_cfg, 0xf001, &ai_thrd_hndl);
+        /* Start Capture Thread */
+        osal_ret = R_OSAL_ThreadCreate(&capture_thrd_cfg, 0xf000, &capture_thrd_hndl);
         if (OSAL_RETURN_OK != osal_ret) {
             g_is_thread_exit = true;
-            PRINT_ERROR("OSAL inference thread creation failed with error %d\n", osal_ret);
+            PRINT_ERROR("OSAL capture thread creation failed with error %d\n", osal_ret);
             R_Deinit_Modules();
             break;
         }
-    }
+
+        /* Start IMR Thread */
+        if (true == g_customize.IMR_LDC || true == g_customize.IMR_Resize) {
+            osal_ret = R_OSAL_ThreadCreate(&imr_thrd_cfg, 0xf004, &imr_thrd_hndl);
+            if (OSAL_RETURN_OK != osal_ret) {
+                PRINT_ERROR("OSAL IMR thread creation failed with error %d\n", osal_ret);
+                R_Deinit_Modules();
+                break;
+            }
+        }
+
+#if (CDNN)
+        if (true == g_customize.CDNN_Enable) {
+            osal_ret = R_OSAL_ThreadCreate(&ai_thrd_cfg, 0xf001, &ai_thrd_hndl);
+            if (OSAL_RETURN_OK != osal_ret) {
+                g_is_thread_exit = true;
+                PRINT_ERROR("OSAL inference thread creation failed with error %d\n", osal_ret);
+                R_Deinit_Modules();
+                break;
+            }
+        }
 #endif
-    /* Start CPU Thread */
+        /* Start CPU Thread */
 #if (RCAR_V4H) && (CDNN)
-    if (g_customize.CPU_Load_Enable || g_customize.CDNN_Load_Enable)
+        if ((true == g_customize.CPU_Load_Enable) || (true == g_customize.CDNN_Load_Enable))
 #else
-    if (g_customize.CPU_Load_Enable)
+        if (true == g_customize.CPU_Load_Enable)
 #endif
-    {
-        osal_ret = R_OSAL_ThreadCreate(&cpu_thrd_cfg, 0xf005, &cpu_thrd_hndl);
+        {
+            osal_ret = R_OSAL_ThreadCreate(&cpu_thrd_cfg, 0xf005, &cpu_thrd_hndl);
+            if (OSAL_RETURN_OK != osal_ret) {
+                g_is_thread_exit = true;
+                PRINT_ERROR("OSAL cpu thread creation failed with error %d\n", osal_ret);
+                R_Deinit_Modules();
+                break;
+            }
+        }
+        /* Start vout Thread */
+        osal_ret = R_OSAL_ThreadCreate(&vout_thrd_cfg, 0xf002, &vout_thrd_hndl);
         if (OSAL_RETURN_OK != osal_ret) {
             g_is_thread_exit = true;
-            PRINT_ERROR("OSAL cpu thread creation failed with error %d\n", osal_ret);
+            PRINT_ERROR("OSAL vout thread creation failed with error %d\n", osal_ret);
             R_Deinit_Modules();
             break;
         }
-    }
-    /* Start vout Thread */
-    osal_ret = R_OSAL_ThreadCreate(&vout_thrd_cfg, 0xf002, &vout_thrd_hndl);
-    if (OSAL_RETURN_OK != osal_ret) {
-        g_is_thread_exit = true;
-        PRINT_ERROR("OSAL vout thread creation failed with error %d\n", osal_ret);
-        R_Deinit_Modules();
-        break;
-    }
-    /* wait until capture thread */
-    osal_ret = R_OSAL_ThreadJoin(capture_thrd_hndl, &thrd_return_value);
-    if (OSAL_RETURN_OK != osal_ret) {
-        PRINT_ERROR("OSAL capture thread join failed with error %d\n", osal_ret);
-        R_Deinit_Modules();
-        break;
-    }
-
-    if (g_customize.IMR_LDC || g_customize.IMR_Resize) {
-        osal_ret = R_OSAL_ThreadJoin(imr_thrd_hndl, &imr_thrd_return_value);
+        /* wait until capture thread */
+        osal_ret = R_OSAL_ThreadJoin(capture_thrd_hndl, &thrd_return_value);
         if (OSAL_RETURN_OK != osal_ret) {
-            PRINT_ERROR("OSAL imr thread join failed with error %d\n", osal_ret);
+            PRINT_ERROR("OSAL capture thread join failed with error %d\n", osal_ret);
             R_Deinit_Modules();
             break;
         }
-    }
 
-    /*Wait until Inference Thread*/
+        if (true == g_customize.IMR_LDC || true == g_customize.IMR_Resize) {
+            osal_ret = R_OSAL_ThreadJoin(imr_thrd_hndl, &imr_thrd_return_value);
+            if (OSAL_RETURN_OK != osal_ret) {
+                PRINT_ERROR("OSAL imr thread join failed with error %d\n", osal_ret);
+                R_Deinit_Modules();
+                break;
+            }
+        }
+
+        /*Wait until Inference Thread*/
 #if (CDNN)
-    if (g_customize.CDNN_Enable) {
-        osal_ret = R_OSAL_ThreadJoin(ai_thrd_hndl, &ai_thrd_return_value);
-        if (OSAL_RETURN_OK != osal_ret) {
-            PRINT_ERROR("OSAL inference thread join failed with error %d\n", osal_ret);
-            R_Deinit_Modules();
-            break;
+        if (true == g_customize.CDNN_Enable)
+
+        {
+            osal_ret = R_OSAL_ThreadJoin(ai_thrd_hndl, &ai_thrd_return_value);
+            if (OSAL_RETURN_OK != osal_ret) {
+                PRINT_ERROR("OSAL inference thread join failed with error %d\n", osal_ret);
+                R_Deinit_Modules();
+                break;
+            }
         }
-    }
 #endif
 
-    /*Wait until CPU Thread*/
+        /*Wait until CPU Thread*/
 #if (CDNN)
-    if (g_customize.CPU_Load_Enable || g_customize.CDNN_Load_Enable)
+        if ((true == g_customize.CPU_Load_Enable) || (true == g_customize.CDNN_Load_Enable))
 #else
-    if (g_customize.CPU_Load_Enable)
+        if (true == g_customize.CPU_Load_Enable)
 #endif
-    {
-        osal_ret = R_OSAL_ThreadJoin(cpu_thrd_hndl, &cpu_thrd_return_value);
+        {
+            osal_ret = R_OSAL_ThreadJoin(cpu_thrd_hndl, &cpu_thrd_return_value);
+            if (OSAL_RETURN_OK != osal_ret) {
+                PRINT_ERROR("OSAL cpu thread join failed with error %d\n", osal_ret);
+                R_Deinit_Modules();
+                break;
+            }
+        }
+
+        /* wait until VOUT thread finished */
+        osal_ret = R_OSAL_ThreadJoin(vout_thrd_hndl, &vout_thrd_return_value);
         if (OSAL_RETURN_OK != osal_ret) {
-            PRINT_ERROR("OSAL cpu thread join failed with error %d\n", osal_ret);
+            PRINT_ERROR("OSAL vout thread join failed with error %d\n", osal_ret);
             R_Deinit_Modules();
             break;
         }
-    }
 
-    /* wait until VOUT thread finished */
-    osal_ret = R_OSAL_ThreadJoin(vout_thrd_hndl, &vout_thrd_return_value);
-    if (OSAL_RETURN_OK != osal_ret) {
-        PRINT_ERROR("OSAL vout thread join failed with error %d\n", osal_ret);
+        if (true == g_customize.screen_capture_enable && false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) {
+            screen_capture_deinit();
+        }
+
+        printf("Please press Enter to Exit \n");
+        /* wait until control thread finished */
+        osal_ret = R_OSAL_ThreadJoin(ctrl_thrd_hndl, &ctrl_thrd_return_value);
+        if (OSAL_RETURN_OK != osal_ret) {
+            PRINT_ERROR("OSAL control thread join failed with error %d\n", osal_ret);
+            R_Deinit_Modules();
+            break;
+        }
+
+        /* De-Initialize */
         R_Deinit_Modules();
-        break;
-    }
-
-    if (g_customize.screen_capture_enable && !g_customize.Image_Folder_Enable && !g_customize.VIN_Enable) {
-        screen_capture_deinit();
-    }
-
-    printf("Please press Enter to Exit \n");
-    /* wait until control thread finished */
-    osal_ret = R_OSAL_ThreadJoin(ctrl_thrd_hndl, &ctrl_thrd_return_value);
-    if (OSAL_RETURN_OK != osal_ret) {
-        PRINT_ERROR("OSAL control thread join failed with error %d\n", osal_ret);
-        R_Deinit_Modules();
-        break;
-    }
-
-    /* De-Initialize */
-    R_Deinit_Modules();
+    } while (0);
     printf("FC App terminated successfully.\n");
 
     return SUCCESS;
@@ -708,9 +712,10 @@ int64_t R_Capture_Task() {
     struct timeval mod_endtime;
 
     VideoCaptureWrapper *fcVideoCaptureWrapper;
-    if (g_customize.Image_Folder_Video_Enable && g_customize.Image_Folder_Enable) {
+    if (true == g_customize.Image_Folder_Video_Enable && true == g_customize.Image_Folder_Enable) {
         fcVideoCaptureWrapper = open_video_stream(g_customize.Video_File_Path);
-    } else if (g_customize.Image_Folder_Enable) /* Image read from folder enabled */ {
+    } else if (true == g_customize.Image_Folder_Enable) /* Image read from folder enabled */
+    {
         struct dirent **entries;
         int num_entries;
         fp_list = fopen(IMAGE_LIST, "w+");
@@ -735,7 +740,7 @@ int64_t R_Capture_Task() {
     int64_t read_image_size, png_size;
     png_size = g_frame_height * g_frame_width * BPP_YUV;
     while (!g_is_thread_exit) {
-        if (g_customize.VIN_Enable) /* Camera capture enabled */
+        if (true == g_customize.VIN_Enable) /* Camera capture enabled */
         {
             ret = st_r_vin_execute_main(); /* Execution of VIN */
 
@@ -745,7 +750,7 @@ int64_t R_Capture_Task() {
                 return FAILED;
             }
         } else {
-            if (g_customize.Image_Folder_Video_Enable && g_customize.Image_Folder_Enable) {
+            if (true == g_customize.Image_Folder_Video_Enable && true == g_customize.Image_Folder_Enable) {
                 e_osal_return_t osal_ret = R_OSAL_MqSendForTimePeriod(g_mq_handle_imgread, TIMEOUT_MS,
                                                                       (void *)&image_read_send_flag, g_mq_config_imgread.msg_size);
                 if (OSAL_RETURN_OK != osal_ret) {
@@ -754,7 +759,7 @@ int64_t R_Capture_Task() {
                 R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
                 ret = read_frame(fcVideoCaptureWrapper, gp_vin_out_buffer);
                 R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
-            } else if (g_customize.Image_Folder_Enable) /* Image read from folder enabled */
+            } else if (true == g_customize.Image_Folder_Enable) /* Image read from folder enabled */
             {
                 if (fgets(fname, MAX_LEN_IMG_BUFF, fp_list)) {
                     /* sending message to image read message queue */
@@ -770,13 +775,13 @@ int64_t R_Capture_Task() {
                     R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
                 } else {
                     rewind(fp_list);
-                    printf("Read Image from folder completed!Starting over now...\n");
+                    printf("Read Image from folder completed! Starting over now...\n");
                 }
-            } else if (!g_customize.Image_Folder_Enable && !g_customize.VIN_Enable && !g_customize.screen_capture_enable) {
+            } else if (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable && false == g_customize.screen_capture_enable) {
                 R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
                 Conv_RGB2YUYV(mapped_buffer_in, gp_vin_out_buffer, g_frame_width, g_frame_height);
                 R_FC_SyncEnd(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
-            } else if (g_customize.screen_capture_enable && !g_customize.Image_Folder_Enable && !g_customize.VIN_Enable) {
+            } else if (true == g_customize.screen_capture_enable && false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) {
                 unsigned int capture_width = 896;
                 unsigned int capture_height = 504;
 
@@ -819,7 +824,7 @@ int64_t R_Capture_Task() {
             // R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_25MS_SLEEP);
         }
 
-        if (g_customize.ISP_Enable) {
+        if (true == g_customize.ISP_Enable) {
             ret = R_ISP_Execute();
             if (FAILED == ret) {
                 PRINT_ERROR("Failed R_ISP_Execute \n");
@@ -827,7 +832,7 @@ int64_t R_Capture_Task() {
                 return FAILED;
             }
 
-            if (g_customize.ISP_RAW_OUT_Format) {
+            if (true == g_customize.ISP_RAW_OUT_Format) {
                 memcpy((void *)gp_isp_buffer, (void *)gp_isp_out_rgb, (size_t)g_frame_width * g_frame_height * BPP_RGB);
             } else {
 #if (!RCAR_V4H)
@@ -869,7 +874,7 @@ int64_t R_IMR_Task() {
     R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_50MS_SLEEP);
     while (!g_is_thread_exit) {
         long long before_imr_task = currentTimeMillis();
-        if (g_customize.IMR_LDC) {
+        if (true == g_customize.IMR_LDC) {
             ret = R_IMR_ExecuteLDC();
             if (FAILED == ret) {
                 PRINT_ERROR("Failed R_IMR_ExecuteLDC \n");
@@ -878,7 +883,7 @@ int64_t R_IMR_Task() {
             }
         }
 
-        if (g_customize.IMR_Resize) {
+        if (true == g_customize.IMR_Resize) {
             ret = R_IMR_ExecuteResize(); /* Execution of IMR Resize */
             if (FAILED == ret) {
                 PRINT_ERROR("Failed R_IMR_ExecuteResize \n");
@@ -914,7 +919,7 @@ int64_t R_CPULOAD_Task() {
 
     R_OSAL_ThreadSleepForTimePeriod((osal_milli_sec_t)TIMEOUT_50MS_SLEEP);
 
-    if (g_customize.CPU_Load_Enable) /* If CPU Load is enabled */
+    if (true == g_customize.CPU_Load_Enable) /* If CPU Load is enabled */
     {
         while (!g_is_thread_exit) {
             R_CPU_Getstats(&load_0, &pid_temp); /* Get status of load 0 */
@@ -982,7 +987,7 @@ int64_t R_VOUT_Task() {
         {
             fpsCount(0); /* Get FPS */
         }
-        if (g_customize.VOUT_Enable) /* if VOUT is enabled */
+        if (true == g_customize.VOUT_Enable) /* if VOUT is enabled */
         {
             ret = execute(); /* VOUT execution */
             if (FAILED == ret) {
@@ -992,7 +997,7 @@ int64_t R_VOUT_Task() {
             }
         }
 
-        if (g_customize.Image_Folder_Enable) {
+        if (true == g_customize.Image_Folder_Enable) {
             /*Receiving message to image read MQ*/
             e_osal_return_t osal_ret = R_OSAL_MqReceiveForTimePeriod(g_mq_handle_imgread, TIMEOUT_MS,
                                                                      (void *)&image_read_receive_flag, g_mq_config_imgread.msg_size);
@@ -1084,7 +1089,7 @@ int64_t R_Init_Modules() {
     int32_t ret_sample = IMPDEMO_OK;
 
     /* Initialize all modules */
-    if (g_customize.VIN_Enable) /* If VIN enabled */
+    if (true == g_customize.VIN_Enable) /* If VIN enabled */
     {
         ret = R_VIN_Initilize(g_customize.VIN_Device,
                               g_frame_width, g_frame_height, g_customize.VIN_Offset_X,
@@ -1104,7 +1109,7 @@ int64_t R_Init_Modules() {
         g_fcStatus.vin.status = SUCCESS;
     }
 
-    if (g_customize.IMR_LDC || g_customize.IMR_Resize) {
+    if (true == g_customize.IMR_LDC || true == g_customize.IMR_Resize) {
         ret = R_IMR_Init();
         if (FAILED == ret) {
             g_fcStatus.imr_ldc.status = FAILED;
@@ -1114,7 +1119,7 @@ int64_t R_Init_Modules() {
         }
     }
 
-    if (g_customize.ISP_Enable) {
+    if (true == g_customize.ISP_Enable) {
         ret = R_ISP_Initialize(); /* ISP initialization */
         if (FAILED == ret) {
             g_fcStatus.isp.status = FAILED;
@@ -1123,7 +1128,7 @@ int64_t R_Init_Modules() {
         }
     }
 
-    if (g_customize.IMR_LDC) /* If IMR lens distortion correction enabled */
+    if (true == g_customize.IMR_LDC) /* If IMR lens distortion correction enabled */
     {
         ret = R_IMR_SetupLDC(); /* Set up IMR LDC */
         if (FAILED == ret) {
@@ -1132,7 +1137,7 @@ int64_t R_Init_Modules() {
         }
     }
 
-    if (g_customize.IMR_Resize) /* If IMR resize enabled */
+    if (true == g_customize.IMR_Resize) /* If IMR resize enabled */
     {
         ret = R_IMR_SetupResize(); /* Set up IMR resize */
         if (FAILED == ret) {
@@ -1141,7 +1146,7 @@ int64_t R_Init_Modules() {
         }
     }
 
-    if (g_customize.VOUT_Enable) /* If VOUT is enabled */
+    if (true == g_customize.VOUT_Enable) /* If VOUT is enabled */
     {
         ret = vout_init(); /* Initialize VOUT */
 
@@ -1205,7 +1210,7 @@ int64_t R_Deinit_Modules() {
         PRINT_ERROR("R_OSAL_MqIsEmpty failed, osal_ret = %d\n", osal_ret);
     }
 
-    if (!isEmpty) {
+    if (false == isEmpty) {
         osal_ret = R_OSAL_MqReset(g_mq_handle_aiactivity);
         if (OSAL_RETURN_OK != osal_ret) {
             // Notifying that R_OSAL_MqReset() failed.
@@ -1225,7 +1230,7 @@ int64_t R_Deinit_Modules() {
         R_VIN_DeInitialize(g_customize.VIN_Device); /* Deinitialize VIN */
     }
 
-    if (g_customize.ISP_Enable) {
+    if (true == g_customize.ISP_Enable) {
         ret = R_ISP_DeInitialize();
         if (FAILED == ret) {
             PRINT_ERROR("Failed R_ISP_DeInitialize \n");
@@ -1242,7 +1247,7 @@ int64_t R_Deinit_Modules() {
     free(gp_imr_rs_buffer_ch4);
     free(gp_ai_rgb_buffer);
 
-    if (g_customize.IMR_LDC || g_customize.IMR_Resize) {
+    if (true == g_customize.IMR_LDC || true == g_customize.IMR_Resize) {
         ret = R_IMR_Deinit();
         if (FAILED == ret) {
             PRINT_ERROR("Failed IMR DeInitialize \n");
@@ -1250,14 +1255,14 @@ int64_t R_Deinit_Modules() {
         }
     }
 
-    if (g_customize.mmap_out_enable) {
+    if (true == g_customize.mmap_out_enable) {
         ret = mmap_deinit();
         if (FAILED == ret) {
             PRINT_ERROR("Failed mmap_out DeInitialize \n");
             return FAILED;
         }
     }
-    if (!g_customize.screen_capture_enable && !g_customize.Image_Folder_Enable && !g_customize.VIN_Enable) {
+    if (false == g_customize.screen_capture_enable && false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable) {
         ret = in_mmap_deinit();
         if (FAILED == ret) {
             PRINT_ERROR("Failed in_mmap DeInitialize \n");
@@ -1368,28 +1373,28 @@ static int64_t R_FC_SystemInit() {
                                                                                                                       *********************************************************************************************************************/
 int R_PipelineParamValidate() {
 #ifdef NDEBUG
-    if (g_customize.Debug_Enable) {
+    if (true == g_customize.Debug_Enable) {
         PRINT_WARNING(
             "Currently the build has taken in release mode. So the configuration parameter Debug_Enable = 1\
  is an invalid configuration\n");
         return FAILED;
     }
 #endif
-    if ((g_customize.VIN_Enable) && (g_customize.Image_Folder_Enable)) {
+    if ((true == g_customize.VIN_Enable) && (true == g_customize.Image_Folder_Enable)) {
         PRINT_WARNING(
             "Configuration parameters VIN_Enable and Image_Folder_Enable are enabled at same time, \
 which is an invalid configuration for the application \n");
         return FAILED;
     }
 #if (CDNN)
-    else if ((!g_customize.IMR_Resize) && (g_customize.CDNN_Enable)) {
+    else if ((false == g_customize.IMR_Resize) && (true == g_customize.CDNN_Enable)) {
         PRINT_WARNING(
             "Configuration parameters IMR_Resize is disabled and CDNN_Enable is enabled at same time, \
 which is an invalid configuration for the application \n");
         return FAILED;
     }
 #endif
-    else if ((g_customize.VIN_Enable) && (g_customize.ISP_Enable)) {
+    else if ((true == g_customize.VIN_Enable) && (true == g_customize.ISP_Enable)) {
         PRINT_WARNING(
             "Currently FC App not supporting raw image from camera. So the configuration VIN_Enable=1 and \
 ISP_Enable=1 are invalid configuration for the application \n");
@@ -1399,7 +1404,7 @@ ISP_Enable=1 are invalid configuration for the application \n");
     else if ((g_customize.Frame_Width * 2) % MAX_LEN_IMG_BUFF != 0) {
         PRINT_WARNING("Please give a valid stride value(Frame Width * BPP) as multiple of 256 to run the pipeline \n");
         return FAILED;
-    } else if ((g_customize.Image_Folder_Enable) && (g_customize.ISP_Enable)) {
+    } else if ((true == g_customize.Image_Folder_Enable) && (true == g_customize.ISP_Enable)) {
         PRINT_WARNING(
             "Currently FC App only support to read single ISP buffer. Application pipeline shall not \
                          handle ISP buffers from image folder\n");
@@ -1582,9 +1587,9 @@ int64_t R_Mutex_Map() {
     gp_imr_ldc_cond_handle = &g_vin_cond_handle;
 
     /*yuv2rgb */
-    if (g_customize.IMR_Resize) {
+    if (true == g_customize.IMR_Resize) {
         gp_mtx_handle_yuv2rgb = &g_mtx_handle_imrrs;
-    } else if (g_customize.IMR_LDC) {
+    } else if (true == g_customize.IMR_LDC) {
         gp_mtx_handle_yuv2rgb = &g_mtx_handle_imrldc;
     } else {
         gp_mtx_handle_yuv2rgb = &g_mtx_handle_vin_out;
@@ -1596,7 +1601,7 @@ int64_t R_Mutex_Map() {
     gp_imr_rs_cond_handle = &g_vin_cond_handle;
 
     /* OpenCV Input Customization */
-    if (g_customize.IMR_LDC) {
+    if (true == g_customize.IMR_LDC) {
         gp_mtx_handle_opencv = &g_mtx_handle_imrldc;
         gp_opencv_cond_handle = &g_imr_ldc_cond_handle;
     } else {
@@ -1604,11 +1609,11 @@ int64_t R_Mutex_Map() {
         gp_opencv_cond_handle = &g_vin_cond_handle;
     }
 
-    if (g_customize.IMR_LDC) {
+    if (true == g_customize.IMR_LDC) {
         gp_mtx_handle_vout = &g_mtx_handle_imrldc;
-    } else if (g_customize.ISP_Enable) {
+    } else if (true == g_customize.ISP_Enable) {
         gp_mtx_handle_vout = &g_mtx_handle_vin_out;
-    } else if (g_customize.VIN_Enable) {
+    } else if (true == g_customize.VIN_Enable) {
         gp_mtx_handle_vout = &g_mtx_handle_vin_out;
     } else {
         gp_mtx_handle_vout = &g_mtx_handle_opencv;
@@ -1635,9 +1640,9 @@ int get_syncstatus(e_fc_module_t module, int flow) {
     if (flow == 1) {
         switch (module) {
             case eVIN:
-                if (g_customize.IMR_LDC) {
+                if (true == g_customize.IMR_LDC) {
                     status = g_imr_in_done;
-                } else if (g_customize.IMR_Resize) {
+                } else if (true == g_customize.IMR_Resize) {
                     status = g_imr_in_done && g_vout_done;
                 } else {
                     status = g_vout_done;
@@ -1650,7 +1655,7 @@ int get_syncstatus(e_fc_module_t module, int flow) {
 
             case eIMR_RS:
 #if (CDNN)
-                if (g_customize.CDNN_Enable) {
+                if (true == g_customize.CDNN_Enable) {
                     status = g_ai_done;
                 }
 #endif
@@ -1885,7 +1890,7 @@ static int64_t Vin_Buffer_Alloc() {
                                                                                                                       * @retval      false           fail(1)
                                                                                                                       *********************************************************************************************************************/
 static int64_t Isp_Buffer_Alloc() {
-    if (g_customize.ISP_RAW_OUT_Format) /* ISP raw format enabled */
+    if (true == g_customize.ISP_RAW_OUT_Format) /* ISP raw format enabled */
     {
         gp_isp_buffer = (char *)malloc(g_frame_width * g_frame_height * BPP_RGB); /* isp buffer allocation */
     } else {
@@ -1896,7 +1901,7 @@ static int64_t Isp_Buffer_Alloc() {
         return FAILED;
     }
 
-    if (g_customize.ISP_Enable) /* ISP enabled */
+    if (true == g_customize.ISP_Enable) /* ISP enabled */
     {
         gp_image_buffer = (char *)malloc(g_frame_width * g_frame_height * BPP_RGB); /* image buffer allocation */
 
@@ -1995,7 +2000,7 @@ static int64_t Imr_Buffer_Alloc() {
                                                                                                                       *********************************************************************************************************************/
 static void ISP_inputcustom() {
     /* ISP Input Customization */
-    if (g_customize.VIN_Enable) {
+    if (true == g_customize.VIN_Enable) {
         gp_isp_in = gp_vin_out_buffer;
     } else {
         gp_isp_in = gp_image_buffer;
@@ -2016,9 +2021,9 @@ static void ISP_inputcustom() {
                                                                                                                       *********************************************************************************************************************/
 static void IMR_LDC_inputcustom() {
     /* IMR LDC Input Customization */
-    if (g_customize.ISP_Enable) {
+    if (true == g_customize.ISP_Enable) {
         gp_imr_ldc_in = gp_isp_buffer;
-    } else if (g_customize.VIN_Enable) {
+    } else if (true == g_customize.VIN_Enable) {
         gp_imr_ldc_in = gp_vin_out_buffer;
     } else {
         gp_imr_ldc_in = gp_vin_out_buffer;
@@ -2038,11 +2043,11 @@ static void IMR_LDC_inputcustom() {
                                                                                                                       *********************************************************************************************************************/
 static void IMR_Resize_inputcustom() {
     /* IMR Resize Input Customization */
-    if (g_customize.IMR_LDC) {
+    if (true == g_customize.IMR_LDC) {
         gp_imr_res_in = gp_imr_ldc_buffer;
-    } else if (g_customize.ISP_Enable) {
+    } else if (true == g_customize.ISP_Enable) {
         gp_imr_res_in = gp_isp_buffer;
-    } else if (g_customize.VIN_Enable) {
+    } else if (true == g_customize.VIN_Enable) {
         gp_imr_res_in = gp_vin_out_buffer;
     } else {
         gp_imr_res_in = gp_vin_out_buffer;
@@ -2062,11 +2067,11 @@ static void IMR_Resize_inputcustom() {
                                                                                                                       *********************************************************************************************************************/
 static void Color_Conversion_bufferCustom() {
     /*gp_yuv2rgb_in buffer setting */
-    if (g_customize.IMR_Resize) {
+    if (true == g_customize.IMR_Resize) {
         gp_yuv2rgb_in = gp_imr_rs_buffer_ch0;
-    } else if (g_customize.IMR_LDC) {
+    } else if (true == g_customize.IMR_LDC) {
         gp_yuv2rgb_in = gp_imr_ldc_buffer;
-    } else if (g_customize.ISP_Enable) {
+    } else if (true == g_customize.ISP_Enable) {
         gp_yuv2rgb_in = gp_isp_buffer;
     } else {
         gp_yuv2rgb_in = gp_vin_out_buffer;
@@ -2088,11 +2093,11 @@ static void Color_Conversion_bufferCustom() {
                                                                                                                       *********************************************************************************************************************/
 static void opencv_inputcustom() {
     /* OpenCV Input Customization */
-    if (g_customize.IMR_LDC) {
+    if (true == g_customize.IMR_LDC) {
         gp_opencv_in = gp_imr_ldc_buffer;
-    } else if (g_customize.VIN_Enable) {
+    } else if (true == g_customize.VIN_Enable) {
         gp_opencv_in = gp_vin_out_buffer;
-    } else if (g_customize.ISP_Enable) {
+    } else if (true == g_customize.ISP_Enable) {
         gp_opencv_in = gp_isp_buffer;
     } else {
         gp_opencv_in = gp_vin_out_buffer;
@@ -2112,7 +2117,7 @@ static void opencv_inputcustom() {
                                                                                                                       *********************************************************************************************************************/
 static void vout_inputcustom() {
     /* Vout Input Customization */
-    if (g_customize.VOUT_Enable) {
+    if (true == g_customize.VOUT_Enable) {
         gp_vout_in = gp_opencv_buffer;
     }
 }
@@ -2133,9 +2138,9 @@ static void vout_inputcustom() {
 static int64_t syncflow_enable(e_fc_module_t module) {
     switch (module) {
         case eVIN:
-            if (g_customize.IMR_LDC) {
+            if (true == g_customize.IMR_LDC) {
                 g_imr_in_done = 1;
-            } else if (g_customize.IMR_Resize) {
+            } else if (true == g_customize.IMR_Resize) {
                 g_imr_in_done = 1;
                 g_vout_done = 1;  // TODO: Need to fix once Opencv enable/ disable is implemented
             } else {
@@ -2144,7 +2149,7 @@ static int64_t syncflow_enable(e_fc_module_t module) {
             break;
 
         case eIMR_LDC:
-            if (g_customize.IMR_Resize) {
+            if (true == g_customize.IMR_Resize) {
                 g_vout_done = 1;
             } else {
                 g_vout_done = 0;
@@ -2153,7 +2158,7 @@ static int64_t syncflow_enable(e_fc_module_t module) {
 
         case eIMR_RS:
 #if (CDNN)
-            if (g_customize.CDNN_Enable) {
+            if (true == g_customize.CDNN_Enable) {
                 g_ai_done = 1;
             }
 #endif
@@ -2179,16 +2184,16 @@ static int64_t syncflow_enable(e_fc_module_t module) {
 static int64_t syncflow_disable(e_fc_module_t module) {
     switch (module) {
         case eIMR_LDC:
-            if (g_customize.VIN_Enable || g_customize.ISP_Enable ||
-                g_customize.Image_Folder_Enable) {
+            if (true == g_customize.VIN_Enable || true == g_customize.ISP_Enable ||
+                true == g_customize.Image_Folder_Enable) {
                 g_imr_in_done = 0;
             } else {
                 g_imr_in_done = 1;
             }
             break;
         case eIMR_RS:
-            if (g_customize.VIN_Enable || g_customize.ISP_Enable ||
-                g_customize.Image_Folder_Enable || (!g_customize.Image_Folder_Enable && !g_customize.VIN_Enable)) {
+            if (true == g_customize.VIN_Enable || true == g_customize.ISP_Enable ||
+                true == g_customize.Image_Folder_Enable || (false == g_customize.Image_Folder_Enable && false == g_customize.VIN_Enable)) {
                 g_imr_in_done = 0;
             } else {
                 g_imr_in_done = 1;
@@ -2198,8 +2203,8 @@ static int64_t syncflow_disable(e_fc_module_t module) {
             g_ai_done = 0;
             break;
         case eFC_DRAW:
-            if (!g_customize.VIN_Enable && !g_customize.IMR_LDC &&
-                !g_customize.ISP_Enable && !g_customize.Image_Folder_Enable) {
+            if (false == g_customize.VIN_Enable && false == g_customize.IMR_LDC &&
+                false == g_customize.ISP_Enable && false == g_customize.Image_Folder_Enable) {
                 g_vout_done = 1;
             } else {
                 g_vout_done = 0;
