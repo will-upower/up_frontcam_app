@@ -250,6 +250,58 @@ int R_CheckConfig(st_customize_t *custom_param)
  * @retval      true            success
  * @retval      false           fail
  *********************************************************************************************************************/
+int R_CustomizePreload(st_customize_t *custom_param)
+{
+    custom_param->mmap_out_enable = 0;
+    custom_param->Image_Folder_Video_Enable = 0;
+    custom_param->Image_Folder_RGB2YUV_Enable = 1;
+    strcpy(custom_param->Video_File_Path, "input.avi");
+    custom_param->Image_Video_Height = 256;
+    custom_param->Image_Video_Width = 512;
+    custom_param->mmap_in_width = 896;
+    custom_param->mmap_in_height = 504;
+    custom_param->screen_capture_enable = 0;
+
+    return SUCCESS;
+}
+
+int R_CustomizePostload(st_customize_t *custom_param)
+{
+    #if (CDNN)
+    if ((custom_param->CDNN_Load_Enable) || (custom_param->CPU_Load_Enable))
+    #else
+    if (custom_param->CPU_Load_Enable)
+    #endif 
+    {
+        g_customize.Frame_Width = FRAME_WIDTH;
+        g_customize.Frame_Height = FRAME_HEIGHT;
+        g_customize.VOUT_Pos_X = 0;
+        g_customize.VOUT_Pos_Y = 0;
+        g_customize.VOUT_Display_Width = DISPLAY_WIDTH;
+        g_customize.VOUT_Display_Height = DISPLAY_HEIGHT;
+    }
+
+    if (custom_param->Image_Folder_Enable) {
+            g_customize.Frame_Width = g_customize.Image_Video_Width;
+            g_customize.Frame_Height = g_customize.Image_Video_Height;
+            g_customize.VOUT_Pos_X = 0;
+            g_customize.VOUT_Pos_Y = 0;
+            g_customize.VOUT_Display_Width = g_customize.Image_Video_Width;
+            g_customize.VOUT_Display_Height = g_customize.Image_Video_Height;
+            g_customize.VIN_Capture_Format = 1;
+    }
+
+    if (custom_param->Image_Folder_Enable && custom_param->VIN_Enable) {
+        g_customize.Frame_Width = g_customize.mmap_in_width;
+        g_customize.Frame_Height = g_customize.mmap_in_height;
+        g_customize.VOUT_Pos_X = 0;
+        g_customize.VOUT_Pos_Y = 0;
+        g_customize.VOUT_Display_Width = g_customize.mmap_in_width;
+        g_customize.VOUT_Display_Height = g_customize.mmap_in_height;
+        g_customize.VIN_Capture_Format = 1;  // YUYV, need to convert from RGB to YUYV
+    }
+}
+
 int R_CustomizeLoad(st_customize_t *custom_param, const char *file_name)
 {
     int ret = 0;

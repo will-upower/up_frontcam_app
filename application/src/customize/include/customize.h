@@ -160,4 +160,8 @@ int  R_CustomizePrint (st_customize_t * custom_param);
 int R_CustomizeValidate (st_customize_t * custom_param);
 extern int CustomizeRangeCheck (char * var, int val, int min, int max);
 extern char * getstr(char *buffer, char *tag_name, char *dest_buffer);
+
+//new
+int R_CustomizePreload(st_customize_t * custom_param);
+int R_CustomizePostload(st_customize_t * custom_param);
 #endif

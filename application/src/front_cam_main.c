@@ -262,58 +262,16 @@ int main(int argc, char *argv[]) {
 
     do {
         signal(SIGINT, sigint_handler);
-        g_customize.mmap_out_enable = 0;
-        g_customize.Image_Folder_Video_Enable = 0;
-        g_customize.Image_Folder_RGB2YUV_Enable = 1;
-        strcpy(g_customize.Video_File_Path, "input.avi");
-        g_customize.Image_Video_Height = 256;
-        g_customize.Image_Video_Width = 512;
-        g_customize.mmap_in_width = 896;
-        g_customize.mmap_in_height = 504;
-        g_customize.screen_capture_enable = 0;
+        R_CustomizePreload(&g_customize);
         ret = R_CustomizeLoad(&g_customize, FC_CustomizeFile);
         if (ret == FAILED) {
             PRINT_INFO("Cannot find a customize file. customization paramters are used default values\n");
             R_CustomizeInit(&g_customize); /* Initialize customization parameters */
         }
         g_customize.CPU_Load_Enable = false;  // Always disable CPU Load
-#if (CDNN)
-        g_customize.CDNN_Load_Enable = false;                                // Always disable CDNN Load
-        if ((g_customize.CDNN_Load_Enable) || (g_customize.CPU_Load_Enable)) /* Graph Display */
-#else
-        if (g_customize.CPU_Load_Enable) /* Graph Display */  // Make sure to always disable CPU_Load
-#endif
-        {
-            g_customize.Frame_Width = FRAME_WIDTH;
-            g_customize.Frame_Height = FRAME_HEIGHT;
-            g_customize.VOUT_Pos_X = 0;
-            g_customize.VOUT_Pos_Y = 0;
-            g_customize.VOUT_Display_Width = DISPLAY_WIDTH;
-            g_customize.VOUT_Display_Height = DISPLAY_HEIGHT;
-        }
-        if (g_customize.Image_Folder_Enable) {
-            g_customize.Frame_Width = g_customize.Image_Video_Width;
-            g_customize.Frame_Height = g_customize.Image_Video_Height;
-            g_customize.VOUT_Pos_X = 0;
-            g_customize.VOUT_Pos_Y = 0;
-            g_customize.VOUT_Display_Width = g_customize.Image_Video_Width;
-            g_customize.VOUT_Display_Height = g_customize.Image_Video_Height;
-            g_customize.VIN_Capture_Format = 1;
-        }
-        if (!g_customize.Image_Folder_Enable && !g_customize.VIN_Enable) {
-            g_customize.Frame_Width = g_customize.mmap_in_width;
-            g_customize.Frame_Height = g_customize.mmap_in_height;
-            g_customize.VOUT_Pos_X = 0;
-            g_customize.VOUT_Pos_Y = 0;
-            g_customize.VOUT_Display_Width = g_customize.mmap_in_width;
-            g_customize.VOUT_Display_Height = g_customize.mmap_in_height;
-            g_customize.VIN_Capture_Format = 1;  // YUYV, need to convert from RGB to YUYV
-        }
-        R_CustomizePrint(&g_customize); /* Print customization parameters */
-
-        /* if (R_CheckConfig(&g_customize) == FAILED) { // to be modified by me later
-            break;
-        } */
+        g_customize.CDNN_Load_Enable = false;    
+        
+        R_CustomizePostload(&g_customize); /* Print customization parameters */
 
         /* ret = R_CustomizeValidate(&g_customize);
         if (ret == FAILED)
@@ -329,6 +287,8 @@ int main(int argc, char *argv[]) {
 re-run the application\n FC App terminating...\n ");
             break;
         } */
+
+        R_CustomizePrint(&g_customize);
 
         ret = R_FC_SystemInit(); /* System initialization */
 
