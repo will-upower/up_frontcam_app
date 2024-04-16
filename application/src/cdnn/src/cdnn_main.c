@@ -909,7 +909,7 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
                 if (R_FC_Pre_cnt == 0 && g_customize.SEM_SEG_Enable == 1)
                 {
                     R_FC_SyncStart(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);   
-                    Conv_YUYV2RGB_OpenCL(get_imr_resize_buffer(g_sem_seg_map_ch), gp_ai_rgb_buffer, g_customize.IMR_Resize_Width_Ch_0, g_customize.IMR_Resize_Height_Ch_0);
+                    Conv_YUYV2RGB(get_imr_resize_buffer(g_sem_seg_map_ch), gp_ai_rgb_buffer, g_customize.IMR_Resize_Width_Ch_0, g_customize.IMR_Resize_Height_Ch_0);
                     inferencePreprocess_ss();
                     if (g_customize.OBJ_DET_Enable == 1 || g_customize.POSE_EST_Enable == 1)
                     {
@@ -926,7 +926,7 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
                     {
                         R_FC_SyncStart(eAI, &g_mtx_handle_imrrs_out, &g_imr_rs_cond_handle, 0);
                     }
-                    Conv_YUYV2RGB_OpenCL(get_imr_resize_buffer(g_obj_det_map_ch), gp_ai_rgb_buffer, OBJ_WIDTH, OBJ_HEIGHT);
+                    Conv_YUYV2RGB(get_imr_resize_buffer(g_obj_det_map_ch), gp_ai_rgb_buffer, OBJ_WIDTH, OBJ_HEIGHT);
                     
                     inferencePreprocess_od();
                     if (g_customize.SEM_SEG_Enable == 1 && g_customize.POSE_EST_Enable == 0)
@@ -951,7 +951,7 @@ bool R_FC_Pre_post(e_ai_pre_post_t inf_work, const int8_t* data)
                     }
 
                     // Conv_YUYV2RGB(get_imr_resize_buffer(g_pose_est_map_ch), gp_ai_rgb_buffer, POSE_EST_IMG_WIDTH, POSE_EST_IMG_HEIGHT);
-                    Conv_YUYV2RGB_OpenCL(get_imr_resize_buffer(g_pose_est_map_ch), gp_ai_rgb_buffer, POSE_EST_IMG_WIDTH, POSE_EST_IMG_HEIGHT);
+                    Conv_YUYV2RGB(get_imr_resize_buffer(g_pose_est_map_ch), gp_ai_rgb_buffer, POSE_EST_IMG_WIDTH, POSE_EST_IMG_HEIGHT);
                     inferencePreprocess_pe();
                     if (g_customize.SEM_SEG_Enable == 1)
                     {
