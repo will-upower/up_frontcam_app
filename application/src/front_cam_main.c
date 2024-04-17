@@ -272,7 +272,7 @@ int main(int argc, char *argv[]) {
         g_customize.mmap_in_height = 504;
         g_customize.screen_capture_enable = 0;
         ret = R_CustomizeLoad(&g_customize, FC_CustomizeFile);
-        if (FAILED == ret) {
+        if (ret == FAILED) {
             PRINT_INFO("Cannot find a customize file. customization paramters are used default values\n");
             R_CustomizeInit(&g_customize); /* Initialize customization parameters */
         }
@@ -316,7 +316,7 @@ int main(int argc, char *argv[]) {
         } */
 
         /* ret = R_CustomizeValidate(&g_customize);
-        if (FAILED == ret)
+        if (ret == FAILED)
         {
             PRINT_ERROR("Failed R_CustomizeValidate \n");
             break;
@@ -332,14 +332,14 @@ re-run the application\n FC App terminating...\n ");
 
         ret = R_FC_SystemInit(); /* System initialization */
 
-        if (FAILED == ret) {
+        if (ret == FAILED) {
             PRINT_ERROR("R_FC_SystemInit failed\n");
             break;
         }
 
         ret = buffer_map(); /* Mapping IN/OUT buffers */
 
-        if (FAILED == ret) {
+        if (ret == FAILED) {
             PRINT_ERROR("buffer_map failed\n");
             break;
         }
@@ -370,14 +370,14 @@ re-run the application\n FC App terminating...\n ");
 
         ret = R_Init_Modules(); /* Initialize modules */
 
-        if (FAILED == ret) {
+        if (ret == FAILED) {
             R_Deinit_Modules(); /* Deinitialize modules if failed */
             PRINT_ERROR("Failed R_Init_Modules ret\n");
             break;
         }
 
         ret = R_Create_Mutex(); /* Create mutex */
-        if (FAILED == ret) {
+        if (ret == FAILED) {
             R_Deinit_Modules(); /* Deinitialize modules if failed */
             PRINT_ERROR("Failed R_Create_Mutex ret\n");
             break;
@@ -385,7 +385,7 @@ re-run the application\n FC App terminating...\n ");
 
         ret = R_Mutex_Map(); /* Mutex mapping */
 
-        if (FAILED == ret) {
+        if (ret == FAILED) {
             R_Deinit_Modules(); /* Deinitialize modules if failed */
             PRINT_ERROR("Failed R_Mutex_Map ret\n");
             break;
@@ -740,7 +740,7 @@ int64_t R_Capture_Task() {
         {
             ret = st_r_vin_execute_main(); /* Execution of VIN */
 
-            if (FAILED == ret) {
+            if (ret == FAILED) {
                 PRINT_ERROR("Failed R_VIN_Execute \n");
                 g_is_thread_exit = true;
                 return FAILED;
@@ -822,7 +822,7 @@ int64_t R_Capture_Task() {
 
         if (g_customize.ISP_Enable) {
             ret = R_ISP_Execute();
-            if (FAILED == ret) {
+            if (ret == FAILED) {
                 PRINT_ERROR("Failed R_ISP_Execute \n");
                 g_is_thread_exit = true;
                 return FAILED;
@@ -834,7 +834,7 @@ int64_t R_Capture_Task() {
 #if (!RCAR_V4H)
                 R_FC_SyncStart(eVIN, &g_mtx_handle_vin_out, &g_vin_cond_handle, 1);
                 ret = y_uv2yuyv(gp_isp_buffer, (char *)gp_isp_out_y, (char *)gp_isp_out_uv, g_frame_width, g_frame_height);
-                if (FAILED == ret) {
+                if (ret == FAILED) {
                     PRINT_ERROR("Failed y_uv2yuyv Conversion \n");
                     g_is_thread_exit = true;
                     return FAILED;
@@ -872,7 +872,7 @@ int64_t R_IMR_Task() {
         long long before_imr_task = currentTimeMillis();
         if (g_customize.IMR_LDC) {
             ret = R_IMR_ExecuteLDC();
-            if (FAILED == ret) {
+            if (ret == FAILED) {
                 PRINT_ERROR("Failed R_IMR_ExecuteLDC \n");
                 g_is_thread_exit = true;
                 return FAILED;
@@ -881,7 +881,7 @@ int64_t R_IMR_Task() {
 
         if (g_customize.IMR_Resize) {
             ret = R_IMR_ExecuteResize(); /* Execution of IMR Resize */
-            if (FAILED == ret) {
+            if (ret == FAILED) {
                 PRINT_ERROR("Failed R_IMR_ExecuteResize \n");
                 g_is_thread_exit = true;
                 return FAILED;
@@ -965,7 +965,7 @@ int64_t R_VOUT_Task() {
         if (g_customize.mmap_out_enable) {
             ret = mmap_copy();
         }
-        if (FAILED == ret) {
+        if (ret == FAILED) {
             g_is_thread_exit = true;
             return FAILED;
         }
@@ -973,7 +973,7 @@ int64_t R_VOUT_Task() {
         ret = f_opencv_execute(); /* OpenCV execute */
         long long after_vout_task = currentTimeMillis();
         vout_task_timer = after_vout_task - before_vout_task;
-        if (FAILED == ret) {
+        if (ret == FAILED) {
             g_is_thread_exit = true;
             PRINT_ERROR("Failed f_opencv_execute \n");
             return FAILED;
@@ -1082,14 +1082,14 @@ int64_t R_Init_Modules() {
                               g_frame_width, g_frame_height, g_customize.VIN_Offset_X,
                               g_customize.VIN_Offset_Y, g_customize.VIN_Capture_Format, g_customize.VIN_Req_Buffer_Num,
                               g_customize.Debug_Enable); /* Initialize VIN */
-        if (FAILED == ret) {
+        if (ret == FAILED) {
             g_fcStatus.vin.status = FAILED;
             PRINT_ERROR("Failed R_VIN_Initilize \n");
             return FAILED;
         }
 
         ret = R_VIN_Start_Capturing(g_customize.VIN_Device); /* Start capturing frames */
-        if (SUCCESS != ret) {
+        if (ret != SUCCESS) {
             PRINT_ERROR("R_VIN_Start_Capturing failed\n");
             return FAILED;
         }
@@ -1098,7 +1098,7 @@ int64_t R_Init_Modules() {
 
     if (g_customize.IMR_LDC || g_customize.IMR_Resize) {
         ret = R_IMR_Init();
-        if (FAILED == ret) {
+        if (ret == FAILED) {
             g_fcStatus.imr_ldc.status = FAILED;
             g_fcStatus.imr_rs.status = FAILED;
             PRINT_ERROR("Failed R_IMR_Init \n");
@@ -1108,7 +1108,7 @@ int64_t R_Init_Modules() {
 
     if (g_customize.ISP_Enable) {
         ret = R_ISP_Initialize(); /* ISP initialization */
-        if (FAILED == ret) {
+        if (ret == FAILED) {
             g_fcStatus.isp.status = FAILED;
             PRINT_ERROR("Failed ISP_init \n");
             return FAILED;
@@ -1118,7 +1118,7 @@ int64_t R_Init_Modules() {
     if (g_customize.IMR_LDC) /* If IMR lens distortion correction enabled */
     {
         ret = R_IMR_SetupLDC(); /* Set up IMR LDC */
-        if (FAILED == ret) {
+        if (ret == FAILED) {
             PRINT_ERROR("Failed R_IMR_SetupLDC \n");
             return FAILED;
         }
@@ -1127,7 +1127,7 @@ int64_t R_Init_Modules() {
     if (g_customize.IMR_Resize) /* If IMR resize enabled */
     {
         ret = R_IMR_SetupResize(); /* Set up IMR resize */
-        if (FAILED == ret) {
+        if (ret == FAILED) {
             PRINT_ERROR("Failed R_IMR_SetupResize \n");
             return FAILED;
         }
@@ -1136,7 +1136,7 @@ int64_t R_Init_Modules() {
   
     if (g_customize.mmap_out_enable) {
         ret = mmap_image_init();
-        if (FAILED == ret) {
+        if (ret == FAILED) {
             return FAILED;
         }
     }
@@ -1200,13 +1200,13 @@ int64_t R_Deinit_Modules() {
 
     free(gp_vin_out_buffer);
 
-    if (SUCCESS == g_fcStatus.vin.status) {
+    if (g_fcStatus.vin.status == SUCCESS) {
         R_VIN_DeInitialize(g_customize.VIN_Device); /* Deinitialize VIN */
     }
 
     if (g_customize.ISP_Enable) {
         ret = R_ISP_DeInitialize();
-        if (FAILED == ret) {
+        if (ret == FAILED) {
             PRINT_ERROR("Failed R_ISP_DeInitialize \n");
             return FAILED;
         }
@@ -1223,7 +1223,7 @@ int64_t R_Deinit_Modules() {
 
     if (g_customize.IMR_LDC || g_customize.IMR_Resize) {
         ret = R_IMR_Deinit();
-        if (FAILED == ret) {
+        if (ret == FAILED) {
             PRINT_ERROR("Failed IMR DeInitialize \n");
             return FAILED;
         }
@@ -1231,14 +1231,14 @@ int64_t R_Deinit_Modules() {
 
     if (g_customize.mmap_out_enable) {
         ret = mmap_deinit();
-        if (FAILED == ret) {
+        if (ret == FAILED) {
             PRINT_ERROR("Failed mmap_out DeInitialize \n");
             return FAILED;
         }
     }
     if (!g_customize.screen_capture_enable && !g_customize.Image_Folder_Enable && !g_customize.VIN_Enable) {
         ret = in_mmap_deinit();
-        if (FAILED == ret) {
+        if (ret == FAILED) {
             PRINT_ERROR("Failed in_mmap DeInitialize \n");
             return FAILED;
         }
@@ -1246,24 +1246,24 @@ int64_t R_Deinit_Modules() {
 
     free(gp_opencv_buffer);
 
-    if (SUCCESS == g_fcStatus.vout.status) {
+    if (g_fcStatus.vout.status == SUCCESS) {
         ret = vout_deinit(); /* Deinitialize VOUT */
-        if (FAILED == ret) {
+        if (ret == FAILED) {
             PRINT_ERROR("Failed vout DeInitialize \n");
             return FAILED;
         }
     }
     ret = deinit_mmgr(); /* Deinitialize memory manager */
-    if (FAILED == ret) {
+    if (ret == FAILED) {
         PRINT_ERROR("Failed memory manager DeInitialize \n");
         return FAILED;
     }
     ret = R_OSAL_Deinitialize(); /* Deinitialize OSAL */
-    if (FAILED == ret) {
+    if (ret == FAILED) {
         PRINT_ERROR("Failed OSAL DeInitialize \n");
         return FAILED;
     }
-    if (FAILED == ret) {
+    if (ret == FAILED) {
         return FAILED;
     }
     return SUCCESS;
@@ -1305,28 +1305,28 @@ static int64_t R_FC_SystemInit() {
 
     /* memory allocation for VIN buffer */
     ret = Vin_Buffer_Alloc();
-    if (FAILED == ret) {
+    if (ret == FAILED) {
         DEBUG_PRINT("Failed to allocate vin_buffer \n");
         return ret;
     }
 
     /* memory allocation for ISP buffers */
     ret = Isp_Buffer_Alloc();
-    if (FAILED == ret) {
+    if (ret == FAILED) {
         DEBUG_PRINT("Failed to allocate isp buffer \n");
         return ret;
     }
 
     /* memory allocation for IMR buffers */
     ret = Imr_Buffer_Alloc();
-    if (FAILED == ret) {
+    if (ret == FAILED) {
         DEBUG_PRINT("Failed to allocate isp buffer \n");
         return ret;
     }
 
     /* buffer allocation for OpenCV buffers */
     ret = Opencv_buffer_alloc();
-    if (FAILED == ret) {
+    if (ret == FAILED) {
         DEBUG_PRINT("Failed to allocate opencv buffer \n");
         return ret;
     }
@@ -1673,13 +1673,13 @@ int set_syncstatus(e_fc_module_t module, int flow) {
     int ret;
     if (flow == 1) {
         ret = syncflow_enable(module);
-        if (FAILED == ret) {
+        if (ret == FAILED) {
             DEBUG_PRINT("Failed to enable sync status\n");
             return ret;
         }
     } else {
         ret = syncflow_disable(module);
-        if (FAILED == ret) {
+        if (ret == FAILED) {
             DEBUG_PRINT("Failed to disable sync status\n");
             return ret;
         }
@@ -2208,7 +2208,7 @@ static int st_r_vin_execute_main(void) {
 
     ret = R_VIN_Execute(g_customize.VIN_Capture_Format, g_customize.VIN_Device);
 
-    if (FAILED == ret) {
+    if (ret == FAILED) {
         PRINT_ERROR("Failed R_VIN_Execute \n");
         return ret;
     }
