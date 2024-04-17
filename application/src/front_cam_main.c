@@ -239,18 +239,18 @@ int R_FC_SyncEnd(e_fc_module_t module, osal_mutex_handle_t *ptr_mtx, osal_cond_h
 /******************************************************************************************************************/ /**
  /* Function Name : main */
 /******************************************************************************************************************/ /**
-  * @brief       main function
+* @brief       main function
                  [Covers: BPAP_FC_V4H_AD045][Covers: BPAP_FC_V4H_AD001][Covers: BPAP_FC_V4H_AD002]
                  [Covers: BPAP_FC_V4H_AD007][Covers: BPAP_FC_V4H_AD009][Covers: BPAP_FC_V4H_AD055]
                  [Covers: BPAP_FC_V4H_AD011][Covers: BPAP_FC_V4H_AD012][Covers: BPAP_FC_V4H_AD015]
                  [Covers: BPAP_FC_V4H_AD017][Covers: BPAP_FC_V4H_AD024][Covers: BPAP_FC_V4H_AD026]
                  [Covers: BPAP_FC_V4H_AD027][Covers: BPAP_FC_V4H_AD033][Covers: BPAP_FC_V4H_AD034]
                  [Covers: BPAP_FC_V4H_AD047][Covers: BPAP_FC_V4H_AD058]
-  * @param[in]   argc                        unused
-  * @param[in]   argv                        unused
-  * @param[out]  none
-  * @retval      true                        success
-  * @retval      false                       fail
+* @param[in]   argc                        unused
+* @param[in]   argv                        unused
+* @param[out]  none
+* @retval      true                        success
+* @retval      false                       fail
  ***********************************************************************************************************************/
 int main(int argc, char *argv[]) {
     (void)argc; /* unused */
@@ -278,7 +278,7 @@ int main(int argc, char *argv[]) {
         }
         g_customize.CPU_Load_Enable = false;  // Always disable CPU Load
 #if (CDNN)
-        g_customize.CDNN_Load_Enable = false;                                                // Always disable CDNN Load
+        g_customize.CDNN_Load_Enable = false;                                // Always disable CDNN Load
         if ((g_customize.CDNN_Load_Enable) || (g_customize.CPU_Load_Enable)) /* Graph Display */
 #else
         if (g_customize.CPU_Load_Enable) /* Graph Display */  // Make sure to always disable CPU_Load
@@ -683,16 +683,16 @@ int compare(const struct dirent **a, const struct dirent **b) {
 /**********************************************************************************************************************
 /* Function Name : R_Capture_Task */
 /******************************************************************************************************************/ /**
-  * @brief       Capture thread
+* @brief       Capture thread
                  [Covers: BPAP_FC_V4H_AD005][Covers: BPAP_FC_V4H_AD015][Covers: BPAP_FC_V4H_AD016]
                  [Covers: BPAP_FC_V4H_AD020][Covers: BPAP_FC_V4H_AD024][Covers: BPAP_FC_V4H_AD027]
                  [Covers: BPAP_FC_V4H_AD035][Covers: BPAP_FC_V4H_AD036][Covers: BPAP_FC_V4H_AD040]
                  [Covers: BPAP_FC_V4H_AD046][Covers: BPAP_FC_V4H_AD047][Covers: BPAP_FC_V4H_AD048]
                  [Covers: BPAP_FC_V4H_AD008]
-  * @param[in]   none
-  * @param[out]  none
-  * @retval      true            success
-  * @retval      false           fail
+* @param[in]   none
+* @param[out]  none
+* @retval      true            success
+* @retval      false           fail
  ***********************************************************************************************************************/
 int64_t R_Capture_Task() {
     int ret = INVALID;
@@ -855,15 +855,15 @@ int64_t R_Capture_Task() {
 /**********************************************************************************************************************
 /* Function Name : R_IMR_Task */
 /******************************************************************************************************************/ /**
-  * @brief       IMR Thread
+* @brief       IMR Thread
                  [Covers: BPAP_FC_V4H_AD011][Covers: BPAP_FC_V4H_AD017][Covers: BPAP_FC_V4H_AD023]
                  [Covers: BPAP_FC_V4H_AD024][Covers: BPAP_FC_V4H_AD028][Covers: BPAP_FC_V4H_AD037]
                  [Covers: BPAP_FC_V4H_AD049]
-  * @param[in]   none
-  * @param[out]  none
-  * @retval      true            success
-  * @retval      false           fail
-  *********************************************************************************************************************/
+* @param[in]   none
+* @param[out]  none
+* @retval      true            success
+* @retval      false           fail
+*********************************************************************************************************************/
 int64_t R_IMR_Task() {
     int ret;
 
@@ -900,13 +900,13 @@ int64_t R_IMR_Task() {
 /**********************************************************************************************************************
 /* Function Name : R_CPULOAD_Task */
 /******************************************************************************************************************/ /**
-  * @brief       CPU Thread
+* @brief       CPU Thread
                  [Covers: BPAP_FC_V4H_AD030]
-  * @param[in]   none
-  * @param[out]  none
-  * @retval      true            success
-  * @retval      false           fail
-  *********************************************************************************************************************/
+* @param[in]   none
+* @param[out]  none
+* @retval      true            success
+* @retval      false           fail
+*********************************************************************************************************************/
 int64_t R_CPULOAD_Task() {
     int ret;
     int pid_temp = getpid();
@@ -941,15 +941,15 @@ int64_t R_CPULOAD_Task() {
 /**********************************************************************************************************************
 /* Function Name : R_VOUT_Task */
 /******************************************************************************************************************/ /**
-  * @brief       Display Thread
+* @brief       Display Thread
                  [Covers: BPAP_FC_V4H_AD020][Covers: BPAP_FC_V4H_AD021][Covers: BPAP_FC_V4H_AD024]
                  [Covers: BPAP_FC_V4H_AD031][Covers: BPAP_FC_V4H_AD039][Covers: BPAP_FC_V4H_AD043]
                  [Covers: BPAP_FC_V4H_AD051][Covers: BPAP_FC_V4H_AD052]
-  * @param[in]   none
-  * @param[out]  none
-  * @retval      true            success
-  * @retval      false           fail
-  *********************************************************************************************************************/
+* @param[in]   none
+* @param[out]  none
+* @retval      true            success
+* @retval      false           fail
+*********************************************************************************************************************/
 int64_t R_VOUT_Task() {
     int ret = INVALID;
     char folder[] = OUTPUT_BUFFER;
@@ -983,7 +983,7 @@ int64_t R_VOUT_Task() {
         {
             fpsCount(0); /* Get FPS */
         }
-      
+
         if (g_customize.Image_Folder_Enable) {
             /*Receiving message to image read MQ*/
             e_osal_return_t osal_ret = R_OSAL_MqReceiveForTimePeriod(g_mq_handle_imgread, TIMEOUT_MS,
@@ -1005,17 +1005,17 @@ int64_t R_VOUT_Task() {
  *********************************************************************************************************************/
 
 /*********************************************************************************************************************/
-/* Function Name :R_Inference_Task  */
+/* Function Name :R_Inference_Task*/
 /******************************************************************************************************************/ /**
-  * @brief       Inference thread
+* @brief       Inference thread
                  [Covers: BPAP_FC_V4H_AD004][Covers: BPAP_FC_V4H_AD005][Covers: BPAP_FC_V4H_AD006]
                  [Covers: BPAP_FC_V4H_AD014][Covers: BPAP_FC_V4H_AD018][Covers: BPAP_FC_V4H_AD057]
                  [Covers: BPAP_FC_V4H_AD024][Covers: BPAP_FC_V4H_AD025][Covers: BPAP_FC_V4H_AD029]
                  [Covers: BPAP_FC_V4H_AD038][Covers: BPAP_FC_V4H_AD050]
-  * @param[in]   none
-  * @param[out]  none
-  * @retval      true           success(0)
-  * @retval      false           fail(1)
+* @param[in]   none
+* @param[out]  none
+* @retval      true           success(0)
+* @retval      false           fail(1)
  ***********************************************************************************************************************/
 int64_t R_Inference_Task() {
     static int counter = 0;
@@ -1034,13 +1034,13 @@ int64_t R_Inference_Task() {
 /**********************************************************************************************************************
 /* Function Name : R_CTRL_Task */
 /******************************************************************************************************************/ /**
-  * @brief       User control thread
+* @brief       User control thread
                  [Covers: BPAP_FC_V4H_AD032]
-  * @param[in]   none
-  * @param[out]  none
-  * @retval      true            success(0)
-  * @retval      false           fail(1)
-  *********************************************************************************************************************/
+* @param[in]   none
+* @param[out]  none
+* @retval      true            success(0)
+* @retval      false           fail(1)
+*********************************************************************************************************************/
 int64_t R_CTRL_Task() {
     char user_in[DATA_LEN_64] = "";
 
@@ -1064,13 +1064,13 @@ int64_t R_CTRL_Task() {
 /**********************************************************************************************************************
 /* Function Name : R_Init_Modules */
 /******************************************************************************************************************/ /**
-  * @brief       Module Initialization
+* @brief       Module Initialization
                  [Covers: BPAP_FC_V4H_AD009][Covers: BPAP_FC_V4H_AD020]
-  * @param[in]   none
-  * @param[out]  none
-  * @retval      true            success
-  * @retval      false           fail
-  *********************************************************************************************************************/
+* @param[in]   none
+* @param[out]  none
+* @retval      true            success
+* @retval      false           fail
+*********************************************************************************************************************/
 int64_t R_Init_Modules() {
     int ret = INVALID;
     int32_t ret_sample = IMPDEMO_OK;
@@ -1133,7 +1133,6 @@ int64_t R_Init_Modules() {
         }
     }
 
-  
     if (g_customize.mmap_out_enable) {
         ret = mmap_image_init();
         if (ret == FAILED) {
@@ -1151,13 +1150,13 @@ int64_t R_Init_Modules() {
 /**********************************************************************************************************************
 /* Function Name : R_Deinit_Modules */
 /******************************************************************************************************************/ /**
-  * @brief       Module deinitialization
+* @brief       Module deinitialization
                  [Covers: BPAP_FC_V4H_AD020]
-  * @param[in]   none
-  * @param[out]  none
-  * @retval      true            success(0)
-  * @retval      false           fail(1)
-  *********************************************************************************************************************/
+* @param[in]   none
+* @param[out]  none
+* @retval      true            success(0)
+* @retval      false           fail(1)
+*********************************************************************************************************************/
 int64_t R_Deinit_Modules() {
     int ret = INVALID;
     int32_t ret_sample = IMPDEMO_OK;
@@ -1271,16 +1270,17 @@ int64_t R_Deinit_Modules() {
 /**********************************************************************************************************************
  End of function R_Deinit_Modules
  *********************************************************************************************************************/
+
 /**********************************************************************************************************************
 /* Function Name : R_FC_SystemInit */
 /******************************************************************************************************************/ /**
-  * @brief       FC system Initialisation
+* @brief       FC system Initialisation
                  [Covers: BPAP_FC_V4H_AD009]
-  * @param[in]   none
-  * @param[out]  none
-  * @retval      true            success(0)
-  * @retval      false           fail(1)
-  *********************************************************************************************************************/
+* @param[in]   none
+* @param[out]  none
+* @retval      true            success(0)
+* @retval      false           fail(1)
+*********************************************************************************************************************/
 static int64_t R_FC_SystemInit() {
     int ret = INVALID;
     g_frame_width = g_customize.Frame_Width; /* Set frame width and height */
@@ -1339,12 +1339,12 @@ static int64_t R_FC_SystemInit() {
 /**********************************************************************************************************************
 /* Function Name : R_PipelineParamValidate */
 /******************************************************************************************************************/ /**
-                                                                                                                      * @brief       Pipeline Validation
-                                                                                                                      * @param[in]   none
-                                                                                                                      * @param[out]  none
-                                                                                                                      * @retval      true            success(0)
-                                                                                                                      * @retval      false           fail(1)
-                                                                                                                      *********************************************************************************************************************/
+* @brief       Pipeline Validation
+* @param[in]   none
+* @param[out]  none
+* @retval      true            success(0)
+* @retval      false           fail(1)
+*********************************************************************************************************************/
 int R_PipelineParamValidate() {
 #ifdef NDEBUG
     if (g_customize.Debug_Enable) {
@@ -1395,13 +1395,13 @@ ISP_Enable=1 are invalid configuration for the application \n");
 /**********************************************************************************************************************
 /* Function Name : buffer_map */
 /******************************************************************************************************************/ /**
-  * @brief       Customization
+* @brief       Customization
                  [Covers: BPAP_FC_V4H_AD053]
-  * @param[in]   none
-  * @param[out]  none
-  * @retval      true            success(0)
-  * @retval      false           fail(1)
-  *********************************************************************************************************************/
+* @param[in]   none
+* @param[out]  none
+* @retval      true            success(0)
+* @retval      false           fail(1)
+*********************************************************************************************************************/
 static int64_t buffer_map() {
     /* ISP Input Customization */
     ISP_inputcustom();
@@ -1430,11 +1430,11 @@ static int64_t buffer_map() {
 /**********************************************************************************************************************
 /* Function Name : sigint_handler */
 /******************************************************************************************************************/ /**
-                                                                                                                      * @brief       thread exit
-                                                                                                                      * @param[in]   signum
-                                                                                                                      * @param[out]  none
-                                                                                                                      * @retval      none
-                                                                                                                      *********************************************************************************************************************/
+* @brief       thread exit
+* @param[in]   signum
+* @param[out]  none
+* @retval      none
+*********************************************************************************************************************/
 static void sigint_handler(int signum) {
     g_is_thread_exit = true;
     signal(SIGINT, sigint_handler);
@@ -1445,11 +1445,11 @@ static void sigint_handler(int signum) {
 /**********************************************************************************************************************
 /* Function Name : FcModuleInitFlags*/
 /******************************************************************************************************************/ /**
-                                                                                                                      * @brief       Module init Flags
-                                                                                                                      * @param[in]   none
-                                                                                                                      * @param[out]  none
-                                                                                                                      * @retval      none
-                                                                                                                      *********************************************************************************************************************/
+* @brief       Module init Flags
+* @param[in]   none
+* @param[out]  none
+* @retval      none
+*********************************************************************************************************************/
 static void FcModuleInitFlags() {
     g_fcStatus.vin.status = INVALID;
     g_fcStatus.imr_ldc.status = INVALID;
@@ -1464,12 +1464,12 @@ static void FcModuleInitFlags() {
 /**********************************************************************************************************************
 /* Function Name : R_Create_Mutex */
 /******************************************************************************************************************/ /**
-                                                                                                                      * @brief       Create Mutex
-                                                                                                                      * @param[in]   none
-                                                                                                                      * @param[out]  none
-                                                                                                                      * @retval      true            success(0)
-                                                                                                                      * @retval      false           fail(1)
-                                                                                                                      *********************************************************************************************************************/
+* @brief       Create Mutex
+* @param[in]   none
+* @param[out]  none
+* @retval      true            success(0)
+* @retval      false           fail(1)
+*********************************************************************************************************************/
 int64_t R_Create_Mutex() {
     e_osal_return_t osal_ret;
     /* Opencv mutex handle create */
@@ -1545,12 +1545,12 @@ int64_t R_Create_Mutex() {
 /**********************************************************************************************************************
 /* Function Name : R_Mutex_Map */
 /******************************************************************************************************************/ /**
-                                                                                                                      * @brief       Mapping of Mutex
-                                                                                                                      * @param[in]   none
-                                                                                                                      * @param[out]  none
-                                                                                                                      * @retval      true            success(0)
-                                                                                                                      * @retval      false           fail(1)
-                                                                                                                      *********************************************************************************************************************/
+* @brief       Mapping of Mutex
+* @param[in]   none
+* @param[out]  none
+* @retval      true            success(0)
+* @retval      false           fail(1)
+*********************************************************************************************************************/
 int64_t R_Mutex_Map() {
     /*Vin Customization */
     gp_mtx_handle_vin = &g_mtx_handle_vin_out;
@@ -1602,13 +1602,13 @@ int64_t R_Mutex_Map() {
 /**********************************************************************************************************************
 /* Function Name : get_syncstatus */
 /******************************************************************************************************************/ /**
-  * @brief       To get the sync status
+* @brief       To get the sync status
                  [Covers: BPAP_FC_V4H_AD009]
-  * @param[in]   module              defining FC modules
-  * @param[in]   flow                defines the direction of buffer copy of thread(0-input 1-output)
-  * @param[out]  none
-  * @retval      status
-  *********************************************************************************************************************/
+* @param[in]   module              defining FC modules
+* @param[in]   flow                defines the direction of buffer copy of thread(0-input 1-output)
+* @param[out]  none
+* @retval      status
+*********************************************************************************************************************/
 int get_syncstatus(e_fc_module_t module, int flow) {
     int status = INVALID;
     if (flow == 1) {
@@ -1661,14 +1661,14 @@ int get_syncstatus(e_fc_module_t module, int flow) {
 /**********************************************************************************************************************
 /* Function Name : set_syncstatus */
 /******************************************************************************************************************/ /**
-  * @brief       To set the sync status
+* @brief       To set the sync status
                  [Covers: BPAP_FC_V4H_AD009]
-  * @param[in]   module          defining FC modules
-  * @param[in]   flow            defines the direction of buffer copy of thread(0-input 1-output)
-  * @param[out]  none
-  * @retval      true            success(0)
-  * @retval      false           fail(1)
-  *********************************************************************************************************************/
+* @param[in]   module          defining FC modules
+* @param[in]   flow            defines the direction of buffer copy of thread(0-input 1-output)
+* @param[out]  none
+* @retval      true            success(0)
+* @retval      false           fail(1)
+*********************************************************************************************************************/
 int set_syncstatus(e_fc_module_t module, int flow) {
     int ret;
     if (flow == 1) {
@@ -1693,15 +1693,15 @@ int set_syncstatus(e_fc_module_t module, int flow) {
 /**********************************************************************************************************************
 /* Function Name :  R_FC_SyncStart*/
 /******************************************************************************************************************/ /**
-  * @brief       sync start
+* @brief       sync start
                  [Covers: BPAP_FC_V4H_AD009]
-  * @param[in]   module          defining FC modules
-  * @param[in]   flow            defines the direction of buffer copy of thread(0-input 1-output)
-  * @param[in]   ptr_mtx         mutex handle for corresponding module
-  * @param[in]   ptr_cond        condition handle for corresponding thread
-  * @retval      true            success(0)
-  * @retval      false           fail(1)
-  *********************************************************************************************************************/
+* @param[in]   module          defining FC modules
+* @param[in]   flow            defines the direction of buffer copy of thread(0-input 1-output)
+* @param[in]   ptr_mtx         mutex handle for corresponding module
+* @param[in]   ptr_cond        condition handle for corresponding thread
+* @retval      true            success(0)
+* @retval      false           fail(1)
+*********************************************************************************************************************/
 int R_FC_SyncStart(e_fc_module_t module, osal_mutex_handle_t *ptr_mtx, osal_cond_handle_t *ptr_cond, int flow) {
     /*The function R_FC_SyncStart is used to start the synchronization process in thread.
       A R_OSAL_ThsyncMutexLockForTimePeriod function is used to lock a mutex assigned to handle with timeout for
@@ -1737,16 +1737,16 @@ int R_FC_SyncStart(e_fc_module_t module, osal_mutex_handle_t *ptr_mtx, osal_cond
 /**********************************************************************************************************************
 /* Function Name :  R_FC_SyncEnd*/
 /******************************************************************************************************************/ /**
-  * @brief       sync stop
-                 [Covers: BPAP_FC_V4H_AD009]
-  * @param[in]   module          defining fc modules
-  * @param[in]   flow            defines the direction of buffer copy of thread(0-input 1-output)
-  * @param[in]   ptr_mtx         mutex handle for corresponding module
-  * @param[in]   ptr_cond        condition handle for corresponding thread
-  * @param[out]  none
-  * @retval      true            success(0)
-  * @retval      false           fail(1)
-  *********************************************************************************************************************/
+* @brief       sync stop
+                [Covers: BPAP_FC_V4H_AD009]
+* @param[in]   module          defining fc modules
+* @param[in]   flow            defines the direction of buffer copy of thread(0-input 1-output)
+* @param[in]   ptr_mtx         mutex handle for corresponding module
+* @param[in]   ptr_cond        condition handle for corresponding thread
+* @param[out]  none
+* @retval      true            success(0)
+* @retval      false           fail(1)
+*********************************************************************************************************************/
 int R_FC_SyncEnd(e_fc_module_t module, osal_mutex_handle_t *ptr_mtx, osal_cond_handle_t *ptr_cond, int flow) {
     /* The function R_FC_SyncEnd is used for end the synchronization process in thread.Here a set_syncstatus function is
        used to set buffer copy status of the thread according to the flow.
@@ -1775,13 +1775,13 @@ int R_FC_SyncEnd(e_fc_module_t module, osal_mutex_handle_t *ptr_mtx, osal_cond_h
 /**********************************************************************************************************************
 /* Function Name :  uSecElapsed*/
 /******************************************************************************************************************/ /**
-  * @brief       To get elapsed time in us
+* @brief       To get elapsed time in us
                  [Covers: BPAP_FC_V4H_AD041][Covers: BPAP_FC_V4H_AD042][Covers: BPAP_FC_V4H_AD056]
-  * @param[in]   t1        time value structure pointer
-  * @param[in]   t2        time value structure pointer
-  * @param[out]  none
-  * @retval      elapsed time
-  *********************************************************************************************************************/
+* @param[in]   t1        time value structure pointer
+* @param[in]   t2        time value structure pointer
+* @param[out]  none
+* @retval      elapsed time
+*********************************************************************************************************************/
 static inline unsigned long uSecElapsed(struct timeval *t2, struct timeval *t1) {
     return (t2->tv_sec - t1->tv_sec) * 1000000 + t2->tv_usec - t1->tv_usec;
 }
@@ -1792,12 +1792,12 @@ static inline unsigned long uSecElapsed(struct timeval *t2, struct timeval *t1) 
 /**********************************************************************************************************************
 /* Function Name :  fpsCount*/
 /******************************************************************************************************************/ /**
-  * @brief       To get the fps count
-                 [Covers: BPAP_FC_V4H_AD041][Covers: BPAP_FC_V4H_AD042]
-  * @param[in]   dev
-  * @param[out]  none
-  * @retval      none
-  *********************************************************************************************************************/
+* @brief       To get the fps count
+                [Covers: BPAP_FC_V4H_AD041][Covers: BPAP_FC_V4H_AD042]
+* @param[in]   dev
+* @param[out]  none
+* @retval      none
+*********************************************************************************************************************/
 void fpsCount(int dev) {
     static unsigned frames[N_DEVS_MAX];
     static struct timeval frame_time[N_DEVS_MAX];
@@ -1821,12 +1821,12 @@ void fpsCount(int dev) {
 /**********************************************************************************************************************
 /* Function Name :  Vin_Buffer_Alloc */
 /******************************************************************************************************************/ /**
-                                                                                                                      * @brief       Memory allocation for Vin buffer
-                                                                                                                      * @param[in]   none
-                                                                                                                      * @param[out]  none
-                                                                                                                      * @retval      true            success(0)
-                                                                                                                      * @retval      false           fail(1)
-                                                                                                                      *********************************************************************************************************************/
+* @brief       Memory allocation for Vin buffer
+* @param[in]   none
+* @param[out]  none
+* @retval      true            success(0)
+* @retval      false           fail(1)
+*********************************************************************************************************************/
 static int64_t Vin_Buffer_Alloc() {
     if (YUYV == g_customize.VIN_Capture_Format) /* YUYV capture format */
     {
@@ -1857,12 +1857,12 @@ static int64_t Vin_Buffer_Alloc() {
 /**********************************************************************************************************************
 /* Function Name :  Isp_Buffer_Alloc */
 /******************************************************************************************************************/ /**
-                                                                                                                      * @brief       Memory allocation for isp buffers
-                                                                                                                      * @param[in]   none
-                                                                                                                      * @param[out]  none
-                                                                                                                      * @retval      true            success(0)
-                                                                                                                      * @retval      false           fail(1)
-                                                                                                                      *********************************************************************************************************************/
+* @brief       Memory allocation for isp buffers
+* @param[in]   none
+* @param[out]  none
+* @retval      true            success(0)
+* @retval      false           fail(1)
+*********************************************************************************************************************/
 static int64_t Isp_Buffer_Alloc() {
     if (g_customize.ISP_RAW_OUT_Format) /* ISP raw format enabled */
     {
@@ -1895,12 +1895,12 @@ static int64_t Isp_Buffer_Alloc() {
 /**********************************************************************************************************************
 /* Function Name :  Imr_Buffer_Alloc */
 /******************************************************************************************************************/ /**
-                                                                                                                      * @brief       Memory allocation for imr buffers
-                                                                                                                      * @param[in]   none
-                                                                                                                      * @param[out]  none
-                                                                                                                      * @retval      true            success(0)
-                                                                                                                      * @retval      false           fail(1)
-                                                                                                                      *********************************************************************************************************************/
+* @brief       Memory allocation for imr buffers
+* @param[in]   none
+* @param[out]  none
+* @retval      true            success(0)
+* @retval      false           fail(1)
+*********************************************************************************************************************/
 static int64_t Imr_Buffer_Alloc() {
     int bpp = BPP_YUV;
 
@@ -1967,11 +1967,11 @@ static int64_t Imr_Buffer_Alloc() {
 /**********************************************************************************************************************
 /* Function Name :  ISP_inputcustom*/
 /******************************************************************************************************************/ /**
-                                                                                                                      * @brief       ISP Input Customization
-                                                                                                                      * @param[in]   none
-                                                                                                                      * @param[out]  none
-                                                                                                                      * @retval      none
-                                                                                                                      *********************************************************************************************************************/
+* @brief       ISP Input Customization
+* @param[in]   none
+* @param[out]  none
+* @retval      none
+*********************************************************************************************************************/
 static void ISP_inputcustom() {
     /* ISP Input Customization */
     if (g_customize.VIN_Enable) {
@@ -1988,11 +1988,11 @@ static void ISP_inputcustom() {
 /**********************************************************************************************************************
 /* Function Name :  IMR_LDC_inputcustom*/
 /******************************************************************************************************************/ /**
-                                                                                                                      * @brief       IMR LDC Input Customization
-                                                                                                                      * @param[in]   none
-                                                                                                                      * @param[out]  none
-                                                                                                                      * @retval      none
-                                                                                                                      *********************************************************************************************************************/
+* @brief       IMR LDC Input Customization
+* @param[in]   none
+* @param[out]  none
+* @retval      none
+*********************************************************************************************************************/
 static void IMR_LDC_inputcustom() {
     /* IMR LDC Input Customization */
     if (g_customize.ISP_Enable) {
@@ -2010,11 +2010,11 @@ static void IMR_LDC_inputcustom() {
 /**********************************************************************************************************************
 /* Function Name :  IMR_Resize_inputcustom */
 /******************************************************************************************************************/ /**
-                                                                                                                      * @brief       IMR Resize Input Customization
-                                                                                                                      * @param[in]   none
-                                                                                                                      * @param[out]  none
-                                                                                                                      * @retval      none
-                                                                                                                      *********************************************************************************************************************/
+* @brief       IMR Resize Input Customization
+* @param[in]   none
+* @param[out]  none
+* @retval      none
+*********************************************************************************************************************/
 static void IMR_Resize_inputcustom() {
     /* IMR Resize Input Customization */
     if (g_customize.IMR_LDC) {
@@ -2034,11 +2034,11 @@ static void IMR_Resize_inputcustom() {
 /**********************************************************************************************************************
 /* Function Name :  Color_Conversion_bufferCustom */
 /******************************************************************************************************************/ /**
-                                                                                                                      * @brief       colour conversion buffer customization
-                                                                                                                      * @param[in]   none
-                                                                                                                      * @param[out]  none
-                                                                                                                      * @retval      none
-                                                                                                                      *********************************************************************************************************************/
+* @brief       colour conversion buffer customization
+* @param[in]   none
+* @param[out]  none
+* @retval      none
+*********************************************************************************************************************/
 static void Color_Conversion_bufferCustom() {
     /*gp_yuv2rgb_in buffer setting */
     if (g_customize.IMR_Resize) {
@@ -2060,11 +2060,11 @@ static void Color_Conversion_bufferCustom() {
 /**********************************************************************************************************************
 /* Function Name :  opencv_inputcustom */
 /******************************************************************************************************************/ /**
-                                                                                                                      * @brief       OpenCV Input Customization
-                                                                                                                      * @param[in]   none
-                                                                                                                      * @param[out]  none
-                                                                                                                      * @retval      none
-                                                                                                                      *********************************************************************************************************************/
+* @brief       OpenCV Input Customization
+* @param[in]   none
+* @param[out]  none
+* @retval      none
+*********************************************************************************************************************/
 static void opencv_inputcustom() {
     /* OpenCV Input Customization */
     if (g_customize.IMR_LDC) {
@@ -2084,11 +2084,11 @@ static void opencv_inputcustom() {
 /**********************************************************************************************************************
 /* Function Name :  vout_inputcustom */
 /******************************************************************************************************************/ /**
-                                                                                                                      * @brief       Vout Input Customization
-                                                                                                                      * @param[in]   none
-                                                                                                                      * @param[out]  none
-                                                                                                                      * @retval      none
-                                                                                                                      *********************************************************************************************************************/
+* @brief       Vout Input Customization
+* @param[in]   none
+* @param[out]  none
+* @retval      none
+*********************************************************************************************************************/
 static void vout_inputcustom() {
     /* Vout Input Customization */
     if (g_customize.VOUT_Enable) {
@@ -2102,13 +2102,13 @@ static void vout_inputcustom() {
 /**********************************************************************************************************************
 /* Function Name :  syncflow_enable */
 /******************************************************************************************************************/ /**
-  * @brief       To enable sync flow
+* @brief       To enable sync flow
                  [Covers: BPAP_FC_V4H_AD009]
-  * @param[in]   module
-  * @param[out]  none
-  * @retval      true            success(0)
-  * @retval      false           fail(1)
-  *********************************************************************************************************************/
+* @param[in]   module
+* @param[out]  none
+* @retval      true            success(0)
+* @retval      false           fail(1)
+*********************************************************************************************************************/
 static int64_t syncflow_enable(e_fc_module_t module) {
     switch (module) {
         case eVIN:
@@ -2148,13 +2148,13 @@ static int64_t syncflow_enable(e_fc_module_t module) {
 /**********************************************************************************************************************
 /* Function Name :  syncflow_disable */
 /******************************************************************************************************************/ /**
-  * @brief       To disable sync flow
+* @brief       To disable sync flow
                  [Covers: BPAP_FC_V4H_AD009]
-  * @param[in]   module
-  * @param[out]  none
-  * @retval      true            success(0)
-  * @retval      false           fail(1)
-  *********************************************************************************************************************/
+* @param[in]   module
+* @param[out]  none
+* @retval      true            success(0)
+* @retval      false           fail(1)
+*********************************************************************************************************************/
 static int64_t syncflow_disable(e_fc_module_t module) {
     switch (module) {
         case eIMR_LDC:
@@ -2196,13 +2196,13 @@ static int64_t syncflow_disable(e_fc_module_t module) {
 /**********************************************************************************************************************
 /* Function Name :  st_r_vin_execute_main */
 /******************************************************************************************************************/ /**
-  * @brief       camera capture execution main
+* @brief       camera capture execution main
                  [Covers: BPAP_FC_V4H_AD015][Covers: BPAP_FC_V4H_AD035]
-  * @param[in]   module
-  * @param[out]  none
-  * @retval      true            success(0)
-  * @retval      false           fail(1)
-  *********************************************************************************************************************/
+* @param[in]   module
+* @param[out]  none
+* @retval      true            success(0)
+* @retval      false           fail(1)
+*********************************************************************************************************************/
 static int st_r_vin_execute_main(void) {
     int ret = FAILED;
 
@@ -2227,13 +2227,13 @@ static int st_r_vin_execute_main(void) {
 /**********************************************************************************************************************
 /* Function Name :  Opencv_buffer_alloc */
 /******************************************************************************************************************/ /**
-  * @brief       To allocate memory for opencv buffers
+* @brief       To allocate memory for opencv buffers
 
-  * @param[in]   none
-  * @param[out]  none
-  * @retval      true            success(0)
-  * @retval      false           fail(1)
-  *********************************************************************************************************************/
+* @param[in]   none
+* @param[out]  none
+* @retval      true            success(0)
+* @retval      false           fail(1)
+*********************************************************************************************************************/
 static int Opencv_buffer_alloc() {
     gp_opencv_buffer = (char *)malloc(g_frame_width * g_frame_height * BPP_RGB); /* opencv buffer allocation */
     if (NULL == gp_opencv_buffer) {
