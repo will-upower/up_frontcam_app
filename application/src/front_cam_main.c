@@ -471,11 +471,7 @@ re-run the application\n FC App terminating...\n ");
                 }
             }
         }
-        // Addendum: opencv window:
-        if (0 == g_customize.VOUT_Enable) {
-            create_opencv_window();
-            atexit(self_destruct_ocv);
-        }
+
         t1_0 = currentTimeMillis();
         t2_0 = currentTimeMillis();
         t4_0 = currentTimeMillis();
@@ -987,16 +983,7 @@ int64_t R_VOUT_Task() {
         {
             fpsCount(0); /* Get FPS */
         }
-        if (true == g_customize.VOUT_Enable) /* if VOUT is enabled */
-        {
-            ret = execute(); /* VOUT execution */
-            if (FAILED == ret) {
-                g_is_thread_exit = true;
-                PRINT_ERROR("Failed Vout execute \n");
-                return FAILED;
-            }
-        }
-
+      
         if (true == g_customize.Image_Folder_Enable) {
             /*Receiving message to image read MQ*/
             e_osal_return_t osal_ret = R_OSAL_MqReceiveForTimePeriod(g_mq_handle_imgread, TIMEOUT_MS,
@@ -1146,20 +1133,7 @@ int64_t R_Init_Modules() {
         }
     }
 
-    if (true == g_customize.VOUT_Enable) /* If VOUT is enabled */
-    {
-        ret = vout_init(); /* Initialize VOUT */
-
-        if (FAILED == ret) {
-            g_fcStatus.vout.status = FAILED;
-            PRINT_ERROR("Failed vout_init \n");
-            return FAILED;
-        }
-        g_fcStatus.vout.status = SUCCESS;
-    } else {
-        g_fcStatus.vout.status = FAILED;
-        printf("VOUT Disabled : Enable from config file\n");
-    }
+  
     if (g_customize.mmap_out_enable) {
         ret = mmap_image_init();
         if (FAILED == ret) {
