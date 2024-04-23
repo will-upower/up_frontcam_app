@@ -431,7 +431,11 @@ re-run the application\n FC App terminating...\n ");
                 }
             }
         }
-
+        // Addendum: opencv window:
+        if (!g_customize.VOUT_Enable) {
+            create_opencv_window();
+            atexit(self_destruct_ocv);
+        }
         t1_0 = currentTimeMillis();
         t2_0 = currentTimeMillis();
         t4_0 = currentTimeMillis();
