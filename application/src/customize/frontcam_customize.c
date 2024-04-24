@@ -282,13 +282,13 @@ int R_CustomizePostload(st_customize_t *custom_param)
     }
 
     if (custom_param->Image_Folder_Enable) {
-            g_customize.Frame_Width = g_customize.Image_Video_Width;
-            g_customize.Frame_Height = g_customize.Image_Video_Height;
-            g_customize.VOUT_Pos_X = 0;
-            g_customize.VOUT_Pos_Y = 0;
-            g_customize.VOUT_Display_Width = g_customize.Image_Video_Width;
-            g_customize.VOUT_Display_Height = g_customize.Image_Video_Height;
-            g_customize.VIN_Capture_Format = 1;
+        g_customize.Frame_Width = g_customize.Image_Video_Width;
+        g_customize.Frame_Height = g_customize.Image_Video_Height;
+        g_customize.VOUT_Pos_X = 0;
+        g_customize.VOUT_Pos_Y = 0;
+        g_customize.VOUT_Display_Width = g_customize.Image_Video_Width;
+        g_customize.VOUT_Display_Height = g_customize.Image_Video_Height;
+        g_customize.VIN_Capture_Format = 1;
     }
 
     if (custom_param->Image_Folder_Enable && custom_param->VIN_Enable) {
