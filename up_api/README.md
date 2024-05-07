@@ -16,16 +16,16 @@
 <h3 align="center">UP OpenCL API Documentation</h3>
 
   <p align="center">
-    project_description
+    The API aims to develop a wrapped OpenCL shared library that incorporates various software Image Signal Processing (ISP) functions essential for image enhancement, manipulation, and correction. These functions include color conversion, cropping, distortion correction, and more. The wrapped library will be integrated into our U Power Front Camera Demo application to showcase its capabilities in real-time image processing.
     <br />
-    <a href="https://github.com/will-upower/up_frontcam_app"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/will-upower/up_frontcam_app/tree/main/documentation"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/will-upower/up_frontcam_app">View Demo</a>
+    <a href="https://github.com/will-upower/up_frontcam_app/blob/main/frontcam_with_cdnn_ref_app_v4h2">View Demo</a>
     ·
-    <a href="https://github.com/will-upower/up_frontcam_app/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+    <a href="https://github.com/will-upower/up_frontcam_app/issues/">Report Bug</a>
     ·
-    <a href="https://github.com/will-upower/up_frontcam_app/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+    <a href="https://github.com/will-upower/up_frontcam_app/issues/">Request Feature</a>
   </p>
 </div>
 
@@ -44,13 +44,10 @@
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
         <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
@@ -61,25 +58,15 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
-
-Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `will-upower`, `up_frontcam_app`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `project_title`, `project_description`
+The project will deliver a wrapped OpenCL shared library equipped with essential software ISP functions for image enhancement and manipulation. Additionally, a demo application will showcase the capabilities of the library through real-time image processing tasks. The project aims to provide a versatile solution for developers seeking to incorporate advanced image processing capabilities into their applications leveraging GPU acceleration.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 ### Built With
 
-* [![Next][Next.js]][Next-url]
-* [![React][React.js]][React-url]
-* [![Vue][Vue.js]][Vue-url]
-* [![Angular][Angular.io]][Angular-url]
-* [![Svelte][Svelte.dev]][Svelte-url]
-* [![Laravel][Laravel.com]][Laravel-url]
-* [![Bootstrap][Bootstrap.com]][Bootstrap-url]
-* [![JQuery][JQuery.com]][JQuery-url]
+[OpenCL](https://www.khronos.org/opencl/)                      
+[C/C++](https://cplusplus.com/)            
+[ShellScript](https://www.shellscript.sh/)            
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -87,34 +74,22 @@ Here's a blank template to get started: To avoid retyping too much info. Do a se
 
 <!-- GETTING STARTED -->
 ## Getting Started
-
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
-
-### Prerequisites
-
-This is an example of how to list things you need to use the software and how to install them.
-* npm
-  ```sh
-  npm install npm@latest -g
-  ```
-
 ### Installation
 
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
-   ```sh
-   git clone https://github.com/will-upower/up_frontcam_app.git
-   ```
-3. Install NPM packages
-   ```sh
-   npm install
-   ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
-   ```
-
+1. First update your system.
+```
+sudo apt update
+sudo apt upgrade
+```
+2. Install related packages
+```
+sudo apt install build-essential -y
+sudo apt install cmake -y
+```
+3. Install OpenCL
+```
+sudo apt install opencl-headers ocl-icd-opencl-dev -y
+```
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
@@ -122,50 +97,18 @@ This is an example of how to list things you need to use the software and how to
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+Run `compile_on_target.sh` on target device (e.g. V4H), and then build the project on a x86_64 device by running `1_build_frontcam_ref_app.sh`.           
+And then, scp and run the demo binary `frontcam_with_cdnn_ref_app_v4h2` on target.
 
 _For more examples, please refer to the [Documentation](https://example.com)_
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
-
-<!-- ROADMAP -->
-## Roadmap
-
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
-    - [ ] Nested Feature
-
-See the [open issues](https://github.com/will-upower/up_frontcam_app/issues) for a full list of proposed features (and known issues).
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- CONTRIBUTING -->
-## Contributing
-
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
 <!-- LICENSE -->
 ## License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+Distributed under the U Power USA License. See `LICENSE.txt` for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -174,7 +117,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email@email_client.com
+Lawrence Xu - lawrence.xu@upower.com
 
 Project Link: [https://github.com/will-upower/up_frontcam_app](https://github.com/will-upower/up_frontcam_app)
 
@@ -205,20 +148,6 @@ Project Link: [https://github.com/will-upower/up_frontcam_app](https://github.co
 [issues-url]: https://github.com/will-upower/up_frontcam_app/issues
 [license-shield]: https://img.shields.io/github/license/will-upower/up_frontcam_app.svg?style=for-the-badge
 [license-url]: https://github.com/will-upower/up_frontcam_app/blob/master/LICENSE.txt
-[product-screenshot]: images/screenshot.png
-[Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
-[Next-url]: https://nextjs.org/
-[React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
-[React-url]: https://reactjs.org/
-[Vue.js]: https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D
-[Vue-url]: https://vuejs.org/
-[Angular.io]: https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white
-[Angular-url]: https://angular.io/
-[Svelte.dev]: https://img.shields.io/badge/Svelte-4A4A55?style=for-the-badge&logo=svelte&logoColor=FF3E00
-[Svelte-url]: https://svelte.dev/
-[Laravel.com]: https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white
-[Laravel-url]: https://laravel.com
-[Bootstrap.com]: https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white
-[Bootstrap-url]: https://getbootstrap.com
-[JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
-[JQuery-url]: https://jquery.com 
+
+
+[Next-url]: [https://nextjs.org/](https://www.khronos.org/opencl/)
