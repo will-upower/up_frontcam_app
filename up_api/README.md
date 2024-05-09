@@ -41,7 +41,8 @@
         <li><a href="#built-with">Built With</a></li>
       </ul>
     </li>
-    <li>
+    <li><a href="#background">Background</a></li>
+    <li>     
       <a href="#getting-started">Getting Started</a>
       <ul>
         <li><a href="#installation">Installation</a></li>
@@ -70,7 +71,22 @@ The project will deliver a wrapped OpenCL shared library equipped with essential
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
+<!-- Background -->
+## Background
+### Camera Information
+```
+Camera Resolution: 1920x1020
+Pixel Format:  YUYV422 (10-bit)
+Color Code: Y210
+Optical Information: 60/200 degrees FOV
+```
+### NN model
+There are currently only two formats we will concern ourselves with                                 
+```
+RGB 1024x1024
+RGB  640x640
+```
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -100,7 +116,7 @@ sudo apt install opencl-headers ocl-icd-opencl-dev -y
 Run `compile_on_target.sh` on target device (e.g. V4H), and then build the project on a x86_64 device by running `1_build_frontcam_ref_app.sh`.           
 And then, scp and run the demo binary `frontcam_with_cdnn_ref_app_v4h2` on target.
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+_For more examples, please refer to the [Documentation](https://github.com/will-upower/up_frontcam_app/tree/add_readme/documentation)_
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -148,6 +164,3 @@ Project Link: [https://github.com/will-upower/up_frontcam_app](https://github.co
 [issues-url]: https://github.com/will-upower/up_frontcam_app/issues
 [license-shield]: https://img.shields.io/github/license/will-upower/up_frontcam_app.svg?style=for-the-badge
 [license-url]: https://github.com/will-upower/up_frontcam_app/blob/master/LICENSE.txt
-
-
-[Next-url]: [https://nextjs.org/](https://www.khronos.org/opencl/)
